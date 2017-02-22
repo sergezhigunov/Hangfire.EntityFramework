@@ -1,0 +1,16 @@
+﻿{
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true
+  },
+  "frameworks": {
+    "net45": {
+      "dependencies": {
+        "EntityFramework": "6.1.3",
+        "HangFire.Core": "1.6.8"
+      }
+    }
+  },
+  "language": "en-US",
+  "version": "0.0.1-*"
+}
