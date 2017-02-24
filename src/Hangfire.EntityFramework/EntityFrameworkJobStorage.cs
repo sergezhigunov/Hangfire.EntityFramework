@@ -56,10 +56,7 @@ namespace Hangfire.EntityFramework
         /// <returns>
         /// A new <see cref="IStorageConnection"/> instance.
         /// </returns>
-        public override IStorageConnection GetConnection()
-        {
-            throw new NotImplementedException();
-        }
+        public override IStorageConnection GetConnection() => new EntityFrameworkJobStorageConnection(this);
 
         /// <summary>
         /// Creates a new <see cref="IMonitoringApi"/> instance for the current storage.
