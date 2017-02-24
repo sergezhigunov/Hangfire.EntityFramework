@@ -22,10 +22,8 @@ namespace Hangfire.EntityFramework
         public override IWriteOnlyTransaction CreateWriteTransaction() =>
             new EntityFrameworkJobStorageTransaction(Storage);
 
-        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
-        {
-            throw new NotImplementedException();
-        }
+        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout) =>
+            new EntityFrameworkJobStorageDistributedLock(Storage, resource, timeout);
 
         public override string CreateExpiredJob(Job job, IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
         {
