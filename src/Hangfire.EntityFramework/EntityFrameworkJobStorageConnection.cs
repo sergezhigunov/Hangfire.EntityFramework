@@ -19,10 +19,8 @@ namespace Hangfire.EntityFramework
             Storage = storage;
         }
 
-        public override IWriteOnlyTransaction CreateWriteTransaction()
-        {
-            throw new NotImplementedException();
-        }
+        public override IWriteOnlyTransaction CreateWriteTransaction() =>
+            new EntityFrameworkJobStorageTransaction(Storage);
 
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
         {
