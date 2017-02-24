@@ -64,10 +64,7 @@ namespace Hangfire.EntityFramework
         /// <returns>
         /// A new <see cref="IMonitoringApi"/> instance.
         /// </returns>
-        public override IMonitoringApi GetMonitoringApi()
-        {
-            throw new NotImplementedException();
-        }
+        public override IMonitoringApi GetMonitoringApi() => new EntityFrameworkJobStorageMonitoringApi(this);
 
         internal void UseHangfireDbContext([InstantHandle] Action<HangfireDbContext> action)
         {
