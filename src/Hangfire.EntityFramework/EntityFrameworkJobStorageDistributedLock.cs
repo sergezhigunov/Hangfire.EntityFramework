@@ -4,9 +4,9 @@ namespace Hangfire.EntityFramework
 {
     internal class EntityFrameworkJobStorageDistributedLock : IDisposable
     {
-        private EntityFrameworkJobStorage Storage;
-        private string Resource;
-        private TimeSpan Timeout;
+        private EntityFrameworkJobStorage Storage { get; }
+        private string Resource { get; }
+        private TimeSpan Timeout { get; }
 
         public EntityFrameworkJobStorageDistributedLock(EntityFrameworkJobStorage storage, string resource, TimeSpan timeout)
         {
@@ -20,8 +20,6 @@ namespace Hangfire.EntityFramework
         }
 
         public void Dispose()
-        {
-            throw new NotImplementedException();
-        }
+        { }
     }
 }

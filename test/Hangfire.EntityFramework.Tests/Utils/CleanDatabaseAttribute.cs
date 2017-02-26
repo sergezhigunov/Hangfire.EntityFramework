@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Data.Entity;
+using System.Reflection;
 using System.Threading;
 using Xunit.Sdk;
 
@@ -6,19 +7,17 @@ namespace Hangfire.EntityFramework.Utils
 {
     internal class CleanDatabaseAttribute : BeforeAfterTestAttribute
     {
-        private static object StaticLock { get; } = new object();
+        static CleanDatabaseAttribute()
+        {
+            Database.SetInitializer(new DropCreateDatabaseIfModelChanges<HangfireDbContext>());
+        }
 
-        private static bool Cleaned { get; set; }
+        private static object StaticLock { get; } = new object();
 
         public override void Before(MethodInfo methodUnderTest)
         {
             Monitor.Enter(StaticLock);
-
-            if (!Cleaned)
-            {
-                CleanDatabase();
-                Cleaned = true;
-            }
+            CleanDatabase();
         }
 
         public override void After(MethodInfo methodUnderTest)
@@ -30,7 +29,17 @@ namespace Hangfire.EntityFramework.Utils
         {
             using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString()))
             {
-                // TODO: Clean up DB data
+                context.Counters.RemoveRange(context.Counters);
+                context.Hashes.RemoveRange(context.Hashes);
+                context.JobActualStates.RemoveRange(context.JobActualStates);
+                context.JobStates.RemoveRange(context.JobStates);
+                context.JobParameters.RemoveRange(context.JobParameters);
+                context.Jobs.RemoveRange(context.Jobs);
+                context.Lists.RemoveRange(context.Lists);
+                context.Servers.RemoveRange(context.Servers);
+                context.Sets.RemoveRange(context.Sets);
+
+                context.SaveChanges();
             }
         }
     }

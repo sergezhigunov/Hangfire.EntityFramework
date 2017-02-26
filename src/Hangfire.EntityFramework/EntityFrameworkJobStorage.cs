@@ -68,17 +68,20 @@ namespace Hangfire.EntityFramework
 
         internal void UseHangfireDbContext([InstantHandle] Action<HangfireDbContext> action)
         {
-            UseHangfireDbContext(context =>
-            {
+            using (var context = CreateHangfireDbContext())
                 action(context);
-                return true;
-            });
         }
 
         internal T UseHangfireDbContext<T>([InstantHandle] Func<HangfireDbContext, T> func)
         {
-            using (var context = CreateHangfireDbContext())
-                return func(context);
+            T result = default(T);
+
+            UseHangfireDbContext(context =>
+            {
+                result = func(context);
+            });
+
+            return result;
         }
 
         private HangfireDbContext CreateHangfireDbContext() => new HangfireDbContext(NameOrConnectionString);
