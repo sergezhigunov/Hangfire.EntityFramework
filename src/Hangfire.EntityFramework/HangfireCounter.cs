@@ -16,6 +16,6 @@ namespace Hangfire.EntityFramework
 
         public long Value { get; set; }
 
-        public DateTime? ExpiredAt { get; set; }
+        public DateTime? ExpireAt { get; set; }
     }
 }
