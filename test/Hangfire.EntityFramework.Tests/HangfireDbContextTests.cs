@@ -13,6 +13,7 @@ namespace Hangfire.EntityFramework
             using (var context = new HangfireDbContext(connectionString))
             {
                 Assert.NotNull(context.Counters);
+                Assert.NotNull(context.DistributedLocks);
                 Assert.NotNull(context.Hashes);
                 Assert.NotNull(context.Jobs);
                 Assert.NotNull(context.JobActualStates);

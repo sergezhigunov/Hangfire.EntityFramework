@@ -231,7 +231,7 @@ namespace Hangfire.EntityFramework
         public override int RemoveTimedOutServers(TimeSpan timeOut)
         {
             if (timeOut < TimeSpan.Zero)
-                throw new ArgumentOutOfRangeException(nameof(timeOut), timeOut, ErrorStrings.NeedNonNegativeNumber);
+                throw new ArgumentOutOfRangeException(nameof(timeOut), timeOut, ErrorStrings.NeedNonNegativeValue);
 
             return Storage.UseHangfireDbContext(context =>
             {

@@ -30,6 +30,7 @@ namespace Hangfire.EntityFramework.Utils
             using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString()))
             {
                 context.Counters.RemoveRange(context.Counters);
+                context.DistributedLocks.RemoveRange(context.DistributedLocks);
                 context.Hashes.RemoveRange(context.Hashes);
                 context.JobActualStates.RemoveRange(context.JobActualStates);
                 context.JobStates.RemoveRange(context.JobStates);

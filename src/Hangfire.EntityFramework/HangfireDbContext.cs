@@ -10,6 +10,8 @@ namespace Hangfire.EntityFramework
 
         public DbSet<HangfireCounter> Counters { get; set; }
 
+        public DbSet<HangfireDistributedLock> DistributedLocks { get; set; }
+
         public DbSet<HangfireHash> Hashes { get; set; }
 
         public DbSet<HangfireJob> Jobs { get; set; }

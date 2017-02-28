@@ -117,7 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="NeedNonNegativeNumber" xml:space="preserve">
-    <value>Non-negative number required.</value>
+  <data name="LockTimedOutOnResource" xml:space="preserve">
+    <value>Could not place a lock on the resource {0}. Lock timed out.</value>
+  </data>
+  <data name="NeedNonNegativeValue" xml:space="preserve">
+    <value>Non-negative value required.</value>
+  </data>
+  <data name="NeedPositiveValue" xml:space="preserve">
+    <value>Non-negative value required.</value>
+  </data>
+  <data name="StringCannotBeEmpty" xml:space="preserve">
+    <value>String cannot be empty.</value>
+  </data>
+  <data name="TimeoutTooLarge" xml:space="preserve">
+    <value>The timeout specified is too large. Please supply a timeout less or equal to '{0}'.</value>
   </data>
 </root>

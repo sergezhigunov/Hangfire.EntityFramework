@@ -60,11 +60,47 @@ namespace Hangfire.EntityFramework {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Non-negative number required..
+        ///    Looks up a localized string similar to Could not place a lock on the resource {0}. Lock timed out..
         /// </summary>
-        public static string NeedNonNegativeNumber {
+        public static string LockTimedOutOnResource {
             get {
-                return ResourceManager.GetString("NeedNonNegativeNumber", resourceCulture);
+                return ResourceManager.GetString("LockTimedOutOnResource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Non-negative value required..
+        /// </summary>
+        public static string NeedNonNegativeValue {
+            get {
+                return ResourceManager.GetString("NeedNonNegativeValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Non-negative value required..
+        /// </summary>
+        public static string NeedPositiveValue {
+            get {
+                return ResourceManager.GetString("NeedPositiveValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to String cannot be empty..
+        /// </summary>
+        public static string StringCannotBeEmpty {
+            get {
+                return ResourceManager.GetString("StringCannotBeEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to The timeout specified is too large. Please supply a timeout less or equal to &apos;{0}&apos;..
+        /// </summary>
+        public static string TimeoutTooLarge {
+            get {
+                return ResourceManager.GetString("TimeoutTooLarge", resourceCulture);
             }
         }
     }

@@ -9,7 +9,7 @@ namespace Hangfire.EntityFramework
     /// </summary>
     public class EntityFrameworkJobStorage : JobStorage
     {
-        private EntityFrameworkJobStorageOptions Options { get; }
+        internal EntityFrameworkJobStorageOptions Options { get; }
         private string NameOrConnectionString { get; }
 
         /// <summary>
