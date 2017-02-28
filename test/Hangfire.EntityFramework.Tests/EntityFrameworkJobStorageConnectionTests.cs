@@ -208,7 +208,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void CreateExpiredJob_CreatesAJobInTheStorage_AndSetsItsParameters()
         {
-            var createdAt = new DateTime(2012, 12, 12);
+            var createdAt = new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Utc);
 
             var jobId = UseConnection(connection => connection.CreateExpiredJob(
                 Job.FromExpression(() => SampleMethod("argument")),

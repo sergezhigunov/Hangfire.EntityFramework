@@ -181,7 +181,7 @@ namespace Hangfire.EntityFramework
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            var data = new
+            var data = new ServerData
             {
                 WorkerCount = context.WorkerCount,
                 Queues = context.Queues,
