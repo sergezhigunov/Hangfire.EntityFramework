@@ -2,16 +2,30 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Threading;
 using Hangfire.Common;
 using Hangfire.EntityFramework.Utils;
 using Hangfire.Server;
 using Hangfire.Storage;
+using Moq;
 using Xunit;
 
 namespace Hangfire.EntityFramework
 {
     public class EntityFrameworkJobStorageConnectionTests
     {
+        private Mock<IPersistentJobQueue> Queue { get; } = new Mock<IPersistentJobQueue>();
+        private PersistentJobQueueProviderCollection Providers { get; }
+
+        public EntityFrameworkJobStorageConnectionTests()
+        {
+            var provider = new Mock<IPersistentJobQueueProvider>();
+            provider.Setup(x => x.GetJobQueue())
+                .Returns(Queue.Object);
+
+            Providers = new PersistentJobQueueProviderCollection(provider.Object);
+        }
+
         [Fact]
         public void Ctor_ThrowsAnException_IfStorageIsNull()
         {
@@ -1040,12 +1054,41 @@ namespace Hangfire.EntityFramework
             Assert.Equal(new[] { "3", "1" }, result);
         }
 
+        [Fact, CleanDatabase]
+        public void FetchNextJob_DelegatesItsExecution_ToTheQueue()
+        {
+            UseConnection(connection =>
+            {
+                var token = new CancellationToken();
+                var queues = new[] { "default" };
+
+                connection.FetchNextJob(queues, token);
+
+                Queue.Verify(x => x.Dequeue(queues, token));
+            });
+        }
+
+        [Fact, CleanDatabase]
+        public void FetchNextJob_Throws_IfMultipleProvidersResolved()
+        {
+            UseConnection(connection =>
+            {
+                var token = new CancellationToken();
+                var anotherProvider = new Mock<IPersistentJobQueueProvider>();
+                Providers.Add(anotherProvider.Object, new[] { "critical" });
+
+                Assert.Throws<InvalidOperationException>(
+                    () => connection.FetchNextJob(new[] { "critical", "default" }, token));
+            });
+        }
+
         private void UseConnection(Action<EntityFrameworkJobStorageConnection> action)
         {
             string connectionString = ConnectionUtils.GetConnectionString();
-            var storage = new EntityFrameworkJobStorage(connectionString);
+            var storage = new Mock<EntityFrameworkJobStorage>(connectionString);
+            storage.Setup(x => x.QueueProviders).Returns(Providers);
 
-            using (var connection = new EntityFrameworkJobStorageConnection(storage))
+            using (var connection = new EntityFrameworkJobStorageConnection(storage.Object))
                 action(connection);
         }
 

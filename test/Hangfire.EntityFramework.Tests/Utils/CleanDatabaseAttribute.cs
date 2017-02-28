@@ -35,6 +35,7 @@ namespace Hangfire.EntityFramework.Utils
                 context.JobActualStates.RemoveRange(context.JobActualStates);
                 context.JobStates.RemoveRange(context.JobStates);
                 context.JobParameters.RemoveRange(context.JobParameters);
+                context.JobQueues.RemoveRange(context.JobQueues);
                 context.Jobs.RemoveRange(context.Jobs);
                 context.Lists.RemoveRange(context.Lists);
                 context.Servers.RemoveRange(context.Servers);

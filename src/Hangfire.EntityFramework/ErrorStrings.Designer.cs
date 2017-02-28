@@ -60,11 +60,29 @@ namespace Hangfire.EntityFramework {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Cannot retrieve provider instances registered for the folowing queues: {0}..
+        /// </summary>
+        public static string CannotRetrieveQueueProviderForQueue {
+            get {
+                return ResourceManager.GetString("CannotRetrieveQueueProviderForQueue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Could not place a lock on the resource {0}. Lock timed out..
         /// </summary>
         public static string LockTimedOutOnResource {
             get {
                 return ResourceManager.GetString("LockTimedOutOnResource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Multiple provider instances registered for the folowing queues: {0}. You should choose only one type of persistent queues per server instance..
+        /// </summary>
+        public static string MultipleQueueProvidersNotSupported {
+            get {
+                return ResourceManager.GetString("MultipleQueueProvidersNotSupported", resourceCulture);
             }
         }
         
@@ -83,6 +101,15 @@ namespace Hangfire.EntityFramework {
         public static string NeedPositiveValue {
             get {
                 return ResourceManager.GetString("NeedPositiveValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Queues cannot be empty..
+        /// </summary>
+        public static string QueuesCannotBeEmpty {
+            get {
+                return ResourceManager.GetString("QueuesCannotBeEmpty", resourceCulture);
             }
         }
         

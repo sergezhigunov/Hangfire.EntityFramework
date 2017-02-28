@@ -11,3 +11,4 @@ using System.Runtime.InteropServices;
 [assembly: Guid("8e6a464d-1ae3-49e1-8d2e-59fc76f015e0")]
 [assembly: NeutralResourcesLanguage("en-US")]
 [assembly: InternalsVisibleTo("Hangfire.EntityFramework.Tests")]
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

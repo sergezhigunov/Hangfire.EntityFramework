@@ -22,6 +22,8 @@ namespace Hangfire.EntityFramework
 
         public DbSet<HangfireJobParameter> JobParameters { get; set; }
 
+        public DbSet<HangfireJobQueueItem> JobQueues { get; set; }
+
         public DbSet<HangfireListItem> Lists { get; set; }
 
         public DbSet<HangfireServer> Servers { get; set; }

@@ -17,6 +17,7 @@ namespace Hangfire.EntityFramework
                 Assert.NotNull(context.Hashes);
                 Assert.NotNull(context.Jobs);
                 Assert.NotNull(context.JobActualStates);
+                Assert.NotNull(context.JobQueues);
                 Assert.NotNull(context.JobParameters);
                 Assert.NotNull(context.JobStates);
                 Assert.NotNull(context.Lists);

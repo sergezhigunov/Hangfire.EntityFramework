@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using Hangfire.EntityFramework.Utils;
-using Hangfire.Storage;
 using Xunit;
 
 namespace Hangfire.EntityFramework

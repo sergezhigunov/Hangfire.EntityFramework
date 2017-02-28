@@ -88,10 +88,9 @@ namespace Hangfire.EntityFramework
 
         public override void AddToQueue(string queue, string jobId)
         {
-            EnqueueCommand(context => 
-            {
-                throw new NotImplementedException();
-            });
+            var provider = Storage.QueueProviders.GetProvider(queue);
+            var persistentQueue = provider.GetJobQueue();
+            EnqueueCommand(context => persistentQueue.Enqueue(queue, jobId));
         }
 
         public override void IncrementCounter(string key)

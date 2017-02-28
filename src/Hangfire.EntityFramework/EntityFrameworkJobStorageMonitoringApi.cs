@@ -23,7 +23,31 @@ namespace Hangfire.EntityFramework
 
         public IList<QueueWithTopEnqueuedJobsDto> Queues()
         {
-            throw new NotImplementedException();
+            var tuples = Storage.QueueProviders
+                .Select(x => x.GetJobQueueMonitoringApi())
+                .SelectMany(x => x.GetQueues(), (monitoring, queue) => new { Monitoring = monitoring, Queue = queue })
+                .OrderBy(x => x.Queue)
+                .ToArray();
+
+            var result = new List<QueueWithTopEnqueuedJobsDto>(tuples.Length);
+
+            foreach (var tuple in tuples)
+            {
+                var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
+                var counters = tuple.Monitoring.GetJobQueueCounters(tuple.Queue);
+
+                var firstJobs = EnqueuedJobs(enqueuedJobIds);
+
+                result.Add(new QueueWithTopEnqueuedJobsDto
+                {
+                    Name = tuple.Queue,
+                    Length = counters.EnqueuedCount,
+                    Fetched = counters.FetchedCount,
+                    FirstJobs = firstJobs
+                });
+            }
+
+            return result;
         }
 
         public IList<ServerDto> Servers()
@@ -101,18 +125,25 @@ namespace Hangfire.EntityFramework
                 };
             });
 
-            // TODO: Implement queues counting
-            throw new NotImplementedException();
+            statistics.Queues = Storage.QueueProviders
+                .SelectMany(x => x.GetJobQueueMonitoringApi().GetQueues())
+                .Count();
+
+            return statistics;
         }
 
         public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage)
         {
-            throw new NotImplementedException();
+            var queueApi = GetQueueApi(queue);
+            var enqueuedJobIds = queueApi.GetEnqueuedJobIds(queue, from, perPage);
+            return EnqueuedJobs(enqueuedJobIds.ToArray());
         }
 
         public JobList<FetchedJobDto> FetchedJobs(string queue, int from, int perPage)
         {
-            throw new NotImplementedException();
+            var queueApi = GetQueueApi(queue);
+            var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
+            return FetchedJobs(fetchedJobIds.ToArray());
         }
 
         public JobList<ProcessingJobDto> ProcessingJobs(int from, int count)
@@ -179,12 +210,16 @@ namespace Hangfire.EntityFramework
 
         public long EnqueuedCount(string queue)
         {
-            throw new NotImplementedException();
+            var queueApi = GetQueueApi(queue);
+            var counters = queueApi.GetJobQueueCounters(queue);
+            return counters.EnqueuedCount;
         }
 
         public long FetchedCount(string queue)
         {
-            throw new NotImplementedException();
+            var queueApi = GetQueueApi(queue);
+            var counters = queueApi.GetJobQueueCounters(queue);
+            return counters.FetchedCount;
         }
 
         public long FailedCount() => GetNumberOfJobsByStateName(FailedState.StateName);
@@ -204,6 +239,49 @@ namespace Hangfire.EntityFramework
         public IDictionary<DateTime, long> HourlySucceededJobs() => GetHourlyTimelineStats("succeeded");
 
         public IDictionary<DateTime, long> HourlyFailedJobs() => GetHourlyTimelineStats("failed");
+
+        private JobList<EnqueuedJobDto> EnqueuedJobs(Guid[] enqueuedJobIds)
+        {
+            return UseHangfireDbContext(context =>
+            {
+                var jobs = (
+                    from job in context.Jobs.Include(x => x.ActualState.State)
+                    where enqueuedJobIds.Contains(job.JobId)
+                    orderby job.CreatedAt ascending
+                    select job).
+                    ToArray();
+
+                return DeserializeJobs(
+                    jobs,
+                    (sqlJob, job, stateData) => new EnqueuedJobDto
+                    {
+                        Job = job,
+                        State = sqlJob.ActualState.State.Name,
+                        EnqueuedAt = sqlJob.ActualState.State.Name == EnqueuedState.StateName
+                            ? JobHelper.DeserializeNullableDateTime(stateData["EnqueuedAt"])
+                            : null
+                    });
+            });
+        }
+
+        private JobList<FetchedJobDto> FetchedJobs(Guid[] fetchedJobIds)
+        {
+            return UseHangfireDbContext(context =>
+            {
+                var jobs = (
+                    from job in context.Jobs.Include(x => x.ActualState.State)
+                    where fetchedJobIds.Contains(job.JobId)
+                    orderby job.CreatedAt ascending
+                    select job).
+                    ToArray();
+
+                return new JobList<FetchedJobDto>(jobs.ToDictionary(x => x.JobId.ToString(), x => new FetchedJobDto
+                {
+                    State = x.ActualState.State.Name,
+                    Job = DeserializeJob(x.InvocationData, x.Arguments),
+                }));
+            });
+        }
 
         private JobList<T> GetJobs<T>(
             int from,
@@ -248,6 +326,12 @@ namespace Hangfire.EntityFramework
             }
 
             return new JobList<T>(result);
+        }
+
+        private IPersistentJobQueueMonitoringApi GetQueueApi(string queue)
+        {
+            var provider = Storage.QueueProviders.GetProvider(queue);
+            return provider.GetJobQueueMonitoringApi();
         }
 
         private long GetNumberOfJobsByStateName(string stateName)

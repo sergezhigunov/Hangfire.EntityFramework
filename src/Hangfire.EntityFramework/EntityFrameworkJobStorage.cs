@@ -11,6 +11,7 @@ namespace Hangfire.EntityFramework
     {
         internal EntityFrameworkJobStorageOptions Options { get; }
         private string NameOrConnectionString { get; }
+        internal virtual PersistentJobQueueProviderCollection QueueProviders { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EntityFrameworkJobStorage"/> class with the specified database name
@@ -48,6 +49,8 @@ namespace Hangfire.EntityFramework
 
             Options = options;
             NameOrConnectionString = nameOrConnectionString;
+            var defaultQueueProvider = new EntityFrameworkJobQueueProvider(this);
+            QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
         }
 
         /// <summary>
