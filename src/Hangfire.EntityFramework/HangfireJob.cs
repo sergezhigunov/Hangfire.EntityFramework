@@ -13,9 +13,6 @@ namespace Hangfire.EntityFramework
         [Required(AllowEmptyStrings = true)]
         public string InvocationData { get; set; }
 
-        [Required(AllowEmptyStrings = true)]
-        public string Arguments { get; set; }
-
         [DateTimePrecision(7)]
         public DateTime CreatedAt { get; set; }
 

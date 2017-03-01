@@ -67,7 +67,6 @@ namespace Hangfire.EntityFramework
                 JobId = jobId,
                 CreatedAt = DateTime.UtcNow,
                 InvocationData = string.Empty,
-                Arguments = string.Empty,
             };
             var jobQueueItem = new HangfireJobQueueItem
             {
@@ -106,7 +105,6 @@ namespace Hangfire.EntityFramework
                 JobId = jobId,
                 CreatedAt = DateTime.UtcNow,
                 InvocationData = string.Empty,
-                Arguments = string.Empty,
             };
 
             UseContextWithSavingChanges(context => context.Jobs.Add(job));

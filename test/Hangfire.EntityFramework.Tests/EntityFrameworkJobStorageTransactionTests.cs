@@ -771,8 +771,7 @@ namespace Hangfire.EntityFramework
         {
             Guid jobId = Guid.NewGuid();
             UseContextWithSavingChanges(context => context.Jobs.
-                Add(new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow,
-                    InvocationData = string.Empty, Arguments = string.Empty, ExpireAt = expireAt }));
+                Add(new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, ExpireAt = expireAt }));
 
             return jobId;
         }

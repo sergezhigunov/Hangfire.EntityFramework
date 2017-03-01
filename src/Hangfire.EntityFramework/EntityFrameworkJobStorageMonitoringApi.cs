@@ -90,7 +90,7 @@ namespace Hangfire.EntityFramework
                 {
                     CreatedAt = job.CreatedAt,
                     ExpireAt = job.ExpireAt,
-                    Job = DeserializeJob(job.InvocationData, job.Arguments),
+                    Job = DeserializeJob(job.InvocationData),
                     Properties = job.Parameters.
                         ToDictionary(x => x.Name, x => x.Value),
                     History = job.States.
@@ -278,7 +278,7 @@ namespace Hangfire.EntityFramework
                 return new JobList<FetchedJobDto>(jobs.ToDictionary(x => x.JobId.ToString(), x => new FetchedJobDto
                 {
                     State = x.ActualState.State.Name,
-                    Job = DeserializeJob(x.InvocationData, x.Arguments),
+                    Job = DeserializeJob(x.InvocationData),
                 }));
             });
         }
@@ -319,7 +319,7 @@ namespace Hangfire.EntityFramework
                         ? new Dictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
                         : null;
 
-                    dto = selector(job, DeserializeJob(job.InvocationData, job.Arguments), stateData);
+                    dto = selector(job, DeserializeJob(job.InvocationData), stateData);
                 }
 
                 result.Add(new KeyValuePair<string, T>(job.JobId.ToString(), dto));
@@ -395,10 +395,9 @@ namespace Hangfire.EntityFramework
 
         private T UseHangfireDbContext<T>(Func<HangfireDbContext, T> func) => Storage.UseHangfireDbContext(func);
 
-        private static Job DeserializeJob(string invocationData, string arguments)
+        private static Job DeserializeJob(string invocationData)
         {
             var data = JobHelper.FromJson<InvocationData>(invocationData);
-            data.Arguments = arguments;
 
             return data.Deserialize();
         }

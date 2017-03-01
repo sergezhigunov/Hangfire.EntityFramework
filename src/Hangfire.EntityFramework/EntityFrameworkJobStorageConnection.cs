@@ -45,7 +45,6 @@ namespace Hangfire.EntityFramework
                     CreatedAt = createdAt,
                     ExpireAt = createdAt + expireIn,
                     InvocationData = JobHelper.ToJson(invocationData),
-                    Arguments = invocationData.Arguments,
                 });
 
                 foreach (var parameter in parameters)
@@ -133,7 +132,6 @@ namespace Hangfire.EntityFramework
                 select new
                 {
                     job.InvocationData,
-                    job.Arguments,
                     job.CreatedAt,
                     StateName = job.ActualState.State.Name,
                 }).
@@ -142,7 +140,6 @@ namespace Hangfire.EntityFramework
             if (jobInfo == null) return null;
 
             var invocationData = JobHelper.FromJson<InvocationData>(jobInfo.InvocationData);
-            invocationData.Arguments = jobInfo.Arguments;
 
             var jobData = new JobData
             {

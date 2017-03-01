@@ -244,7 +244,6 @@ namespace Hangfire.EntityFramework
             Assert.Null(hangfireJob.ActualState);
 
             var invocationData = JobHelper.FromJson<InvocationData>(hangfireJob.InvocationData);
-            invocationData.Arguments = hangfireJob.Arguments;
 
             var job = invocationData.Deserialize();
             Assert.Equal(typeof(EntityFrameworkJobStorageConnectionTests), job.Type);
@@ -287,7 +286,7 @@ namespace Hangfire.EntityFramework
             {
                 var stateId = Guid.NewGuid();
 
-                context.Jobs.Add(new HangfireJob { JobId = jobId, InvocationData = serializedInvocationData, Arguments = arguments, CreatedAt = DateTime.UtcNow, });
+                context.Jobs.Add(new HangfireJob { JobId = jobId, InvocationData = serializedInvocationData, CreatedAt = DateTime.UtcNow, });
                 context.JobStates.Add(new HangfireJobState { StateId = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, Name = "Succeeded", });
                 context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
             });
@@ -315,7 +314,7 @@ namespace Hangfire.EntityFramework
             {
                 var stateId = Guid.NewGuid();
 
-                context.Jobs.Add(new HangfireJob { JobId = jobId, InvocationData = serializedInvocationData, Arguments = arguments, CreatedAt = DateTime.UtcNow });
+                context.Jobs.Add(new HangfireJob { JobId = jobId, InvocationData = serializedInvocationData, CreatedAt = DateTime.UtcNow });
                 context.JobStates.Add(new HangfireJobState { StateId = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, Name = "Succeeded", });
                 context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
             });
@@ -346,7 +345,7 @@ namespace Hangfire.EntityFramework
             var parameterValue = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, Arguments = string.Empty, };
+            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
 
             UseContextWithSavingChanges(context => context.Jobs.Add(job));
 
@@ -369,7 +368,7 @@ namespace Hangfire.EntityFramework
             var parameterAnotherValue = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, Arguments = string.Empty, };
+            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
 
             UseContextWithSavingChanges(context =>
             {
@@ -394,7 +393,7 @@ namespace Hangfire.EntityFramework
             var parameterName = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, Arguments = string.Empty, };
+            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
 
             UseContextWithSavingChanges(context => context.Jobs.Add(job));
 
@@ -440,7 +439,7 @@ namespace Hangfire.EntityFramework
             var parameterValue = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, Arguments = string.Empty, };
+            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
 
             UseContextWithSavingChanges(context =>
             {
@@ -484,7 +483,7 @@ namespace Hangfire.EntityFramework
             {
                 var stateId = Guid.NewGuid();
 
-                context.Jobs.Add(new HangfireJob { JobId = jobId, InvocationData = serializedInvocationData, Arguments = arguments, CreatedAt = DateTime.UtcNow, });
+                context.Jobs.Add(new HangfireJob { JobId = jobId, InvocationData = serializedInvocationData, CreatedAt = DateTime.UtcNow, });
                 context.JobStates.Add(new HangfireJobState
                 {
                     StateId = stateId,
