@@ -19,9 +19,11 @@ namespace Hangfire.EntityFramework
         public double Score { get; set; }
 
         [DateTimePrecision(7)]
+        [Index("IX_HangfireSet_CreatedAt", IsUnique = false)]
         public DateTime CreatedAt { get; set; }
 
         [DateTimePrecision(7)]
+        [Index("IX_HangfireSet_ExpireAt", IsUnique = false)]
         public DateTime? ExpireAt { get; set; }
     }
 }

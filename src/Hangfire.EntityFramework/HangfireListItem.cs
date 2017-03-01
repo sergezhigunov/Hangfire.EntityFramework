@@ -9,6 +9,7 @@ namespace Hangfire.EntityFramework
         [Key, Column(Order = 0)]
         [Required]
         [StringLength(100)]
+        [Index("IX_HangfireListItem_Key", IsUnique = false)]
         public string Key { get; set; }
 
         [Key, Column(Order = 1)]
@@ -17,6 +18,7 @@ namespace Hangfire.EntityFramework
         public string Value { get; set; }
 
         [DateTimePrecision(7)]
+        [Index("IX_HangfireListItem_ExpireAt", IsUnique = false)]
         public DateTime? ExpireAt { get; set; }
     }
 }

@@ -9,11 +9,11 @@ namespace Hangfire.EntityFramework
         [Key, ForeignKey(nameof(Job))]
         public Guid JobId { get; set; }
 
+        [ForeignKey(nameof(State))]
         public Guid StateId { get; set; }
 
         public virtual HangfireJob Job { get; set; }
 
-        [ForeignKey(nameof(StateId))]
         public virtual HangfireJobState State { get; set; }
     }
 }

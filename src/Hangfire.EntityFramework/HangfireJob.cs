@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Hangfire.EntityFramework
@@ -14,9 +15,11 @@ namespace Hangfire.EntityFramework
         public string InvocationData { get; set; }
 
         [DateTimePrecision(7)]
+        [Index("IX_HangfireJob_CreatedAt", IsUnique = false)]
         public DateTime CreatedAt { get; set; }
 
         [DateTimePrecision(7)]
+        [Index("IX_HangfireJob_ExpireAt", IsUnique = false)]
         public DateTime? ExpireAt { get; set; }
 
         public virtual HangfireJobActualState ActualState { get; set; }

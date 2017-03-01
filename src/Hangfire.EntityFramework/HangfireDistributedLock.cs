@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hangfire.EntityFramework
 {
@@ -10,6 +11,7 @@ namespace Hangfire.EntityFramework
         public string Resource { get; set; }
 
         [DateTimePrecision(7)]
+        [Index("IX_HangfireDistrLock_CreatedAt", IsUnique = false)]
         public DateTime CreatedAt { get; set; }
     }
 }

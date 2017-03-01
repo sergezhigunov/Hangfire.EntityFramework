@@ -6,13 +6,15 @@ namespace Hangfire.EntityFramework
 {
     internal class HangfireJobState
     {
-        [Key, Column(Order = 0)]
+        [Key]
         public Guid StateId { get; set; }
 
+        [ForeignKey(nameof(Job))]
         public Guid JobId { get; set; }
 
         [Required]
         [StringLength(20)]
+        [Index("IX_HangfireJobState_Name", IsUnique = false)]
         public string Name { get; set; }
 
         [StringLength(100)]
@@ -20,11 +22,10 @@ namespace Hangfire.EntityFramework
 
         public string Data { get; set; }
 
-        [Index("IX_HangfireJobState_CreatedAt")]
         [DateTimePrecision(7)]
+        [Index("IX_HangfireJobState_CreatedAt", IsUnique = false)]
         public DateTime CreatedAt { get; set; }
 
-        [ForeignKey(nameof(JobId))]
         public virtual HangfireJob Job { get; set; }
     }
 }
