@@ -28,7 +28,7 @@ namespace Hangfire.EntityFramework
             UseTransaction(transaction => transaction.ExpireJob(jobId.ToString(), TimeSpan.FromDays(1)));
 
             var job = GetTestJob(jobId);
-            Assert.True(DateTime.UtcNow.AddDays(-1) < job.ExpireAt && job.ExpireAt <= DateTime.UtcNow.AddDays(1));
+            Assert.True(DateTime.UtcNow.AddMinutes(-1) < job.ExpireAt && job.ExpireAt <= DateTime.UtcNow.AddDays(1));
 
             var anotherJob = GetTestJob(anotherJobId);
             Assert.Null(anotherJob.ExpireAt);
@@ -105,6 +105,20 @@ namespace Hangfire.EntityFramework
             var data = JobHelper.FromJson<Dictionary<string, string>>(jobState.Data);
             Assert.Equal(1, data.Count);
             Assert.Equal("Value", data["Name"]);
+        }
+
+        [Fact, CleanDatabase]
+        public void AddToQueue_CallsEnqueue_OnTargetPersistentQueue()
+        {
+            var id = InsertTestJob();
+
+            UseTransaction(transaction => transaction.AddToQueue("default", id.ToString()));
+
+            var result = UseContext(context => context.JobQueues.Single());
+
+            Assert.Equal(id, result.JobId);
+            Assert.Equal("default", result.Queue);
+            Assert.Null(result.FetchedAt);
         }
 
         [Fact, CleanDatabase]

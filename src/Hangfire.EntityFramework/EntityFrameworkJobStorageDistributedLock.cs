@@ -48,7 +48,7 @@ namespace Hangfire.EntityFramework
                 TryRemoveDeadlock();
 
                 using (var context = Storage.CreateHangfireDbContext())
-                using (var transaction = context.Database.BeginTransaction(IsolationLevel.RepeatableRead))
+                using (var transaction = context.Database.BeginTransaction())
                 {
                     if (!context.DistributedLocks.Any(x => x.Resource == Resource))
                     {
@@ -81,7 +81,7 @@ namespace Hangfire.EntityFramework
         {
             Storage.UseHangfireDbContext(context =>
             {
-                using (var transaction = context.Database.BeginTransaction(IsolationLevel.RepeatableRead))
+                using (var transaction = context.Database.BeginTransaction())
                 {
                     DateTime distributedLockExpiration = DateTime.UtcNow - Storage.Options.DistributedLockTimeout;
 

@@ -36,7 +36,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void AnnounceServer_ThrowsAnException_WhenServerIdIsNull()
         {
-            UseConnection(connection => Assert.Throws<ArgumentNullException>("serverId", 
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("serverId",
                 () => connection.AnnounceServer(null, new ServerContext())));
         }
 
@@ -190,7 +190,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void AcquireLock_ReturnsEntityFrameworkJobStorageDistributedLockInstance()
         {
-            var result =  UseConnection(connection => connection.AcquireDistributedLock("1", TimeSpan.FromSeconds(1)));
+            var result = UseConnection(connection => connection.AcquireDistributedLock("1", TimeSpan.FromSeconds(1)));
 
             Assert.NotNull(result);
             using (result)
@@ -211,7 +211,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void CreateExpiredJob_ThrowsAnException_WhenParametersCollectionIsNull()
         {
-            UseConnection(connection => Assert.Throws<ArgumentNullException>("parameters", 
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("parameters",
                 () => connection.CreateExpiredJob(
                     Job.FromExpression(() => SampleMethod("argument")),
                     null,
@@ -328,7 +328,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void SetParameter_ThrowsAnException_WhenJobIdIsNull()
         {
-            UseConnection(connection =>Assert.Throws<ArgumentNullException>("id", 
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("id",
                 () => connection.SetJobParameter(null, "name", "value")));
         }
 
@@ -412,7 +412,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void GetJobParameter_ThrowsAnException_WhenJobIdIsNull()
         {
-            UseConnection(connection => Assert.Throws<ArgumentNullException>("id", 
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("id",
                 () => connection.GetJobParameter(null, "name")));
         }
 
@@ -456,8 +456,8 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void GetStateData_ThrowsAnException_WhenJobIdIsNull()
         {
-            UseConnection( connection => Assert.Throws<ArgumentNullException>("jobId",
-                () => connection.GetStateData(null)));
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("jobId",
+               () => connection.GetStateData(null)));
         }
 
         [Theory, CleanDatabase]
@@ -465,7 +465,7 @@ namespace Hangfire.EntityFramework
         [InlineData("00000000-0000-0000-0000-000000000000")]
         public void GetStateData_ReturnsNull_IfThereIsNoSuchState(string jobId)
         {
-            var result = UseConnection(connection =>connection.GetStateData(jobId));
+            var result = UseConnection(connection => connection.GetStateData(jobId));
 
             Assert.Null(result);
         }
@@ -485,8 +485,15 @@ namespace Hangfire.EntityFramework
                 var stateId = Guid.NewGuid();
 
                 context.Jobs.Add(new HangfireJob { JobId = jobId, InvocationData = serializedInvocationData, Arguments = arguments, CreatedAt = DateTime.UtcNow, });
-                context.JobStates.Add(new HangfireJobState { StateId = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow,
-                    Name = "Name", Reason = "Reason", Data = data });
+                context.JobStates.Add(new HangfireJobState
+                {
+                    StateId = stateId,
+                    JobId = jobId,
+                    CreatedAt = DateTime.UtcNow,
+                    Name = "Name",
+                    Reason = "Reason",
+                    Data = data
+                });
                 context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
             });
 
@@ -640,7 +647,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void GetSetTtl_ThrowsAnException_WhenKeyIsNull()
         {
-            UseConnection(connection =>  Assert.Throws<ArgumentNullException>("key",
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetSetTtl(null)));
         }
 
@@ -677,7 +684,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull()
         {
-            UseConnection(connection => Assert.Throws<ArgumentNullException>("key", 
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.SetRangeInHash(null, new Dictionary<string, string>())));
         }
 
@@ -826,7 +833,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void GetValueFromHash_ThrowsAnException_WhenKeyIsNull()
         {
-            UseConnection(connection =>Assert.Throws<ArgumentNullException>("key",
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetValueFromHash(null, "name")));
 
         }
@@ -982,7 +989,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void GetRangeFromList_ThrowsAnException_WhenKeyIsNull()
         {
-            UseConnection(connection => Assert.Throws<ArgumentNullException>("key", 
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetRangeFromList(null, 0, 1)));
         }
 
@@ -991,7 +998,7 @@ namespace Hangfire.EntityFramework
         {
             string key = Guid.NewGuid().ToString();
 
-            var result = UseConnection(connection =>connection.GetRangeFromList(key, 0, 1));
+            var result = UseConnection(connection => connection.GetRangeFromList(key, 0, 1));
 
             Assert.Empty(result);
         }
@@ -1021,7 +1028,7 @@ namespace Hangfire.EntityFramework
         [Fact, CleanDatabase]
         public void GetAllItemsFromList_ThrowsAnException_WhenKeyIsNull()
         {
-            UseConnection(connection =>Assert.Throws<ArgumentNullException>("key",
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetAllItemsFromList(null)));
         }
 

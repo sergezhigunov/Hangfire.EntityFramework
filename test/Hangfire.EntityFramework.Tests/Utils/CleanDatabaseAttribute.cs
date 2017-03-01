@@ -1,28 +1,59 @@
 ﻿using System.Data.Entity;
 using System.Reflection;
 using System.Threading;
+using System.Transactions;
 using Xunit.Sdk;
 
 namespace Hangfire.EntityFramework.Utils
 {
     internal class CleanDatabaseAttribute : BeforeAfterTestAttribute
     {
+        private static object StaticLock { get; } = new object();
+
+        private static bool Cleaned { get; set; }
+
+        private IsolationLevel IsolationLevel { get; }
+
+        private TransactionScope TransactionScope { get; set; }
+
         static CleanDatabaseAttribute()
         {
             Database.SetInitializer(new DropCreateDatabaseIfModelChanges<HangfireDbContext>());
         }
 
-        private static object StaticLock { get; } = new object();
+        public CleanDatabaseAttribute(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+        {
+            IsolationLevel = IsolationLevel;
+        }
 
         public override void Before(MethodInfo methodUnderTest)
         {
             Monitor.Enter(StaticLock);
-            CleanDatabase();
+            if (!Cleaned)
+            {
+                CleanDatabase();
+                Cleaned = true;
+            }
+
+            if (IsolationLevel != IsolationLevel.Unspecified)
+            {
+                TransactionScope = new TransactionScope(
+                    TransactionScopeOption.RequiresNew,
+                    new TransactionOptions { IsolationLevel = IsolationLevel });
+            }
+
         }
 
         public override void After(MethodInfo methodUnderTest)
         {
-            Monitor.Exit(StaticLock);
+            try
+            {
+                TransactionScope?.Dispose();
+            }
+            finally
+            {
+                Monitor.Exit(StaticLock);
+            }
         }
 
         private static void CleanDatabase()

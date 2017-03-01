@@ -12,6 +12,9 @@
       "dependencies": {
         "EntityFramework": "6.1.3",
         "HangFire.Core": "1.6.8"
+      },
+      "frameworkAssemblies": {
+        "System.Transactions": "4.0.0.0"
       }
     }
   },

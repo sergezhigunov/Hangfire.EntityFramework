@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Transactions;
 using Hangfire.EntityFramework.Utils;
 using Xunit;
 
@@ -27,7 +28,7 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkJobStorage(string.Empty, null));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]
         public void GetMonitoringApi_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();

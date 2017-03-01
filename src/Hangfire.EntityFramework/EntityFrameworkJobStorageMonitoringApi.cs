@@ -119,8 +119,8 @@ namespace Hangfire.EntityFramework
                     Processing = jobs.LongCount(x => x.ActualState.State.Name == ProcessingState.StateName),
                     Scheduled = jobs.LongCount(x => x.ActualState.State.Name == ScheduledState.StateName),
                     Servers = context.Servers.LongCount(),
-                    Succeeded = context.Counters.Where(x => x.Key == "stats:succeeded").Sum(x => x.Value),
-                    Deleted = context.Counters.Where(x => x.Key == "stats:deleted").Sum(x => x.Value),
+                    Succeeded = context.Counters.Where(x => x.Key == "stats:succeeded").Sum(x => (long?)x.Value) ?? 0,
+                    Deleted = context.Counters.Where(x => x.Key == "stats:deleted").Sum(x => (long?)x.Value) ?? 0,
                     Recurring = context.Sets.LongCount(x => x.Key == "recurring-jobs")
                 };
             });
@@ -400,14 +400,7 @@ namespace Hangfire.EntityFramework
             var data = JobHelper.FromJson<InvocationData>(invocationData);
             data.Arguments = arguments;
 
-            try
-            {
-                return data.Deserialize();
-            }
-            catch (JobLoadException)
-            {
-                return null;
-            }
+            return data.Deserialize();
         }
     }
 }

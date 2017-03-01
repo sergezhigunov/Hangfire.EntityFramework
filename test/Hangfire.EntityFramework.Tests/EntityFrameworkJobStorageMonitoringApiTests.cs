@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Hangfire.Common;
 using Hangfire.EntityFramework.Utils;
@@ -16,6 +17,39 @@ namespace Hangfire.EntityFramework
         {
             Assert.Throws<ArgumentNullException>("storage",
                 () => new EntityFrameworkJobStorageMonitoringApi(null));
+        }
+
+        [Fact, CleanDatabase]
+        public void Queues()
+        {
+            Guid jobId = Guid.NewGuid();
+
+            var job = new HangfireJob
+            {
+                JobId = jobId,
+                CreatedAt = DateTime.UtcNow,
+                InvocationData = string.Empty,
+                Arguments = string.Empty,
+            };
+            var jobQueueItem = new HangfireJobQueueItem
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+                JobId = jobId,
+                Queue = "default",
+            };
+
+            UseContextWithSavingChanges(context =>
+            {
+                context.Jobs.Add(job);
+                context.JobQueues.Add(jobQueueItem);
+            });
+
+            var result = UseMonitoringApi(api => api.Queues());
+
+            Assert.Equal(1, result.Count);
+            Assert.Equal("default", result.First().Name);
+
         }
 
         [Fact, CleanDatabase]
@@ -55,6 +89,23 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, server2.WorkersCount);
             Assert.Null(server2.Queues);
             Assert.Equal(default(DateTime), server2.StartedAt);
+        }
+
+        [Fact, CleanDatabase]
+        public void GetStatistics_ReturnsZeroes_WhenDatabaseClean()
+        {
+            var result = UseMonitoringApi(api => api.GetStatistics());
+
+            Assert.NotNull(result);
+            Assert.Equal(0, result.Deleted);
+            Assert.Equal(0, result.Enqueued);
+            Assert.Equal(0, result.Failed);
+            Assert.Equal(0, result.Processing);
+            Assert.Equal(0, result.Queues);
+            Assert.Equal(0, result.Recurring);
+            Assert.Equal(0, result.Scheduled);
+            Assert.Equal(0, result.Servers);
+            Assert.Equal(0, result.Succeeded);
         }
 
         [Theory, CleanDatabase]
@@ -123,19 +174,6 @@ namespace Hangfire.EntityFramework
             return func(monitoringApi);
         }
 
-        private void UseContext(Action<HangfireDbContext> action)
-        {
-            using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString()))
-                action(context);
-        }
-
-        private T UseContext<T>(Func<HangfireDbContext, T> func)
-        {
-            T result = default(T);
-            UseContext(context => { result = func(context); });
-            return result;
-        }
-
         private void UseContextWithSavingChanges(Action<HangfireDbContext> action)
         {
             using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString()))
@@ -161,6 +199,7 @@ namespace Hangfire.EntityFramework
             return result;
         }
 
+        [ExcludeFromCodeCoverage]
         public void SampleMethod(string value)
         { }
     }
