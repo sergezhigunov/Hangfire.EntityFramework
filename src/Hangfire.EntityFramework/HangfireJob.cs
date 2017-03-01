@@ -16,8 +16,10 @@ namespace Hangfire.EntityFramework
         [Required(AllowEmptyStrings = true)]
         public string Arguments { get; set; }
 
+        [DateTimePrecision(7)]
         public DateTime CreatedAt { get; set; }
 
+        [DateTimePrecision(7)]
         public DateTime? ExpireAt { get; set; }
 
         public virtual HangfireJobActualState ActualState { get; set; }

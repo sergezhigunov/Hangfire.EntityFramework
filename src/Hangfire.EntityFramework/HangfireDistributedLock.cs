@@ -9,6 +9,7 @@ namespace Hangfire.EntityFramework
         [StringLength(100)]
         public string Resource { get; set; }
 
+        [DateTimePrecision(7)]
         public DateTime CreatedAt { get; set; }
     }
 }

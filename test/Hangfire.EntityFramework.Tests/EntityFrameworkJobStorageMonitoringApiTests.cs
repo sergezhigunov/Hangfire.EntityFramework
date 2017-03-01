@@ -176,11 +176,12 @@ namespace Hangfire.EntityFramework
 
         private void UseContextWithSavingChanges(Action<HangfireDbContext> action)
         {
-            using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString()))
+            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
+            storage.UseHangfireDbContext(context =>
             {
                 action(context);
                 context.SaveChanges();
-            }
+            });
         }
 
         private void UseConnection(Action<EntityFrameworkJobStorageConnection> action)

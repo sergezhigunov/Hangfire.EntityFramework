@@ -18,6 +18,7 @@ namespace Hangfire.EntityFramework
 
         public string Value { get; set; }
 
+        [DateTimePrecision(7)]
         public DateTime? ExpireAt { get; set; }
     }
 }

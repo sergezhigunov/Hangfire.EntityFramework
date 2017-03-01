@@ -10,7 +10,7 @@ namespace Hangfire.EntityFramework
         {
             string connectionString = ConnectionUtils.GetConnectionString();
 
-            using (var context = new HangfireDbContext(connectionString))
+            using (var context = new HangfireDbContext(connectionString, null))
             {
                 Assert.NotNull(context.Counters);
                 Assert.NotNull(context.DistributedLocks);

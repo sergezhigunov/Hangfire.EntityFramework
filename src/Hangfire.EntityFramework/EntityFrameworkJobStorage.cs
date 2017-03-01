@@ -87,6 +87,6 @@ namespace Hangfire.EntityFramework
             return result;
         }
 
-        internal HangfireDbContext CreateHangfireDbContext() => new HangfireDbContext(NameOrConnectionString);
+        internal HangfireDbContext CreateHangfireDbContext() => new HangfireDbContext(NameOrConnectionString, Options.DefaultSchemaName);
     }
 }

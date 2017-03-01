@@ -18,8 +18,10 @@ namespace Hangfire.EntityFramework
 
         public double Score { get; set; }
 
+        [DateTimePrecision(7)]
         public DateTime CreatedAt { get; set; }
 
+        [DateTimePrecision(7)]
         public DateTime? ExpireAt { get; set; }
     }
 }

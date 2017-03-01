@@ -21,6 +21,7 @@ namespace Hangfire.EntityFramework
         public string Data { get; set; }
 
         [Index("IX_HangfireJobState_CreatedAt")]
+        [DateTimePrecision(7)]
         public DateTime CreatedAt { get; set; }
 
         [ForeignKey(nameof(JobId))]

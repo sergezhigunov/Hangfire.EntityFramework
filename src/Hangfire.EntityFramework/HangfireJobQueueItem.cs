@@ -17,8 +17,10 @@ namespace Hangfire.EntityFramework
         [Index("IX_HangfireJobQueueItem_Queue", IsUnique = false)]
         public string Queue { get; set; }
 
+        [DateTimePrecision(7)]
         public DateTime CreatedAt { get; set; }
 
+        [DateTimePrecision(7)]
         public DateTime? FetchedAt { get; set; }
 
         public virtual HangfireJob Job { get; set; }

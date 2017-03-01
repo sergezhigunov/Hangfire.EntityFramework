@@ -382,7 +382,7 @@ namespace Hangfire.EntityFramework
                 var exisitingFields = new HashSet<string>(
                     from hash in context.Hashes
                     where hash.Key == key
-                    select hash.Value);
+                    select hash.Field);
 
                 foreach (var item in keyValuePairs)
                 {
@@ -469,7 +469,8 @@ namespace Hangfire.EntityFramework
             {
                 while (CommandQueue.Count > 0)
                 {
-                    CommandQueue.Dequeue().Invoke(context);
+                    var action = CommandQueue.Dequeue();
+                    action.Invoke(context);
                     context.SaveChanges();
                 }
                 transaction.Commit();

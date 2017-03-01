@@ -140,19 +140,27 @@ namespace Hangfire.EntityFramework
                 () => queue.Enqueue("queue", null));
         }
 
+        private void UseContext(Action<HangfireDbContext> action)
+        {
+            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
+            storage.UseHangfireDbContext(action);
+        }
+
+        private T UseContext<T>(Func<HangfireDbContext, T> func)
+        {
+            T result = default(T);
+            UseContext(context => { result = func(context); });
+            return result;
+        }
+
         private void UseContextWithSavingChanges(Action<HangfireDbContext> action)
         {
-            using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString()))
+            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
+            storage.UseHangfireDbContext(context =>
             {
                 action(context);
                 context.SaveChanges();
-            }
-        }
-
-        private T UseContext<T>(Func<HangfireDbContext,T> func)
-        {
-            using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString()))
-                return func(context);
+            });
         }
 
         private static CancellationToken CreateTimingOutCancellationToken()

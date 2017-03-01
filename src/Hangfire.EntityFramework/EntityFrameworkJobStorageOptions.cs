@@ -28,5 +28,13 @@ namespace Hangfire.EntityFramework
                 _distributedLockTimeout = value;
             }
         }
+
+        /// <summary>
+        /// Gets or set DB storage schema name.
+        /// </summary>
+        /// <value>
+        /// A schema name.
+        /// </value>
+        public string DefaultSchemaName { get; set; }
     }
 }

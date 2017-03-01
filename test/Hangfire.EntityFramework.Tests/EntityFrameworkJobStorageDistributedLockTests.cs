@@ -127,8 +127,8 @@ namespace Hangfire.EntityFramework
 
         private void UseContext(Action<HangfireDbContext> action)
         {
-            using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString()))
-                action(context);
+            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
+            storage.UseHangfireDbContext(action);
         }
 
         private T UseContext<T>(Func<HangfireDbContext, T> func)
@@ -140,11 +140,12 @@ namespace Hangfire.EntityFramework
 
         private void UseContextWithSavingChanges(Action<HangfireDbContext> action)
         {
-            using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString()))
+            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
+            storage.UseHangfireDbContext(context =>
             {
                 action(context);
                 context.SaveChanges();
-            }
+            });
         }
     }
 }
