@@ -33,7 +33,7 @@ namespace Hangfire.EntityFramework
                 from item in context.JobQueues
                 where item.Queue == queue
                 orderby item.CreatedAt ascending
-                select item.Id).
+                select item.JobId).
                 Skip(() => from).
                 Take(() => perPage).
                 ToArray());
