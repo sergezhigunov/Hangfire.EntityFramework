@@ -20,15 +20,23 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact, CleanDatabase]
-        public void Queues()
+        public void Queues_ReturnsCorrectList()
         {
             Guid jobId = Guid.NewGuid();
+            Guid stateId = Guid.NewGuid();
 
             var job = new HangfireJob
             {
                 JobId = jobId,
                 CreatedAt = DateTime.UtcNow,
                 InvocationData = string.Empty,
+            };
+            var jobState = new HangfireJobState
+            {
+                StateId = stateId,
+                JobId = jobId,
+                CreatedAt = DateTime.UtcNow,
+                Name = "State",
             };
             var jobQueueItem = new HangfireJobQueueItem
             {
@@ -41,6 +49,8 @@ namespace Hangfire.EntityFramework
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.Add(job);
+                context.JobStates.Add(jobState);
+                context.JobActualStates.Add(new HangfireJobActualState { JobId = jobId, StateId = stateId });
                 context.JobQueues.Add(jobQueueItem);
             });
 
@@ -52,7 +62,7 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact, CleanDatabase]
-        public void Servers()
+        public void Servers_ReturnsCorrectList()
         {
             string serverId1 = "server1";
             string serverId2 = "server2";
@@ -111,7 +121,7 @@ namespace Hangfire.EntityFramework
         [InlineData(null)]
         [InlineData("1")]
         [InlineData("00000000-0000-0000-0000-000000000000")]
-        public void JobDetails_WhenJobNotExists(string jobId)
+        public void JobDetails_ReturnsNull_WhenJobNotExists(string jobId)
         {
             var result = UseMonitoringApi(api => api.JobDetails(jobId));
 
@@ -119,7 +129,7 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact, CleanDatabase]
-        public void JobDetails()
+        public void JobDetails_ReturnsCorrectResult()
         {
             var timestamp = DateTime.UtcNow;
             var createdAt = new DateTime(2012, 12, 12, 12,12,12, DateTimeKind.Unspecified);

@@ -109,21 +109,57 @@ namespace Hangfire.EntityFramework
 
         public StatisticsDto GetStatistics()
         {
+            Dictionary<string, long> statisticsDictionary = null;
+
             var statistics = UseHangfireDbContext(context =>
             {
-                var jobs = context.Jobs;
+                statisticsDictionary = (
+                    from actualState in context.JobActualStates
+                    let name = actualState.State.Name
+                    group actualState by name into @group
+                    select new
+                    {
+                        @group.Key,
+                        Count = @group.LongCount()
+                    }).
+                    ToArray().
+                    ToDictionary(x => x.Key, x => x.Count);
+
+                var counterStatistics = (
+                    from counter in context.Counters
+                    where counter.Key == "stats:succeeded" || counter.Key == "stats:deleted"
+                    group counter by counter.Key into @group
+                    select new
+                    {
+                        @group.Key,
+                        Count = @group.Sum(x => x.Value),
+                    }).
+                    ToArray();
+
+                foreach (var counter in counterStatistics)
+                    statisticsDictionary[counter.Key] = counter.Count;
+
                 return new StatisticsDto
                 {
-                    Enqueued = jobs.LongCount(x => x.ActualState.State.Name == EnqueuedState.StateName),
-                    Failed = jobs.LongCount(x => x.ActualState.State.Name == FailedState.StateName),
-                    Processing = jobs.LongCount(x => x.ActualState.State.Name == ProcessingState.StateName),
-                    Scheduled = jobs.LongCount(x => x.ActualState.State.Name == ScheduledState.StateName),
                     Servers = context.Servers.LongCount(),
-                    Succeeded = context.Counters.Where(x => x.Key == "stats:succeeded").Sum(x => (long?)x.Value) ?? 0,
-                    Deleted = context.Counters.Where(x => x.Key == "stats:deleted").Sum(x => (long?)x.Value) ?? 0,
-                    Recurring = context.Sets.LongCount(x => x.Key == "recurring-jobs")
+                    Recurring = context.Sets.LongCount(x => x.Key == "recurring-jobs"),
                 };
             });
+
+            long count;
+
+            if (statisticsDictionary.TryGetValue(EnqueuedState.StateName, out count))
+                statistics.Enqueued = count;
+            if (statisticsDictionary.TryGetValue(FailedState.StateName, out count))
+                statistics.Failed = count;
+            if (statisticsDictionary.TryGetValue(ProcessingState.StateName, out count))
+                statistics.Processing = count;
+            if (statisticsDictionary.TryGetValue(ScheduledState.StateName, out count))
+                statistics.Scheduled = count;
+            if (statisticsDictionary.TryGetValue("stats:succeeded", out count))
+                statistics.Succeeded = count;
+            if (statisticsDictionary.TryGetValue("stats:deleted", out count))
+                statistics.Deleted = count;
 
             statistics.Queues = Storage.QueueProviders
                 .SelectMany(x => x.GetJobQueueMonitoringApi().GetQueues())
@@ -245,7 +281,8 @@ namespace Hangfire.EntityFramework
             return UseHangfireDbContext(context =>
             {
                 var jobs = (
-                    from job in context.Jobs.Include(x => x.ActualState.State)
+                    from job in context.Jobs.
+                    Include(x => x.ActualState.State)
                     where enqueuedJobIds.Contains(job.JobId)
                     orderby job.CreatedAt ascending
                     select job).
@@ -313,7 +350,7 @@ namespace Hangfire.EntityFramework
             {
                 var dto = default(T);
 
-                if (job.InvocationData != null)
+                if (!string.IsNullOrWhiteSpace(job.InvocationData))
                 {
                     var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.ActualState.State.Data);
                     var stateData = deserializedData != null
