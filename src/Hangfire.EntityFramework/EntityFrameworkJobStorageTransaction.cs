@@ -59,7 +59,7 @@ namespace Hangfire.EntityFramework
             {
                 Guid id = Guid.Parse(jobId);
                 Guid stateId = AddJobStateToContext(context, id, state);
-                context.JobActualStates.Add(new HangfireJobActualState { JobId = id, StateId = stateId, });
+                context.JobActualStates.AddOrUpdate(new HangfireJobActualState { JobId = id, StateId = stateId, });
             });
         }
 
