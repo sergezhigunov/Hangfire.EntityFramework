@@ -31,6 +31,8 @@ namespace Hangfire.EntityFramework
             HangfireJobQueueItem fetchedJob = null;
             DbContextTransaction transaction = null;
 
+            queues = queues.Select(x => x.ToLowerInvariant()).ToArray();
+
             do
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -87,13 +89,15 @@ namespace Hangfire.EntityFramework
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
             Guid id = Guid.Parse(jobId);
+            queue = queue.ToLowerInvariant();
 
             Storage.UseHangfireDbContext(context =>
             {
                 context.JobQueues.Add(new HangfireJobQueueItem
                 {
                     Id = Guid.NewGuid(),
-                    JobId = id, Queue = queue,
+                    JobId = id,
+                    Queue = queue,
                     CreatedAt = DateTime.UtcNow
                 });
                 context.SaveChanges();
