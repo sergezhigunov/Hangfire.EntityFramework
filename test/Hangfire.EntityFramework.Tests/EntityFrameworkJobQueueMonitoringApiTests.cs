@@ -1,5 +1,4 @@
 ﻿using Hangfire.EntityFramework.Utils;
-using Moq;
 using System;
 using System.Linq;
 using Xunit;

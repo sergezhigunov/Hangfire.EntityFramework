@@ -356,8 +356,6 @@ namespace Hangfire.EntityFramework
 
             EnqueueCommand(context =>
             {
-                if (key == null) throw new ArgumentNullException(nameof(key));
-
                 var ids = (
                     from item in context.Lists
                     where item.Key == key
