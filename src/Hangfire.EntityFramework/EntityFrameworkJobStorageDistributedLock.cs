@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -52,11 +53,20 @@ namespace Hangfire.EntityFramework
                     if (!context.DistributedLocks.Any(x => x.Resource == Resource))
                     {
                         context.DistributedLocks.Add(new HangfireDistributedLock { Resource = Resource, CreatedAt = DateTime.UtcNow, });
-                        context.SaveChanges();
-                        transaction.Commit();
-                        return;
+
+                        bool alreadyLocked = false;
+                        try
+                        {
+                            context.SaveChanges();
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            alreadyLocked = true;
+                        }
+
+                        if(!alreadyLocked)
+                            return;
                     }
-                    transaction.Commit();
                 }
 
                 if (lockAcquiringTime.ElapsedMilliseconds > Timeout.TotalMilliseconds)

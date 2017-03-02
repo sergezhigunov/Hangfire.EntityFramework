@@ -12,8 +12,8 @@ namespace Hangfire.EntityFramework
 {
     internal class EntityFrameworkJobStorageTransaction : JobStorageTransaction
     {
-        private Queue<Action<HangfireDbContext>> CommandQueue { get; }
-            = new Queue<Action<HangfireDbContext>>();
+        private Queue<Action<HangfireDbContext>> CommandQueue { get; } = new Queue<Action<HangfireDbContext>>();
+        private Queue<Action> AfterCommitCommandQueue { get; } = new Queue<Action>();
 
         private EntityFrameworkJobStorage Storage { get; }
 
@@ -89,6 +89,9 @@ namespace Hangfire.EntityFramework
             var provider = Storage.QueueProviders.GetProvider(queue);
             var persistentQueue = provider.GetJobQueue();
             EnqueueCommand(context => persistentQueue.Enqueue(queue, jobId));
+
+            if (persistentQueue.GetType() == typeof(EntityFrameworkJobQueue))
+                AfterCommitCommandQueue.Enqueue(() => EntityFrameworkJobQueue.NewItemInQueueEvent.Set());
         }
 
         public override void IncrementCounter(string key)
@@ -473,7 +476,14 @@ namespace Hangfire.EntityFramework
                 }
                 transaction.Commit();
             }
+
+            while (AfterCommitCommandQueue.Count > 0)
+            {
+                var action = AfterCommitCommandQueue.Dequeue();
+                action.Invoke();
+            }
         }
+
         private void EnqueueCommand(Action<HangfireDbContext> command) => CommandQueue.Enqueue(command);
 
         private static void Swap<T>(ref T left, ref T right)

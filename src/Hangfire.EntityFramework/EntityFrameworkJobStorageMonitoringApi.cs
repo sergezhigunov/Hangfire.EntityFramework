@@ -292,7 +292,8 @@ namespace Hangfire.EntityFramework
             return UseHangfireDbContext(context =>
             {
                 var jobs = (
-                    from job in context.Jobs
+                    from job in context.Jobs.
+                    Include(x => x.ActualState.State)
                     where job.ActualState.State.Name == stateName
                     orderby job.CreatedAt descending
                     select job).

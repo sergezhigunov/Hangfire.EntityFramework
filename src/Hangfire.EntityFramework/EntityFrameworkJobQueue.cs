@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
@@ -10,6 +11,8 @@ namespace Hangfire.EntityFramework
 {
     internal class EntityFrameworkJobQueue : IPersistentJobQueue
     {
+        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
+
         public EntityFrameworkJobStorage Storage { get; }
 
         public EntityFrameworkJobQueue([NotNull] EntityFrameworkJobStorage storage)
@@ -44,13 +47,17 @@ namespace Hangfire.EntityFramework
                         FirstOrDefault();
 
                     if (fetchedJob != null)
-                        context.JobQueues.Remove(fetchedJob);
-
-
-                   if (fetchedJob != null)
                     {
                         context.JobQueues.Remove(fetchedJob);
-                        context.SaveChanges();
+                        try
+                        {
+                            context.SaveChanges();
+                        }
+                        catch (DbUpdateConcurrencyException)
+                        {
+                            fetchedJob = null;
+                            continue;
+                        }
 
                         return new EntityFrameworkFetchedJob(
                             context,
@@ -70,7 +77,7 @@ namespace Hangfire.EntityFramework
                     }
                 }
 
-                Thread.Sleep(0);
+                WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, Storage.Options.QueuePollInterval);
             } while (true);
         }
 
