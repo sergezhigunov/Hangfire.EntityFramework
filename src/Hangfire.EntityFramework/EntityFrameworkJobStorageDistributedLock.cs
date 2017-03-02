@@ -63,6 +63,10 @@ namespace Hangfire.EntityFramework
                         {
                             alreadyLocked = true;
                         }
+                        finally
+                        {
+                            transaction.Commit();
+                        }
 
                         if(!alreadyLocked)
                             return;
