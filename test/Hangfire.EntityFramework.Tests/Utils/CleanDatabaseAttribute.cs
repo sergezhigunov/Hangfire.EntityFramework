@@ -58,7 +58,7 @@ namespace Hangfire.EntityFramework.Utils
 
         private static void CleanDatabase()
         {
-            using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString(), null))
+            using (var context = new HangfireDbContext(ConnectionUtils.GetConnectionString(), nameof(Hangfire)))
             {
                 context.Counters.RemoveRange(context.Counters);
                 context.DistributedLocks.RemoveRange(context.DistributedLocks);

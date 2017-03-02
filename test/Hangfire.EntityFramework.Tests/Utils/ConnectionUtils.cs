@@ -3,6 +3,6 @@
     internal class ConnectionUtils
     {
         internal static string GetConnectionString() =>
-            "Server=(localdb)\\mssqllocaldb;Database=HangfireTestDatabase;Integrated Security=true;";
+            "Server=(localdb)\\mssqllocaldb;Database=Hangfire.EntityFramework.Tests;Integrated Security=true;";
     }
 }

@@ -9,15 +9,16 @@ namespace Hangfire.EntityFramework
     {
         private TimeSpan _distributedLockTimeout = new TimeSpan(0, 10, 0);
         private TimeSpan _queuePollInterval = new TimeSpan(0, 0, 5);
+        private string _defaultSchemaName = nameof(Hangfire);
 
         /// <summary>
-        /// Gets or set maximal distributed lock lifetime.
+        /// Gets or set maximal distributed lock lifetime.  The default value is 00:10:00.
         /// </summary>
         /// <value>
         /// A <see cref="TimeSpan"/> value.
         /// </value>
         /// <exception cref="ArgumentOutOfRangeException">
-        /// <paramref name="value"/> is less or equal to <see cref="TimeSpan.Zero"/>
+        /// <paramref name="value"/> is less or equal to <see cref="TimeSpan.Zero"/>.
         /// </exception>
         public TimeSpan DistributedLockTimeout
         {
@@ -30,13 +31,13 @@ namespace Hangfire.EntityFramework
         }
 
         /// <summary>
-        /// Gets or set queue polling interval.
+        /// Gets or set queue polling interval. The default value is 00:00:05.
         /// </summary>
         /// <value>
         /// A <see cref="TimeSpan"/> value.
         /// </value>
         /// <exception cref="ArgumentOutOfRangeException">
-        /// <paramref name="value"/> is less or equal to <see cref="TimeSpan.Zero"/>
+        /// <paramref name="value"/> is less or equal to <see cref="TimeSpan.Zero"/>.
         /// </exception>
         public TimeSpan QueuePollInterval
         {
@@ -49,12 +50,23 @@ namespace Hangfire.EntityFramework
         }
 
         /// <summary>
-        /// Gets or set DB storage schema name.
+        /// Gets or set DB storage schema name.The default value is <c>"Hangfire"</c>
         /// </summary>
         /// <value>
         /// A schema name.
         /// </value>
-        public string DefaultSchemaName { get; set; }
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="value"/> is <c>null</c>.
+        /// </exception>
+        public string DefaultSchemaName
+        {
+            get { return _defaultSchemaName; }
+            set
+            {
+                if (value == null) throw new ArgumentNullException(nameof(value));
+                _defaultSchemaName = value;
+            }
+        }
 
         private static void ThrowIfNonPositive(TimeSpan value)
         {
