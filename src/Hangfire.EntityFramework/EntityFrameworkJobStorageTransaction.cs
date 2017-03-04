@@ -222,8 +222,6 @@ namespace Hangfire.EntityFramework
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            if (key == null) throw new ArgumentNullException(nameof(key));
-
             EnqueueCommand(context =>
             {
                 var ids = (
@@ -486,12 +484,5 @@ namespace Hangfire.EntityFramework
         }
 
         private void EnqueueCommand(Action<HangfireDbContext> command) => CommandQueue.Enqueue(command);
-
-        private static void Swap<T>(ref T left, ref T right)
-        {
-            T temp = left;
-            left = right;
-            right = temp;
-        }
     }
 }
