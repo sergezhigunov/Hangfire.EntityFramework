@@ -1,4 +1,6 @@
 {
+  "authors": [ "Sergey Zhigunov" ],
+  "copyright": "Copyright (c) 2017 Sergey Zhigunov",
   "dependencies": {
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
     "Hangfire.EntityFramework": {

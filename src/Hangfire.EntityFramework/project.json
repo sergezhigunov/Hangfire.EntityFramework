@@ -1,8 +1,11 @@
 ﻿{
+  "authors": [ "Sergey Zhigunov" ],
   "buildOptions": {
     "warningsAsErrors": true,
     "xmlDoc": true
   },
+  "copyright": "Copyright (c) 2017 Sergey Zhigunov",
+  "description": "Entity Framework SQL provider-neutral job storage implementation for Hangfire (http://hangfire.io).",
   "frameworks": {
     "net45": {
       "dependencies": {
@@ -15,5 +18,13 @@
     }
   },
   "language": "en-US",
+  "packOptions": {
+    "owners": [ "Sergey Zhigunov" ],
+    "projectUrl": "https://github.com/sergezhigunov/Hangfire.EntityFramework",
+    "requireLicenseAcceptance": false,
+    "summary": "Entity Framework SQL provider-neutral job storage implementation for Hangfire (http://hangfire.io).",
+    "tags": [ "Hangfire", "EntityFramework" ]
+  },
+  "title": "Hangfire Entity Framework Storage",
   "version": "0.0.1-*"
 }
