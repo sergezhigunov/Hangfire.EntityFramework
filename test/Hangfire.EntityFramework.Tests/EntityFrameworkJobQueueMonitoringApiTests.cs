@@ -34,7 +34,7 @@ namespace Hangfire.EntityFramework
             Guid[] jobIds = Enumerable.Repeat(0, 5).Select(x => Guid.NewGuid()).ToArray();
             var jobs = jobIds.Select(x => new HangfireJob
             {
-                JobId = x,
+                Id = x,
                 CreatedAt = DateTime.UtcNow,
                 InvocationData = string.Empty
             });
@@ -78,7 +78,7 @@ namespace Hangfire.EntityFramework
             Guid[] jobIds = Enumerable.Repeat(0, 10).Select(x => Guid.NewGuid()).ToArray();
             var jobs = jobIds.Select(x => new HangfireJob
             {
-                JobId = x,
+                Id = x,
                 CreatedAt = DateTime.UtcNow,
                 InvocationData = string.Empty
             });
@@ -137,7 +137,7 @@ namespace Hangfire.EntityFramework
             Guid[] jobIds = Enumerable.Repeat(0, 3).Select(x => Guid.NewGuid()).ToArray();
             var jobs = jobIds.Select(x => new HangfireJob
             {
-                JobId = x,
+                Id = x,
                 CreatedAt = DateTime.UtcNow,
                 InvocationData = string.Empty
             });

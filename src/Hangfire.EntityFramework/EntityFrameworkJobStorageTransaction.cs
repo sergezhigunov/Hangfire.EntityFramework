@@ -33,7 +33,7 @@ namespace Hangfire.EntityFramework
             {
                 var job = new HangfireJob
                 {
-                    JobId = Guid.Parse(jobId),
+                    Id = Guid.Parse(jobId),
                     ExpireAt = DateTime.UtcNow + expireIn,
                     InvocationData = string.Empty,
                 };
@@ -48,7 +48,7 @@ namespace Hangfire.EntityFramework
             {
                 var job = new HangfireJob
                 {
-                    JobId = Guid.Parse(jobId),
+                    Id = Guid.Parse(jobId),
                     InvocationData = string.Empty,
                 };
                 context.Jobs.Attach(job);
@@ -76,7 +76,7 @@ namespace Hangfire.EntityFramework
             Guid stateId = Guid.NewGuid();
             var jobState = new HangfireJobState
             {
-                StateId = stateId,
+                Id = stateId,
                 JobId = jobId,
                 Name = state.Name,
                 Reason = state.Reason,

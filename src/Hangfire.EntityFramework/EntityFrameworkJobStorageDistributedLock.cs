@@ -53,9 +53,9 @@ namespace Hangfire.EntityFramework
                 using (var context = Storage.CreateHangfireDbContext())
                 using (var transaction = context.Database.BeginTransaction())
                 {
-                    if (!context.DistributedLocks.Any(x => x.Resource == Resource))
+                    if (!context.DistributedLocks.Any(x => x.Id == Resource))
                     {
-                        context.DistributedLocks.Add(new HangfireDistributedLock { Resource = Resource, CreatedAt = DateTime.UtcNow, });
+                        context.DistributedLocks.Add(new HangfireDistributedLock { Id = Resource, CreatedAt = DateTime.UtcNow, });
 
                         bool alreadyLocked = false;
                         try
@@ -101,9 +101,9 @@ namespace Hangfire.EntityFramework
                 {
                     DateTime distributedLockExpiration = DateTime.UtcNow - Storage.Options.DistributedLockTimeout;
 
-                    if (context.DistributedLocks.Any(x => x.Resource == Resource && x.CreatedAt < distributedLockExpiration))
+                    if (context.DistributedLocks.Any(x => x.Id == Resource && x.CreatedAt < distributedLockExpiration))
                     {
-                        context.Entry(new HangfireDistributedLock { Resource = Resource }).State = EntityState.Deleted;
+                        context.Entry(new HangfireDistributedLock { Id = Resource }).State = EntityState.Deleted;
                         context.SaveChanges();
                     }
 
@@ -120,9 +120,9 @@ namespace Hangfire.EntityFramework
                 {
                     using (var transaction = context.Database.BeginTransaction())
                     {
-                        if (context.DistributedLocks.Any(x => x.Resource == Resource))
+                        if (context.DistributedLocks.Any(x => x.Id == Resource))
                         {
-                            context.Entry(new HangfireDistributedLock { Resource = Resource }).State = EntityState.Deleted;
+                            context.Entry(new HangfireDistributedLock { Id = Resource }).State = EntityState.Deleted;
                             context.SaveChanges();
                         }
                         transaction.Commit();

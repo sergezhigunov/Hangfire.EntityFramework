@@ -67,7 +67,7 @@ namespace Hangfire.EntityFramework
             string queueName = DefaultQueues.First();
             var job = new HangfireJob
             {
-                JobId = jobId,
+                Id = jobId,
                 CreatedAt = DateTime.UtcNow,
                 InvocationData = string.Empty,
             };
@@ -105,7 +105,7 @@ namespace Hangfire.EntityFramework
             string queueName = DefaultQueues.First();
             var job = new HangfireJob
             {
-                JobId = jobId,
+                Id = jobId,
                 CreatedAt = DateTime.UtcNow,
                 InvocationData = string.Empty,
             };

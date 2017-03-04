@@ -83,9 +83,9 @@ namespace Hangfire.EntityFramework
 
         private void CheckServer(string serverId, ServerContext actualContext, DateTime timestampBeforeBegin, DateTime timestampAfterEnd)
         {
-            HangfireServer server = UseContext(context => context.Servers.Single(x => x.ServerId == serverId));
+            HangfireServer server = UseContext(context => context.Servers.Single(x => x.Id == serverId));
             var serverData = JobHelper.FromJson<ServerData>(server.Data);
-            Assert.Equal(serverId, server.ServerId);
+            Assert.Equal(serverId, server.Id);
             Assert.Equal(actualContext.WorkerCount, serverData.WorkerCount);
             Assert.Equal(actualContext.Queues, serverData.Queues);
             Assert.True(timestampBeforeBegin <= serverData.StartedAt && serverData.StartedAt <= timestampAfterEnd);
@@ -108,8 +108,8 @@ namespace Hangfire.EntityFramework
 
             var servers = new[]
             {
-                new HangfireServer { ServerId = server1, Heartbeat = datetime },
-                new HangfireServer { ServerId = server2, Heartbeat = datetime },
+                new HangfireServer { Id = server1, Heartbeat = datetime },
+                new HangfireServer { Id = server2, Heartbeat = datetime },
             };
 
             UseContextWithSavingChanges(context => context.Servers.AddRange(servers));
@@ -120,7 +120,7 @@ namespace Hangfire.EntityFramework
             {
                 Func<string, DateTime> getHeartbeatByServerId = serverId => (
                     from server in context.Servers
-                    where server.ServerId == serverId
+                    where server.Id == serverId
                     select server.Heartbeat).
                     Single();
 
@@ -145,13 +145,13 @@ namespace Hangfire.EntityFramework
         {
             var serverId = "Server1";
 
-            var server = new HangfireServer { ServerId = serverId, Heartbeat = DateTime.UtcNow, };
+            var server = new HangfireServer { Id = serverId, Heartbeat = DateTime.UtcNow, };
 
             UseContextWithSavingChanges(context => context.Servers.Add(server));
 
             UseConnection(connection => connection.RemoveServer(serverId));
 
-            Assert.True(UseContext(context => !context.Servers.Any(x => x.ServerId == serverId)));
+            Assert.True(UseContext(context => !context.Servers.Any(x => x.Id == serverId)));
         }
 
         [Fact, CleanDatabase]
@@ -169,15 +169,15 @@ namespace Hangfire.EntityFramework
 
             var servers = new[]
             {
-                new HangfireServer { ServerId = server1, Heartbeat = DateTime.UtcNow.AddHours(-1) },
-                new HangfireServer { ServerId = server2, Heartbeat = DateTime.UtcNow.AddHours(-3) },
+                new HangfireServer { Id = server1, Heartbeat = DateTime.UtcNow.AddHours(-1) },
+                new HangfireServer { Id = server2, Heartbeat = DateTime.UtcNow.AddHours(-3) },
             };
             UseContextWithSavingChanges(context => context.Servers.AddRange(servers));
 
             UseConnection(connection => connection.RemoveTimedOutServers(TimeSpan.FromHours(2)));
 
-            Assert.True(UseContext(context => context.Servers.Any(x => x.ServerId == server1)));
-            Assert.False(UseContext(context => context.Servers.Any(x => x.ServerId == server2)));
+            Assert.True(UseContext(context => context.Servers.Any(x => x.Id == server1)));
+            Assert.False(UseContext(context => context.Servers.Any(x => x.Id == server2)));
         }
 
         [Fact, CleanDatabase]
@@ -242,7 +242,7 @@ namespace Hangfire.EntityFramework
                 Include(p => p.Parameters).
                 Single());
 
-            Assert.Equal(jobId, hangfireJob.JobId.ToString());
+            Assert.Equal(jobId, hangfireJob.Id.ToString());
             Assert.Equal(createdAt, hangfireJob.CreatedAt);
             Assert.Null(hangfireJob.ActualState);
 
@@ -289,8 +289,8 @@ namespace Hangfire.EntityFramework
             {
                 var stateId = Guid.NewGuid();
 
-                context.Jobs.Add(new HangfireJob { JobId = jobId, InvocationData = serializedInvocationData, CreatedAt = DateTime.UtcNow, });
-                context.JobStates.Add(new HangfireJobState { StateId = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, Name = "Succeeded", });
+                context.Jobs.Add(new HangfireJob { Id = jobId, InvocationData = serializedInvocationData, CreatedAt = DateTime.UtcNow, });
+                context.JobStates.Add(new HangfireJobState { Id = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, Name = "Succeeded", });
                 context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
             });
 
@@ -317,8 +317,8 @@ namespace Hangfire.EntityFramework
             {
                 var stateId = Guid.NewGuid();
 
-                context.Jobs.Add(new HangfireJob { JobId = jobId, InvocationData = serializedInvocationData, CreatedAt = DateTime.UtcNow });
-                context.JobStates.Add(new HangfireJobState { StateId = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, Name = "Succeeded", });
+                context.Jobs.Add(new HangfireJob { Id = jobId, InvocationData = serializedInvocationData, CreatedAt = DateTime.UtcNow });
+                context.JobStates.Add(new HangfireJobState { Id = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, Name = "Succeeded", });
                 context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
             });
 
@@ -348,7 +348,7 @@ namespace Hangfire.EntityFramework
             var parameterValue = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
+            var job = new HangfireJob { Id = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
 
             UseContextWithSavingChanges(context => context.Jobs.Add(job));
 
@@ -371,7 +371,7 @@ namespace Hangfire.EntityFramework
             var parameterAnotherValue = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
+            var job = new HangfireJob { Id = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
 
             UseContextWithSavingChanges(context =>
             {
@@ -396,7 +396,7 @@ namespace Hangfire.EntityFramework
             var parameterName = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
+            var job = new HangfireJob { Id = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
 
             UseContextWithSavingChanges(context => context.Jobs.Add(job));
 
@@ -442,7 +442,7 @@ namespace Hangfire.EntityFramework
             var parameterValue = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
+            var job = new HangfireJob { Id = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
 
             UseContextWithSavingChanges(context =>
             {
@@ -486,10 +486,10 @@ namespace Hangfire.EntityFramework
             {
                 var stateId = Guid.NewGuid();
 
-                context.Jobs.Add(new HangfireJob { JobId = jobId, InvocationData = serializedInvocationData, CreatedAt = DateTime.UtcNow, });
+                context.Jobs.Add(new HangfireJob { Id = jobId, InvocationData = serializedInvocationData, CreatedAt = DateTime.UtcNow, });
                 context.JobStates.Add(new HangfireJobState
                 {
-                    StateId = stateId,
+                    Id = stateId,
                     JobId = jobId,
                     CreatedAt = DateTime.UtcNow,
                     Name = "Name",

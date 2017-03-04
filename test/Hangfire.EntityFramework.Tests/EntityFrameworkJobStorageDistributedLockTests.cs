@@ -70,7 +70,7 @@ namespace Hangfire.EntityFramework
 
             var record = UseContext(context => context.DistributedLocks.Single());
 
-            Assert.Equal(resource, record.Resource);
+            Assert.Equal(resource, record.Id);
             Assert.True(start <= record.CreatedAt && record.CreatedAt <= end);
         }
 

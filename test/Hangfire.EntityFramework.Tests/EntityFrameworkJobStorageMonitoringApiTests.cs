@@ -30,13 +30,13 @@ namespace Hangfire.EntityFramework
 
             var job = new HangfireJob
             {
-                JobId = jobId,
+                Id = jobId,
                 CreatedAt = DateTime.UtcNow,
                 InvocationData = string.Empty,
             };
             var jobState = new HangfireJobState
             {
-                StateId = stateId,
+                Id = stateId,
                 JobId = jobId,
                 CreatedAt = DateTime.UtcNow,
                 Name = "State",
@@ -82,8 +82,8 @@ namespace Hangfire.EntityFramework
 
             var servers = new[]
             {
-                new HangfireServer { ServerId = serverId1, Heartbeat = heartbeat, Data = JobHelper.ToJson(data),  },
-                new HangfireServer { ServerId = serverId2, Heartbeat = heartbeat,  },
+                new HangfireServer { Id = serverId1, Heartbeat = heartbeat, Data = JobHelper.ToJson(data),  },
+                new HangfireServer { Id = serverId2, Heartbeat = heartbeat,  },
             };
 
             UseContextWithSavingChanges(context => context.Servers.AddRange(servers));

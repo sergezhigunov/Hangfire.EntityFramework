@@ -44,7 +44,7 @@ namespace Hangfire.EntityFramework
             {
                 HangfireJob hangfireJob = context.Jobs.Add(new HangfireJob
                 {
-                    JobId = jobId,
+                    Id = jobId,
                     CreatedAt = createdAt,
                     ExpireAt = createdAt + expireIn,
                     InvocationData = JobHelper.ToJson(invocationData),
@@ -131,7 +131,7 @@ namespace Hangfire.EntityFramework
 
             var jobInfo = Storage.UseHangfireDbContext(context => (
                 from job in context.Jobs
-                where job.JobId == id
+                where job.Id == id
                 select new
                 {
                     job.InvocationData,
@@ -208,7 +208,7 @@ namespace Hangfire.EntityFramework
             {
                 dbContext.Servers.AddOrUpdate(new HangfireServer
                 {
-                    ServerId = serverId,
+                    Id = serverId,
                     Data = JobHelper.ToJson(data),
                     Heartbeat = DateTime.UtcNow,
                 });
@@ -223,7 +223,7 @@ namespace Hangfire.EntityFramework
 
             Storage.UseHangfireDbContext(context =>
             {
-                context.Entry(new HangfireServer { ServerId = serverId }).State = EntityState.Deleted;
+                context.Entry(new HangfireServer { Id = serverId }).State = EntityState.Deleted;
                 context.SaveChanges();
             });
         }
@@ -234,9 +234,9 @@ namespace Hangfire.EntityFramework
 
             Storage.UseHangfireDbContext(context =>
             {
-                if (context.Servers.Any(x => x.ServerId == serverId))
+                if (context.Servers.Any(x => x.Id == serverId))
                 {
-                    var server = new HangfireServer { ServerId = serverId, Heartbeat = DateTime.UtcNow };
+                    var server = new HangfireServer { Id = serverId, Heartbeat = DateTime.UtcNow };
                     context.Servers.Attach(server);
                     context.Entry(server).Property(x => x.Heartbeat).IsModified = true;
                     context.SaveChanges();
@@ -256,11 +256,11 @@ namespace Hangfire.EntityFramework
                 string[] serverIds = (
                     from server in context.Servers
                     where server.Heartbeat <= outdate
-                    select server.ServerId).
+                    select server.Id).
                     ToArray();
 
                 foreach (var serverId in serverIds)
-                    context.Entry(new HangfireServer { ServerId = serverId }).State = EntityState.Deleted;
+                    context.Entry(new HangfireServer { Id = serverId }).State = EntityState.Deleted;
 
                 context.SaveChanges();
 

@@ -12,7 +12,7 @@ namespace Hangfire.EntityFramework
     internal class HangfireJob
     {
         [Key]
-        public Guid JobId { get; set; }
+        public Guid Id { get; set; }
 
         [Required(AllowEmptyStrings = true)]
         public string InvocationData { get; set; }

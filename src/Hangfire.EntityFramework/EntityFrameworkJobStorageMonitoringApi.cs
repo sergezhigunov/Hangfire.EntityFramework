@@ -63,7 +63,7 @@ namespace Hangfire.EntityFramework
 
                 return new ServerDto
                 {
-                    Name = server.ServerId,
+                    Name = server.Id,
                     Heartbeat = server.Heartbeat,
                     Queues = data?.Queues,
                     StartedAt = data?.StartedAt ?? DateTime.MinValue,
@@ -85,7 +85,7 @@ namespace Hangfire.EntityFramework
                 var job = context.Jobs.
                     Include(x => x.States).
                     Include(x => x.Parameters).
-                    SingleOrDefault(x => x.JobId == id);
+                    SingleOrDefault(x => x.Id == id);
 
                 if (job == null) return null;
 
@@ -286,7 +286,7 @@ namespace Hangfire.EntityFramework
                 var jobs = (
                     from job in context.Jobs.
                     Include(x => x.ActualState.State)
-                    where enqueuedJobIds.Contains(job.JobId)
+                    where enqueuedJobIds.Contains(job.Id)
                     orderby job.CreatedAt ascending
                     select job).
                     ToArray();
@@ -310,12 +310,12 @@ namespace Hangfire.EntityFramework
             {
                 var jobs = (
                     from job in context.Jobs.Include(x => x.ActualState.State)
-                    where fetchedJobIds.Contains(job.JobId)
+                    where fetchedJobIds.Contains(job.Id)
                     orderby job.CreatedAt ascending
                     select job).
                     ToArray();
 
-                return new JobList<FetchedJobDto>(jobs.ToDictionary(x => x.JobId.ToString(), x => new FetchedJobDto
+                return new JobList<FetchedJobDto>(jobs.ToDictionary(x => x.Id.ToString(), x => new FetchedJobDto
                 {
                     State = x.ActualState.State.Name,
                     Job = DeserializeJob(x.InvocationData),
@@ -363,7 +363,7 @@ namespace Hangfire.EntityFramework
                     dto = selector(job, DeserializeJob(job.InvocationData), stateData);
                 }
 
-                result.Add(new KeyValuePair<string, T>(job.JobId.ToString(), dto));
+                result.Add(new KeyValuePair<string, T>(job.Id.ToString(), dto));
             }
 
             return new JobList<T>(result);

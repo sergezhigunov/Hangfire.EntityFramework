@@ -10,7 +10,7 @@ namespace Hangfire.EntityFramework
     internal class HangfireJobParameter
     {
         [Key, Column(Order = 0)]
-        [Index("IX_HangfireJobParameter_JobId", IsUnique = false)]
+        [ForeignKey(nameof(Job))]
         public Guid JobId { get; set; }
 
         [Key, Column(Order = 1)]
@@ -20,7 +20,6 @@ namespace Hangfire.EntityFramework
 
         public string Value { get; set; }
 
-        [ForeignKey(nameof(JobId))]
         public virtual HangfireJob Job { get; set; }
     }
 }

@@ -774,7 +774,7 @@ namespace Hangfire.EntityFramework
         {
             Guid jobId = Guid.NewGuid();
             UseContextWithSavingChanges(context => context.Jobs.
-                Add(new HangfireJob { JobId = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, ExpireAt = expireAt }));
+                Add(new HangfireJob { Id = jobId, CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, ExpireAt = expireAt }));
 
             return jobId;
         }
@@ -783,7 +783,7 @@ namespace Hangfire.EntityFramework
             Include(p => p.ActualState.State).
             Include(p => p.Parameters).
             Include(p => p.States).
-            Single(x => x.JobId == jobId));
+            Single(x => x.Id == jobId));
 
         private void UseTransaction(Action<EntityFrameworkJobStorageTransaction> action)
         {

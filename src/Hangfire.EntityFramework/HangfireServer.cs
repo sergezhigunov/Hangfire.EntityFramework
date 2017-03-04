@@ -11,7 +11,7 @@ namespace Hangfire.EntityFramework
     {
         [Key]
         [MaxLength(100)]
-        public string ServerId { get; set; }
+        public string Id { get; set; }
 
         public string Data { get; set; }
 
