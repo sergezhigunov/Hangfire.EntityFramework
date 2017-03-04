@@ -59,6 +59,25 @@ namespace Hangfire.EntityFramework
             Assert.Throws<ArgumentOutOfRangeException>("value", () => options.QueuePollInterval = value);
         }
 
+        [Fact]
+        public void DefaultSchemaName_ThrowsAnException_WhenValueIsNull()
+        {
+            var options = new EntityFrameworkJobStorageOptions();
+
+            Assert.Throws<ArgumentNullException>("value", () => options.DefaultSchemaName = null);
+        }
+
+        [Fact]
+        public void DefaultSchemaName_SetChangesValue()
+        {
+            var options = new EntityFrameworkJobStorageOptions();
+            var valueToSet = "TEST";
+
+            options.DefaultSchemaName = valueToSet;
+
+            Assert.Same(valueToSet, options.DefaultSchemaName);
+        }
+
         private static IEnumerable<object[]> GetNonPositiveTimestamps()
         {
             yield return new object[] { TimeSpan.MinValue, };
