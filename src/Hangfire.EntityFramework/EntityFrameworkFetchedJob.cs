@@ -25,17 +25,16 @@ namespace Hangfire.EntityFramework
         public EntityFrameworkFetchedJob(
             [NotNull] HangfireDbContext context,
             [NotNull] DbContextTransaction transaction,
-            string jobId,
-            string queue)
+            Guid jobId,
+            [NotNull] string queue)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
             if (queue == null) throw new ArgumentNullException(nameof(queue));
 
             Context = context;
             Transaction = transaction;
-            JobId = jobId;
+            JobId = jobId.ToString();
             Queue = queue;
         }
 

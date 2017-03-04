@@ -67,7 +67,7 @@ namespace Hangfire.EntityFramework
                         return new EntityFrameworkFetchedJob(
                             context,
                             transaction,
-                            fetchedJob.JobId.ToString(),
+                            fetchedJob.JobId,
                             fetchedJob.Queue);
                     }
                 }
