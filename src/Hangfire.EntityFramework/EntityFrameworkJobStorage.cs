@@ -10,7 +10,7 @@ namespace Hangfire.EntityFramework
     internal class EntityFrameworkJobStorage : JobStorage
     {
         internal EntityFrameworkJobStorageOptions Options { get; }
-        private string NameOrConnectionString { get; }
+        internal string NameOrConnectionString { get; }
         internal virtual PersistentJobQueueProviderCollection QueueProviders { get; }
 
         public EntityFrameworkJobStorage(string nameOrConnectionString)

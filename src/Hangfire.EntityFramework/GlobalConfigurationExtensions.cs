@@ -57,7 +57,6 @@ namespace Hangfire.EntityFramework
             [NotNull] EntityFrameworkJobStorageOptions options)
         {
             if (configuration == null) throw new ArgumentNullException(nameof(configuration));
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             if (options == null) throw new ArgumentNullException(nameof(options));
 
             var storage = new EntityFrameworkJobStorage(nameOrConnectionString, options);
