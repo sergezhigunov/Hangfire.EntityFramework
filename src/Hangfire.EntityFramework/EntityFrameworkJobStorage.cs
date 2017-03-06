@@ -2,7 +2,9 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using Hangfire.Annotations;
+using Hangfire.Server;
 using Hangfire.Storage;
 
 namespace Hangfire.EntityFramework
@@ -31,6 +33,16 @@ namespace Hangfire.EntityFramework
         public override IStorageConnection GetConnection() => new EntityFrameworkJobStorageConnection(this);
 
         public override IMonitoringApi GetMonitoringApi() => new EntityFrameworkJobStorageMonitoringApi(this);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        public override IEnumerable<IServerComponent> GetComponents()
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            foreach (var item in base.GetComponents())
+                yield return item;
+
+            yield return new CountersAggregator(this, Options.CountersAggregationInterval);
+        }
 
         internal void UseHangfireDbContext([InstantHandle] Action<HangfireDbContext> action)
         {

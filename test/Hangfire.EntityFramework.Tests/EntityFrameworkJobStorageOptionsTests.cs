@@ -17,6 +17,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Hangfire", options.DefaultSchemaName);
             Assert.Equal(new TimeSpan(0, 10, 0), options.DistributedLockTimeout);
             Assert.Equal(new TimeSpan(0, 0, 5), options.QueuePollInterval);
+            Assert.Equal(new TimeSpan(0, 5, 0), options.CountersAggregationInterval);
         }
 
         [Fact]
@@ -57,6 +58,26 @@ namespace Hangfire.EntityFramework
             var options = new EntityFrameworkJobStorageOptions();
 
             Assert.Throws<ArgumentOutOfRangeException>("value", () => options.QueuePollInterval = value);
+        }
+
+        [Fact]
+        public void CountersAggregationInterval_SetChangesValue()
+        {
+            var valueToSet = new TimeSpan(1, 2, 3);
+            var options = new EntityFrameworkJobStorageOptions();
+
+            options.CountersAggregationInterval = valueToSet;
+
+            Assert.Equal(valueToSet, options.CountersAggregationInterval);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetNonPositiveTimestamps))]
+        public void CountersAggregationInterval_ThrowsAnException_WhenValueNonPositive(TimeSpan value)
+        {
+            var options = new EntityFrameworkJobStorageOptions();
+
+            Assert.Throws<ArgumentOutOfRangeException>("value", () => options.CountersAggregationInterval = value);
         }
 
         [Fact]

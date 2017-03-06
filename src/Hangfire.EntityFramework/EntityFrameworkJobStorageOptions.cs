@@ -12,6 +12,7 @@ namespace Hangfire.EntityFramework
     {
         private TimeSpan _distributedLockTimeout = new TimeSpan(0, 10, 0);
         private TimeSpan _queuePollInterval = new TimeSpan(0, 0, 5);
+        private TimeSpan _countersAggregationInterval = new TimeSpan(0, 5, 0);
         private string _defaultSchemaName = nameof(Hangfire);
 
         /// <summary>
@@ -49,6 +50,25 @@ namespace Hangfire.EntityFramework
             {
                 ThrowIfNonPositive(value);
                 _queuePollInterval = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or set interval between counter aggregation executions. The default value is 00:05:00.
+        /// </summary>
+        /// <value>
+        /// A <see cref="TimeSpan"/> value.
+        /// </value>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="value"/> is less or equal to <see cref="TimeSpan.Zero"/>.
+        /// </exception>
+        public TimeSpan CountersAggregationInterval
+        {
+            get { return _countersAggregationInterval; }
+            set
+            {
+                ThrowIfNonPositive(value);
+                _countersAggregationInterval = value;
             }
         }
 
