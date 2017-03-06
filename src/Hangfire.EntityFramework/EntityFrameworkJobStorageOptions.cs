@@ -11,7 +11,7 @@ namespace Hangfire.EntityFramework
     public class EntityFrameworkJobStorageOptions
     {
         private TimeSpan _distributedLockTimeout = new TimeSpan(0, 10, 0);
-        private TimeSpan _queuePollInterval = new TimeSpan(0, 0, 5);
+        private TimeSpan _queuePollInterval = new TimeSpan(0, 0, 15);
         private TimeSpan _countersAggregationInterval = new TimeSpan(0, 5, 0);
         private string _defaultSchemaName = nameof(Hangfire);
 
@@ -35,7 +35,7 @@ namespace Hangfire.EntityFramework
         }
 
         /// <summary>
-        /// Gets or set queue polling interval. The default value is 00:00:05.
+        /// Gets or set queue polling interval. The default value is 00:00:15.
         /// </summary>
         /// <value>
         /// A <see cref="TimeSpan"/> value.

@@ -16,7 +16,7 @@ namespace Hangfire.EntityFramework
 
             Assert.Equal("Hangfire", options.DefaultSchemaName);
             Assert.Equal(new TimeSpan(0, 10, 0), options.DistributedLockTimeout);
-            Assert.Equal(new TimeSpan(0, 0, 5), options.QueuePollInterval);
+            Assert.Equal(new TimeSpan(0, 0, 15), options.QueuePollInterval);
             Assert.Equal(new TimeSpan(0, 5, 0), options.CountersAggregationInterval);
         }
 
