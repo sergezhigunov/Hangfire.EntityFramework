@@ -62,7 +62,7 @@ namespace Hangfire.EntityFramework
                         {
                             context.SaveChanges();
                         }
-                        catch (DbUpdateConcurrencyException)
+                        catch (DbUpdateException)
                         {
                             alreadyLocked = true;
                         }
