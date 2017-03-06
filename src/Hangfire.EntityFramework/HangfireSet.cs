@@ -19,6 +19,7 @@ namespace Hangfire.EntityFramework
         [StringLength(100)]
         public string Value { get; set; }
 
+        [Index("IX_HangfireSet_Score", IsUnique = false)]
         public double Score { get; set; }
 
         [DateTimePrecision(7)]
