@@ -66,16 +66,13 @@ namespace Hangfire.EntityFramework
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
-            if (queues == null || queues.Length == 0) throw new ArgumentNullException(nameof(queues));
+            if (queues == null) throw new ArgumentNullException(nameof(queues));
+            if (queues.Length == 0) throw new ArgumentException(ErrorStrings.QueuesCannotBeEmpty, nameof(queues));
 
             var providers = queues
                 .Select(queue => Storage.QueueProviders.GetProvider(queue))
                 .Distinct()
                 .ToArray();
-
-            if (!providers.Any())
-                throw new InvalidOperationException(string.Format(ErrorStrings.Culture,
-                    ErrorStrings.CannotRetrieveQueueProviderForQueue, string.Join(", ", queues)));
 
             if (providers.Length > 1)
                 throw new InvalidOperationException(string.Format(ErrorStrings.Culture,

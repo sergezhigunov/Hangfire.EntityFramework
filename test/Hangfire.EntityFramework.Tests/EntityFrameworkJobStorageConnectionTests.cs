@@ -1057,6 +1057,20 @@ namespace Hangfire.EntityFramework
             Assert.Equal(new[] { "3", "1" }, result);
         }
 
+        [Fact]
+        public void FetchNextJob_Throws_IfQueuesIsNull()
+        {
+            UseConnection(connection => Assert.Throws<ArgumentNullException>("queues",
+                () => connection.FetchNextJob(null, new CancellationToken())));
+        }
+
+        [Fact]
+        public void FetchNextJob_Throws_IfQueuesIsEmpty()
+        {
+            UseConnection(connection => Assert.Throws<ArgumentException>("queues",
+                () => connection.FetchNextJob(new string[0], new CancellationToken())));
+        }
+
         [Fact, CleanDatabase]
         public void FetchNextJob_DelegatesItsExecution_ToTheQueue()
         {

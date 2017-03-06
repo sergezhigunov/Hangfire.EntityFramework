@@ -98,11 +98,7 @@ namespace Hangfire.EntityFramework
             {
                 var storage = CreateStorage();
                 Assert.Throws<EntityFrameworkDistributedLockTimeoutException>(
-                    () =>
-                    {
-                        using (new EntityFrameworkJobStorageDistributedLock(storage, resource, Timeout))
-                        { }
-                    });
+                    () => new EntityFrameworkJobStorageDistributedLock(storage, resource, Timeout));
             }
 
             releaseLock.Set();
@@ -139,16 +135,6 @@ namespace Hangfire.EntityFramework
             T result = default(T);
             UseContext(context => { result = func(context); });
             return result;
-        }
-
-        private void UseContextWithSavingChanges(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(context =>
-            {
-                action(context);
-                context.SaveChanges();
-            });
         }
     }
 }
