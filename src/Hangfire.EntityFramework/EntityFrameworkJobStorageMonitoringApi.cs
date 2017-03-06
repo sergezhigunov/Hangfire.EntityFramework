@@ -38,9 +38,7 @@ namespace Hangfire.EntityFramework
             {
                 var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
                 var counters = tuple.Monitoring.GetJobQueueCounters(tuple.Queue);
-
                 var firstJobs = EnqueuedJobs(enqueuedJobIds);
-
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
                     Name = tuple.Queue,
@@ -386,31 +384,18 @@ namespace Hangfire.EntityFramework
 
         private Dictionary<DateTime, long> GetHourlyTimelineStats(string type)
         {
-            var endDate = DateTime.UtcNow;
-            var dates = new List<DateTime>();
-            for (var i = 0; i < 24; i++)
-            {
-                dates.Add(endDate);
-                endDate = endDate.AddHours(-1);
-            }
-
+            var ticks = DateTime.UtcNow.Ticks;
+            var endDate = new DateTime(ticks - ticks % TimeSpan.TicksPerHour, DateTimeKind.Utc);
+            var dates = Enumerable.Range(0, 24).Select(x => endDate.AddHours(-x));
             var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd-HH")}");
-
             return GetTimelineStats(keyMaps);
         }
 
         private Dictionary<DateTime, long> GetTimelineStats(string type)
         {
             var endDate = DateTime.UtcNow.Date;
-            var dates = new List<DateTime>();
-            for (var i = 0; i < 7; i++)
-            {
-                dates.Add(endDate);
-                endDate = endDate.AddDays(-1);
-            }
-
+            var dates = Enumerable.Range(0, 7).Select(x => endDate.AddDays(-x));
             var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd")}");
-
             return GetTimelineStats(keyMaps);
         }
 
