@@ -13,6 +13,7 @@ namespace Hangfire.EntityFramework
         private TimeSpan _distributedLockTimeout = new TimeSpan(0, 10, 0);
         private TimeSpan _queuePollInterval = new TimeSpan(0, 0, 15);
         private TimeSpan _countersAggregationInterval = new TimeSpan(0, 5, 0);
+        private TimeSpan _jobExpirationCheckInterval = new TimeSpan(0, 30, 0);
         private string _defaultSchemaName = nameof(Hangfire);
 
         /// <summary>
@@ -69,6 +70,25 @@ namespace Hangfire.EntityFramework
             {
                 ThrowIfNonPositive(value);
                 _countersAggregationInterval = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or set interval between expiration manager executions. The default value is 00:30:00.
+        /// </summary>
+        /// <value>
+        /// A <see cref="TimeSpan"/> value.
+        /// </value>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="value"/> is less or equal to <see cref="TimeSpan.Zero"/>.
+        /// </exception>
+        public TimeSpan JobExpirationCheckInterval
+        {
+            get { return _jobExpirationCheckInterval; }
+            set
+            {
+                ThrowIfNonPositive(value);
+                _jobExpirationCheckInterval = value;
             }
         }
 

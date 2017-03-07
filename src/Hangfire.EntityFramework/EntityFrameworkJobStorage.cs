@@ -34,14 +34,15 @@ namespace Hangfire.EntityFramework
 
         public override IMonitoringApi GetMonitoringApi() => new EntityFrameworkJobStorageMonitoringApi(this);
 
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618
         public override IEnumerable<IServerComponent> GetComponents()
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618
         {
             foreach (var item in base.GetComponents())
                 yield return item;
 
             yield return new CountersAggregator(this, Options.CountersAggregationInterval);
+            yield return new ExpirationManager(this, Options.JobExpirationCheckInterval);
         }
 
         internal void UseHangfireDbContext([InstantHandle] Action<HangfireDbContext> action)

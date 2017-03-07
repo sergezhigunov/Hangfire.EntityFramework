@@ -57,8 +57,9 @@ namespace Hangfire.EntityFramework
 
             var components = storage.GetComponents().ToArray();
 
-            Assert.Equal(1, components.Count());
+            Assert.Equal(2, components.Count());
             Assert.True(components.Any(x => x is CountersAggregator));
+            Assert.True(components.Any(x => x is ExpirationManager));
         }
 
         private EntityFrameworkJobStorage CreateStorage() =>
