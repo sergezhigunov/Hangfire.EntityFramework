@@ -185,61 +185,59 @@ namespace Hangfire.EntityFramework
 
         public JobList<ProcessingJobDto> ProcessingJobs(int from, int count)
         {
-            return GetJobs(from, count, ProcessingState.StateName, (sqlJob, job, stateData) =>
-                new ProcessingJobDto
+            return GetJobs<ProcessingJobDto, ProcessingStateData>(from, count, ProcessingState.StateName,
+                (sqlJob, job, stateData) => new ProcessingJobDto
                 {
                     Job = job,
-                    ServerId = stateData.ContainsKey("ServerId") ? stateData["ServerId"] : stateData["ServerName"],
-                    StartedAt = JobHelper.DeserializeDateTime(stateData["StartedAt"]),
+                    ServerId = stateData?.ServerId ?? stateData?.ServerName,
+                    StartedAt = stateData?.StartedAt,
                 });
         }
 
         public JobList<ScheduledJobDto> ScheduledJobs(int from, int count)
         {
-            return GetJobs(from, count, ScheduledState.StateName, (sqlJob, job, stateData) =>
-                new ScheduledJobDto
+            return GetJobs<ScheduledJobDto, ScheduledStateData>(from, count, ScheduledState.StateName,
+                (sqlJob, job, stateData) => new ScheduledJobDto
                 {
                     Job = job,
-                    EnqueueAt = JobHelper.DeserializeDateTime(stateData["EnqueueAt"]),
-                    ScheduledAt = JobHelper.DeserializeDateTime(stateData["ScheduledAt"])
+                    EnqueueAt = stateData?.EnqueueAt ?? default(DateTime),
+                    ScheduledAt = stateData?.ScheduledAt,
                 });
         }
 
         public JobList<SucceededJobDto> SucceededJobs(int from, int count)
         {
-            return GetJobs(from, count, SucceededState.StateName, (sqlJob, job, stateData) =>
-                new SucceededJobDto
+            return GetJobs<SucceededJobDto, SucceededStateData>(from, count, SucceededState.StateName,
+                (sqlJob, job, stateData) => new SucceededJobDto
                 {
                     Job = job,
-                    Result = stateData.ContainsKey("Result") ? stateData["Result"] : null,
-                    TotalDuration = stateData.ContainsKey("PerformanceDuration") && stateData.ContainsKey("Latency")
-                        ? long.Parse(stateData["PerformanceDuration"]) + long.Parse(stateData["Latency"])
-                        : default(long?),
-                    SucceededAt = JobHelper.DeserializeNullableDateTime(stateData["SucceededAt"])
+                    Result = stateData?.Result,
+                    TotalDuration = stateData?.PerformanceDuration + stateData?.Latency,
+                    SucceededAt = stateData?.SucceededAt,
                 });
         }
 
         public JobList<FailedJobDto> FailedJobs(int from, int count)
         {
-            return GetJobs(from, count, FailedState.StateName, (sqlJob, job, stateData) =>
-                new FailedJobDto
+            return GetJobs<FailedJobDto, FailedStateData>(from, count, FailedState.StateName,
+                (sqlJob, job, stateData) => new FailedJobDto
                 {
                     Job = job,
                     Reason = sqlJob.ActualState.State.Reason,
-                    ExceptionDetails = stateData["ExceptionDetails"],
-                    ExceptionMessage = stateData["ExceptionMessage"],
-                    ExceptionType = stateData["ExceptionType"],
-                    FailedAt = JobHelper.DeserializeNullableDateTime(stateData["FailedAt"])
+                    ExceptionDetails = stateData?.ExceptionDetails,
+                    ExceptionMessage = stateData?.ExceptionMessage,
+                    ExceptionType = stateData?.ExceptionType,
+                    FailedAt = stateData?.FailedAt,
                 });
         }
 
         public JobList<DeletedJobDto> DeletedJobs(int from, int count)
         {
-            return GetJobs(from, count, DeletedState.StateName, (sqlJob, job, stateData) =>
-                new DeletedJobDto
+            return GetJobs<DeletedJobDto, DeletedStateData>(from, count, DeletedState.StateName,
+                (sqlJob, job, stateData) => new DeletedJobDto
                 {
                     Job = job,
-                    DeletedAt = JobHelper.DeserializeNullableDateTime(stateData["DeletedAt"])
+                    DeletedAt = stateData?.DeletedAt,
                 });
         }
 
@@ -289,15 +287,13 @@ namespace Hangfire.EntityFramework
                     select job).
                     ToArray();
 
-                return DeserializeJobs(
+                return DeserializeJobs<EnqueuedJobDto, EnqueuedStateData>(
                     jobs,
                     (sqlJob, job, stateData) => new EnqueuedJobDto
                     {
                         Job = job,
                         State = sqlJob.ActualState.State.Name,
-                        EnqueuedAt = sqlJob.ActualState.State.Name == EnqueuedState.StateName
-                            ? JobHelper.DeserializeNullableDateTime(stateData["EnqueuedAt"])
-                            : null
+                        EnqueuedAt = stateData?.EnqueuedAt
                     });
             });
         }
@@ -321,11 +317,11 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        private JobList<T> GetJobs<T>(
+        private JobList<TResult> GetJobs<TResult, TStateData>(
             int from,
             int count,
             string stateName,
-            Func<HangfireJob, Job, Dictionary<string, string>, T> selector)
+            Func<HangfireJob, Job, TStateData, TResult> selector)
         {
             return UseHangfireDbContext(context =>
             {
@@ -343,28 +339,24 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        private JobList<T> DeserializeJobs<T>(HangfireJob[] jobs, Func<HangfireJob, Job, Dictionary<string, string>, T> selector)
+        private JobList<TResult> DeserializeJobs<TResult, TStateData>(HangfireJob[] jobs, Func<HangfireJob, Job, TStateData, TResult> selector)
         {
-            var result = new List<KeyValuePair<string, T>>(jobs.Length);
+            var result = new List<KeyValuePair<string, TResult>>(jobs.Length);
 
             foreach (var job in jobs)
             {
-                var dto = default(T);
+                var dto = default(TResult);
 
                 if (!string.IsNullOrWhiteSpace(job.InvocationData))
                 {
-                    var deserializedData = JobHelper.FromJson<Dictionary<string, string>>(job.ActualState.State.Data);
-                    var stateData = deserializedData != null
-                        ? new Dictionary<string, string>(deserializedData, StringComparer.OrdinalIgnoreCase)
-                        : null;
-
+                    TStateData stateData = JobHelper.FromJson<TStateData>(job.ActualState.State.Data);
                     dto = selector(job, DeserializeJob(job.InvocationData), stateData);
                 }
 
-                result.Add(new KeyValuePair<string, T>(job.Id.ToString(), dto));
+                result.Add(new KeyValuePair<string, TResult>(job.Id.ToString(), dto));
             }
 
-            return new JobList<T>(result);
+            return new JobList<TResult>(result);
         }
 
         private IPersistentJobQueueMonitoringApi GetQueueApi(string queue)
@@ -387,7 +379,7 @@ namespace Hangfire.EntityFramework
             var ticks = DateTime.UtcNow.Ticks;
             var endDate = new DateTime(ticks - ticks % TimeSpan.TicksPerHour, DateTimeKind.Utc);
             var dates = Enumerable.Range(0, 24).Select(x => endDate.AddHours(-x));
-            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd-HH")}");
+            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x:yyyy-MM-dd-HH}");
             return GetTimelineStats(keyMaps);
         }
 
@@ -395,7 +387,7 @@ namespace Hangfire.EntityFramework
         {
             var endDate = DateTime.UtcNow.Date;
             var dates = Enumerable.Range(0, 7).Select(x => endDate.AddDays(-x));
-            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x.ToString("yyyy-MM-dd")}");
+            var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x:yyyy-MM-dd}");
             return GetTimelineStats(keyMaps);
         }
 
