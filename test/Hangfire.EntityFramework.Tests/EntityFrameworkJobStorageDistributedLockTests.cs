@@ -9,6 +9,8 @@ using Xunit;
 
 namespace Hangfire.EntityFramework
 {
+    using static ConnectionUtils;
+
     public class EntityFrameworkJobStorageDistributedLockTests
     {
         private readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
@@ -116,25 +118,6 @@ namespace Hangfire.EntityFramework
 
             var record = UseContext(context => context.DistributedLocks.Any());
             Assert.False(record);
-        }
-
-        private EntityFrameworkJobStorage CreateStorage()
-        {
-            string connectionString = ConnectionUtils.GetConnectionString();
-            return new EntityFrameworkJobStorage(connectionString);
-        }
-
-        private void UseContext(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(action);
-        }
-
-        private T UseContext<T>(Func<HangfireDbContext, T> func)
-        {
-            T result = default(T);
-            UseContext(context => { result = func(context); });
-            return result;
         }
     }
 }

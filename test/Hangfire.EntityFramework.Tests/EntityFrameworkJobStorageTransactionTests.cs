@@ -13,6 +13,8 @@ using Xunit;
 
 namespace Hangfire.EntityFramework
 {
+    using static ConnectionUtils;
+
     public class EntityFrameworkJobStorageTransactionTests
     {
         [Fact]
@@ -784,40 +786,5 @@ namespace Hangfire.EntityFramework
             Include(p => p.Parameters).
             Include(p => p.States).
             Single(x => x.Id == jobId));
-
-        private void UseTransaction(Action<EntityFrameworkJobStorageTransaction> action)
-        {
-            string connectionString = ConnectionUtils.GetConnectionString();
-            var storage = new EntityFrameworkJobStorage(connectionString);
-
-            using (var transaction = new EntityFrameworkJobStorageTransaction(storage))
-            {
-                action(transaction);
-                transaction.Commit();
-            }
-        }
-
-        private void UseContext(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(action);
-        }
-
-        private T UseContext<T>(Func<HangfireDbContext, T> func)
-        {
-            T result = default(T);
-            UseContext(context => { result = func(context); });
-            return result;
-        }
-
-        private void UseContextWithSavingChanges(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(context =>
-            {
-                action(context);
-                context.SaveChanges();
-            });
-        }
     }
 }

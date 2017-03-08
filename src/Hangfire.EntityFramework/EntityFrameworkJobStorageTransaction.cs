@@ -464,7 +464,7 @@ namespace Hangfire.EntityFramework
 
         public override void Commit()
         {
-            using (var context = Storage.CreateHangfireDbContext())
+            using (var context = Storage.CreateContext())
             using (var transaction = context.Database.BeginTransaction())
             {
                 while (CommandQueue.Count > 0)

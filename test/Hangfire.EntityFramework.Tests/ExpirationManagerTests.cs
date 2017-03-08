@@ -9,6 +9,8 @@ using Xunit;
 
 namespace Hangfire.EntityFramework
 {
+    using static ConnectionUtils;
+
     public class ExpirationManagerTests
     {
         private TimeSpan CheckInterval { get; } = new TimeSpan(1);
@@ -87,6 +89,7 @@ namespace Hangfire.EntityFramework
                 Assert.Equal(1, context.Hashes.Count());
             });
         }
+
         private void CreateExpirationEntries(EntityFrameworkJobStorage storage, DateTime? expireAt)
         {
             UseContextWithSavingChanges(context =>
@@ -96,35 +99,6 @@ namespace Hangfire.EntityFramework
                 context.Lists.Add(new HangfireListItem { Key = "test", ExpireAt = expireAt });
                 context.Sets.Add(new HangfireSet { Key = "test", Value = "test", CreatedAt = DateTime.UtcNow, ExpireAt = expireAt });
                 context.Hashes.Add(new HangfireHash { Key = "test", Field = "test", ExpireAt = expireAt });
-            });
-        }
-
-        private static EntityFrameworkJobStorage CreateStorage()
-        {
-            string connectionString = ConnectionUtils.GetConnectionString();
-            return new EntityFrameworkJobStorage(connectionString);
-        }
-
-        private void UseContext(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(action);
-        }
-
-        private T UseContext<T>(Func<HangfireDbContext, T> func)
-        {
-            T result = default(T);
-            UseContext(context => { result = func(context); });
-            return result;
-        }
-
-        private void UseContextWithSavingChanges(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(context =>
-            {
-                action(context);
-                context.SaveChanges();
             });
         }
     }

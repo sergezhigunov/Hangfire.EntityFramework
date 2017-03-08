@@ -9,6 +9,8 @@ using Xunit;
 
 namespace Hangfire.EntityFramework
 {
+    using static ConnectionUtils;
+
     public class CountersAggregatorTests
     {
         private TimeSpan AggregationInterval { get; } = new TimeSpan(1);
@@ -57,31 +59,5 @@ namespace Hangfire.EntityFramework
             Assert.Equal(-20, result.Single(x => x.Key == "counter2").Value);
             Assert.Equal(99, result.Single(x => x.Key == "counter3").Value);
         }
-
-        private T UseContext<T>(Func<HangfireDbContext, T> func)
-        {
-            T result = default(T);
-            UseContext(context => { result = func(context); });
-            return result;
-        }
-
-        private void UseContext(Action<HangfireDbContext> action)
-        {
-            var storage = CreateStorage();
-            storage.UseHangfireDbContext(action);
-        }
-
-        private void UseContextWithSavingChanges(Action<HangfireDbContext> action)
-        {
-            var storage = CreateStorage();
-            storage.UseHangfireDbContext(context =>
-            {
-                action(context);
-                context.SaveChanges();
-            });
-        }
-
-        private EntityFrameworkJobStorage CreateStorage() =>
-            new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString(), new EntityFrameworkJobStorageOptions());
     }
 }

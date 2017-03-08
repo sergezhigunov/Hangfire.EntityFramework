@@ -9,15 +9,10 @@ using Xunit;
 
 namespace Hangfire.EntityFramework
 {
+    using static ConnectionUtils;
+
     public class EntityFrameworkJobStorageTests
     {
-        private EntityFrameworkJobStorageOptions Options;
-
-        public EntityFrameworkJobStorageTests()
-        {
-            Options = new EntityFrameworkJobStorageOptions();
-        }
-
         [Fact]
         public void Ctor_ThrowsAnException_WhenConnectionStringIsNull()
         {
@@ -61,8 +56,5 @@ namespace Hangfire.EntityFramework
             Assert.True(components.Any(x => x is CountersAggregator));
             Assert.True(components.Any(x => x is ExpirationManager));
         }
-
-        private EntityFrameworkJobStorage CreateStorage() =>
-            new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString(), Options);
     }
 }

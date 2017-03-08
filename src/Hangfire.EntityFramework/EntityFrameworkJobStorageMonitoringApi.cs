@@ -419,7 +419,7 @@ namespace Hangfire.EntityFramework
             return keyMaps.ToDictionary(x => x.Value, x => valuesMap[x.Key]);
         }
 
-        private T UseHangfireDbContext<T>(Func<HangfireDbContext, T> func) => Storage.UseHangfireDbContext(func);
+        private T UseHangfireDbContext<T>(Func<HangfireDbContext, T> func) => Storage.UseContext(func);
 
         private static Job DeserializeJob(string invocationData)
         {

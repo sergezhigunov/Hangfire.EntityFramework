@@ -8,6 +8,8 @@ using Xunit;
 
 namespace Hangfire.EntityFramework
 {
+    using static ConnectionUtils;
+
     public class EntityFrameworkFetchedJobTests
     {
         private const string Queue = "queue";
@@ -132,31 +134,5 @@ namespace Hangfire.EntityFramework
             Assert.ThrowsAny<Exception>(() => transaction.Commit());
             Assert.Throws<InvalidOperationException>(() => contextToUse.SaveChanges());
         }
-
-        private static void UseContext(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(action);
-        }
-
-        private static T UseContext<T>(Func<HangfireDbContext, T> func)
-        {
-            T result = default(T);
-            UseContext(context => { result = func(context); });
-            return result;
-        }
-
-        private static void UseContextWithSavingChanges(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(context =>
-            {
-                action(context);
-                context.SaveChanges();
-            });
-        }
-
-        private static HangfireDbContext CreateContext() =>
-            new HangfireDbContext(ConnectionUtils.GetConnectionString(), nameof(Hangfire));
     }
 }

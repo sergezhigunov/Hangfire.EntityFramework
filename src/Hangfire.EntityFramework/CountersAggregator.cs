@@ -34,7 +34,7 @@ namespace Hangfire.EntityFramework
             {
                 removedCount = 0;
                 concurrencyExceptionThrown = false;
-                Storage.UseHangfireDbContext(context =>
+                Storage.UseContext(context =>
                 {
                     var itemsToRemove = (
                         from counter in context.Counters

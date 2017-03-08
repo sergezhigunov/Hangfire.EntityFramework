@@ -7,6 +7,8 @@ using Xunit;
 
 namespace Hangfire.EntityFramework
 {
+    using static ConnectionUtils;
+
     public class EntityFrameworkJobQueueProviderTests
     {
         [Fact]
@@ -19,7 +21,7 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void Ctor_EnsureDefaults()
         {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
+            var storage = CreateStorage();
 
             var result = new EntityFrameworkJobQueueProvider(storage);
 
@@ -30,7 +32,7 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void GetJobQueue_ReturnsCorrectType()
         {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
+            var storage = CreateStorage();
             var provider = new EntityFrameworkJobQueueProvider(storage);
 
             var result = provider.GetJobQueue();
@@ -41,7 +43,7 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void GetJobQueueMonitoringApi_ReturnsCorrectType()
         {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
+            var storage = CreateStorage();
             var provider = new EntityFrameworkJobQueueProvider(storage);
 
             var result = provider.GetJobQueueMonitoringApi();

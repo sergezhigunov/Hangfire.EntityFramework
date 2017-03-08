@@ -11,9 +11,12 @@ namespace Hangfire.EntityFramework
 {
     internal class EntityFrameworkJobStorage : JobStorage
     {
+        private EntityFrameworkJobStorageMonitoringApi MonitoringApi { get; }
+        private CountersAggregator CountersAggregator { get; }
+        private ExpirationManager ExpirationManager { get; }
         internal EntityFrameworkJobStorageOptions Options { get; }
-        internal string NameOrConnectionString { get; }
         internal virtual PersistentJobQueueProviderCollection QueueProviders { get; }
+        internal string NameOrConnectionString { get; }
 
         public EntityFrameworkJobStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new EntityFrameworkJobStorageOptions())
@@ -28,6 +31,9 @@ namespace Hangfire.EntityFramework
             NameOrConnectionString = nameOrConnectionString;
             var defaultQueueProvider = new EntityFrameworkJobQueueProvider(this);
             QueueProviders = new PersistentJobQueueProviderCollection(defaultQueueProvider);
+            MonitoringApi = new EntityFrameworkJobStorageMonitoringApi(this);
+            CountersAggregator = new CountersAggregator(this, options.CountersAggregationInterval);
+            ExpirationManager = new ExpirationManager(this, options.JobExpirationCheckInterval);
         }
 
         public override IStorageConnection GetConnection() => new EntityFrameworkJobStorageConnection(this);
@@ -41,21 +47,21 @@ namespace Hangfire.EntityFramework
             foreach (var item in base.GetComponents())
                 yield return item;
 
-            yield return new CountersAggregator(this, Options.CountersAggregationInterval);
-            yield return new ExpirationManager(this, Options.JobExpirationCheckInterval);
+            yield return CountersAggregator;
+            yield return ExpirationManager;
         }
 
-        internal void UseHangfireDbContext([InstantHandle] Action<HangfireDbContext> action)
+        internal void UseContext([InstantHandle] Action<HangfireDbContext> action)
         {
-            using (var context = CreateHangfireDbContext())
+            using (var context = CreateContext())
                 action(context);
         }
 
-        internal T UseHangfireDbContext<T>([InstantHandle] Func<HangfireDbContext, T> func)
+        internal T UseContext<T>([InstantHandle] Func<HangfireDbContext, T> func)
         {
             T result = default(T);
 
-            UseHangfireDbContext(context =>
+            UseContext(context =>
             {
                 result = func(context);
             });
@@ -63,6 +69,6 @@ namespace Hangfire.EntityFramework
             return result;
         }
 
-        internal HangfireDbContext CreateHangfireDbContext() => new HangfireDbContext(NameOrConnectionString, Options.DefaultSchemaName);
+        internal HangfireDbContext CreateContext() => new HangfireDbContext(NameOrConnectionString, Options.DefaultSchemaName);
     }
 }

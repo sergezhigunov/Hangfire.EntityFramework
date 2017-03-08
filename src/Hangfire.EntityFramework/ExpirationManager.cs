@@ -27,7 +27,7 @@ namespace Hangfire.EntityFramework
 
         public void Execute(CancellationToken cancellationToken)
         {
-            Storage.UseHangfireDbContext(context =>
+            Storage.UseContext(context =>
             {
                 var now = DateTime.UtcNow;
                 context.Counters.RemoveRange(

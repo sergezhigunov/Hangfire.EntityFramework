@@ -40,7 +40,7 @@ namespace Hangfire.EntityFramework
 
             Guid jobId = Guid.NewGuid();
 
-            return Storage.UseHangfireDbContext(context =>
+            return Storage.UseContext(context =>
             {
                 HangfireJob hangfireJob = context.Jobs.Add(new HangfireJob
                 {
@@ -89,7 +89,7 @@ namespace Hangfire.EntityFramework
 
             Guid jobId = Guid.Parse(id);
 
-            Storage.UseHangfireDbContext(context =>
+            Storage.UseContext(context =>
             {
                 context.JobParameters.AddOrUpdate(new HangfireJobParameter
                 {
@@ -111,7 +111,7 @@ namespace Hangfire.EntityFramework
             if (!Guid.TryParse(id, out jobId))
                 return null;
 
-            return Storage.UseHangfireDbContext(context => (
+            return Storage.UseContext(context => (
                 from parameter in context.JobParameters
                 where parameter.JobId == jobId && parameter.Name == name
                 select parameter.Value).
@@ -126,7 +126,7 @@ namespace Hangfire.EntityFramework
             if (!Guid.TryParse(jobId, out id))
                 return null;
 
-            var jobInfo = Storage.UseHangfireDbContext(context => (
+            var jobInfo = Storage.UseContext(context => (
                 from job in context.Jobs
                 where job.Id == id
                 select new
@@ -167,7 +167,7 @@ namespace Hangfire.EntityFramework
             if (!Guid.TryParse(jobId, out id))
                 return null;
 
-            var stateInfo = Storage.UseHangfireDbContext(context => (
+            var stateInfo = Storage.UseContext(context => (
                 from actualState in context.JobActualStates
                 where actualState.JobId == id
                 let state = actualState.State
@@ -201,7 +201,7 @@ namespace Hangfire.EntityFramework
                 StartedAt = DateTime.UtcNow,
             };
 
-            Storage.UseHangfireDbContext(dbContext =>
+            Storage.UseContext(dbContext =>
             {
                 dbContext.Servers.AddOrUpdate(new HangfireServer
                 {
@@ -218,7 +218,7 @@ namespace Hangfire.EntityFramework
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
 
-            Storage.UseHangfireDbContext(context =>
+            Storage.UseContext(context =>
             {
                 context.Entry(new HangfireServer { Id = serverId }).State = EntityState.Deleted;
                 context.SaveChanges();
@@ -229,7 +229,7 @@ namespace Hangfire.EntityFramework
         {
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
 
-            Storage.UseHangfireDbContext(context =>
+            Storage.UseContext(context =>
             {
                 if (context.Servers.Any(x => x.Id == serverId))
                 {
@@ -246,7 +246,7 @@ namespace Hangfire.EntityFramework
             if (timeOut < TimeSpan.Zero)
                 throw new ArgumentOutOfRangeException(nameof(timeOut), timeOut, ErrorStrings.NeedNonNegativeValue);
 
-            return Storage.UseHangfireDbContext(context =>
+            return Storage.UseContext(context =>
             {
                 DateTime outdate = DateTime.UtcNow - timeOut;
 
@@ -269,7 +269,7 @@ namespace Hangfire.EntityFramework
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return Storage.UseHangfireDbContext(context => new HashSet<string>(
+            return Storage.UseContext(context => new HashSet<string>(
                 from set in context.Sets
                 where set.Key == key
                 select set.Value));
@@ -281,7 +281,7 @@ namespace Hangfire.EntityFramework
 
             if (toScore < fromScore) Swap(ref fromScore, ref toScore);
 
-            return Storage.UseHangfireDbContext(context => (
+            return Storage.UseContext(context => (
                 from set in context.Sets
                 where set.Key == key && fromScore <= set.Score && set.Score <= toScore
                 orderby set.Score
@@ -296,7 +296,7 @@ namespace Hangfire.EntityFramework
             if (endingAt < startingFrom) Swap(ref startingFrom, ref endingAt);
             int take = endingAt - startingFrom + 1;
 
-            return Storage.UseHangfireDbContext(context => (
+            return Storage.UseContext(context => (
                 from set in context.Sets
                 where set.Key == key
                 orderby set.CreatedAt
@@ -310,14 +310,14 @@ namespace Hangfire.EntityFramework
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return Storage.UseHangfireDbContext(context => context.Sets.LongCount(x => x.Key == key));
+            return Storage.UseContext(context => context.Sets.LongCount(x => x.Key == key));
         }
 
         public override TimeSpan GetSetTtl([NotNull] string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            DateTime? minExpiredAt = Storage.UseHangfireDbContext(context => (
+            DateTime? minExpiredAt = Storage.UseContext(context => (
                 from set in context.Sets
                 where set.Key == key
                 select set.ExpireAt).
@@ -331,7 +331,7 @@ namespace Hangfire.EntityFramework
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
 
-            Storage.UseHangfireDbContext(context =>
+            Storage.UseContext(context =>
             {
                 var hashes = keyValuePairs.Select(x => new HangfireHash { Key = key, Field = x.Key, Value = x.Value }).ToArray();
 
@@ -348,7 +348,7 @@ namespace Hangfire.EntityFramework
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            var result = Storage.UseHangfireDbContext(context => (
+            var result = Storage.UseContext(context => (
                 from hash in context.Hashes
                 where hash.Key == key
                 select new { hash.Field, hash.Value }).
@@ -364,14 +364,14 @@ namespace Hangfire.EntityFramework
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return Storage.UseHangfireDbContext(context => context.Hashes.LongCount(x => x.Key == key));
+            return Storage.UseContext(context => context.Hashes.LongCount(x => x.Key == key));
         }
 
         public override TimeSpan GetHashTtl([NotNull] string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            DateTime? minExpiredAt = Storage.UseHangfireDbContext(context => (
+            DateTime? minExpiredAt = Storage.UseContext(context => (
                 from hash in context.Hashes
                 where hash.Key == key
                 select hash.ExpireAt).
@@ -385,7 +385,7 @@ namespace Hangfire.EntityFramework
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (name == null) throw new ArgumentNullException(nameof(name));
 
-            return Storage.UseHangfireDbContext(context => (
+            return Storage.UseContext(context => (
                 from hash in context.Hashes
                 where hash.Key == key && hash.Field == name
                 select hash.Value).
@@ -396,7 +396,7 @@ namespace Hangfire.EntityFramework
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return Storage.UseHangfireDbContext(context => (
+            return Storage.UseContext(context => (
                 from counter in context.Counters
                 where counter.Key == key
                 select (long?)counter.Value).
@@ -407,7 +407,7 @@ namespace Hangfire.EntityFramework
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return Storage.UseHangfireDbContext(context => (
+            return Storage.UseContext(context => (
                 from listItem in context.Lists
                 where listItem.Key == key
                 orderby listItem.Position descending
@@ -419,14 +419,14 @@ namespace Hangfire.EntityFramework
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            return Storage.UseHangfireDbContext(context => context.Lists.LongCount(x => x.Key == key));
+            return Storage.UseContext(context => context.Lists.LongCount(x => x.Key == key));
         }
 
         public override TimeSpan GetListTtl([NotNull] string key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
 
-            DateTime? minExpiredAt = Storage.UseHangfireDbContext(context => (
+            DateTime? minExpiredAt = Storage.UseContext(context => (
                 from listItem in context.Lists
                 where listItem.Key == key
                 select listItem.ExpireAt).
@@ -442,7 +442,7 @@ namespace Hangfire.EntityFramework
             if (endingAt < startingFrom) Swap(ref startingFrom, ref endingAt);
             int take = endingAt - startingFrom + 1;
 
-            return Storage.UseHangfireDbContext(context => (
+            return Storage.UseContext(context => (
                 from listItem in context.Lists
                 where listItem.Key == key
                 orderby listItem.Position descending

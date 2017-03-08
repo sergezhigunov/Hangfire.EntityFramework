@@ -1,11 +1,74 @@
 ﻿// Copyright (c) 2017 Sergey Zhigunov.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using System;
+
 namespace Hangfire.EntityFramework.Utils
 {
-    internal class ConnectionUtils
+    internal static class ConnectionUtils
     {
         internal static string GetConnectionString() =>
             "Server=(localdb)\\mssqllocaldb;Database=Hangfire.EntityFramework.Tests;Integrated Security=true;";
+
+        internal static EntityFrameworkJobStorage CreateStorage()
+        {
+            string connectionString = GetConnectionString();
+            return new EntityFrameworkJobStorage(connectionString);
+        }
+
+        internal static HangfireDbContext CreateContext()
+        {
+            var storage = new EntityFrameworkJobStorage(GetConnectionString());
+            return storage.CreateContext();
+        }
+
+        internal static void UseContext(Action<HangfireDbContext> action)
+        {
+            var storage = new EntityFrameworkJobStorage(GetConnectionString());
+            storage.UseContext(action);
+        }
+
+        internal static T UseContext<T>(Func<HangfireDbContext, T> func)
+        {
+            T result = default(T);
+            UseContext(context => { result = func(context); });
+            return result;
+        }
+
+        internal static void UseContextWithSavingChanges(Action<HangfireDbContext> action)
+        {
+            var storage = new EntityFrameworkJobStorage(GetConnectionString());
+            storage.UseContext(context =>
+            {
+                action(context);
+                context.SaveChanges();
+            });
+        }
+
+        internal static void UseConnection(Action<EntityFrameworkJobStorageConnection> action)
+        {
+            var storage = new EntityFrameworkJobStorage(GetConnectionString());
+
+            using (var connection = new EntityFrameworkJobStorageConnection(storage))
+                action(connection);
+        }
+
+        internal static T UseConnection<T>(Func<EntityFrameworkJobStorageConnection, T> func)
+        {
+            T result = default(T);
+            UseConnection(connection => { result = func(connection); });
+            return result;
+        }
+
+        internal static void UseTransaction(Action<EntityFrameworkJobStorageTransaction> action)
+        {
+            var storage = new EntityFrameworkJobStorage(GetConnectionString());
+
+            using (var transaction = new EntityFrameworkJobStorageTransaction(storage))
+            {
+                action(transaction);
+                transaction.Commit();
+            }
+        }
     }
 }

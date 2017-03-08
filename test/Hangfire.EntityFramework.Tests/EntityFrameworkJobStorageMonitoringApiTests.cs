@@ -13,6 +13,8 @@ using Xunit;
 
 namespace Hangfire.EntityFramework
 {
+    using static ConnectionUtils;
+
     public class EntityFrameworkJobStorageMonitoringApiTests
     {
         [Fact]
@@ -781,37 +783,10 @@ namespace Hangfire.EntityFramework
 
         private T UseMonitoringApi<T>(Func<EntityFrameworkJobStorageMonitoringApi, T> func)
         {
-            string connectionString = ConnectionUtils.GetConnectionString();
-            var storage = new EntityFrameworkJobStorage(connectionString);
-            var monitoringApi = new EntityFrameworkJobStorageMonitoringApi(storage);
-            return func(monitoringApi);
+            var storage = CreateStorage();
+            return func(new EntityFrameworkJobStorageMonitoringApi(storage));
         }
 
-        private void UseContextWithSavingChanges(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(context =>
-            {
-                action(context);
-                context.SaveChanges();
-            });
-        }
-
-        private void UseConnection(Action<EntityFrameworkJobStorageConnection> action)
-        {
-            string connectionString = ConnectionUtils.GetConnectionString();
-            var storage = new EntityFrameworkJobStorage(connectionString);
-
-            using (var connection = new EntityFrameworkJobStorageConnection(storage))
-                action(connection);
-        }
-
-        private T UseConnection<T>(Func<EntityFrameworkJobStorageConnection, T> func)
-        {
-            T result = default(T);
-            UseConnection(connection => { result = func(connection); });
-            return result;
-        }
 
         [ExcludeFromCodeCoverage]
         public void SampleMethod(string value)

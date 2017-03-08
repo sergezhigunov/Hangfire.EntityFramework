@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -40,10 +39,10 @@ namespace Hangfire.EntityFramework
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var context = Storage.CreateHangfireDbContext();
+                var context = Storage.CreateContext();
                 try
                 {
-                    transaction = context.Database.BeginTransaction(IsolationLevel.ReadCommitted);
+                    transaction = context.Database.BeginTransaction();
 
                     fetchedJob = (
                         from item in context.JobQueues
@@ -94,7 +93,7 @@ namespace Hangfire.EntityFramework
             Guid id = Guid.Parse(jobId);
             queue = queue.ToLowerInvariant();
 
-            Storage.UseHangfireDbContext(context =>
+            Storage.UseContext(context =>
             {
                 context.JobQueues.Add(new HangfireJobQueueItem
                 {

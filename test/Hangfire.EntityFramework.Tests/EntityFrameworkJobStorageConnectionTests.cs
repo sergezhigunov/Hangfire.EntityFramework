@@ -15,6 +15,8 @@ using Xunit;
 
 namespace Hangfire.EntityFramework
 {
+    using static ConnectionUtils;
+
     public class EntityFrameworkJobStorageConnectionTests
     {
         private Mock<IPersistentJobQueue> Queue { get; } = new Mock<IPersistentJobQueue>();
@@ -1101,7 +1103,7 @@ namespace Hangfire.EntityFramework
 
         private void UseConnection(Action<EntityFrameworkJobStorageConnection> action)
         {
-            string connectionString = ConnectionUtils.GetConnectionString();
+            string connectionString = GetConnectionString();
             var storage = new Mock<EntityFrameworkJobStorage>(connectionString);
             storage.Setup(x => x.QueueProviders).Returns(Providers);
 
@@ -1114,29 +1116,6 @@ namespace Hangfire.EntityFramework
             T result = default(T);
             UseConnection(connection => { result = func(connection); });
             return result;
-        }
-
-        private void UseContext(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(action);
-        }
-
-        private T UseContext<T>(Func<HangfireDbContext, T> func)
-        {
-            T result = default(T);
-            UseContext(context => { result = func(context); });
-            return result;
-        }
-
-        private void UseContextWithSavingChanges(Action<HangfireDbContext> action)
-        {
-            var storage = new EntityFrameworkJobStorage(ConnectionUtils.GetConnectionString());
-            storage.UseHangfireDbContext(context =>
-            {
-                action(context);
-                context.SaveChanges();
-            });
         }
 
         public void SampleMethod(string value)

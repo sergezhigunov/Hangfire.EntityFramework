@@ -14,7 +14,7 @@ namespace Hangfire.EntityFramework
         private TimeSpan _queuePollInterval = new TimeSpan(0, 0, 15);
         private TimeSpan _countersAggregationInterval = new TimeSpan(0, 5, 0);
         private TimeSpan _jobExpirationCheckInterval = new TimeSpan(0, 30, 0);
-        private string _defaultSchemaName = nameof(Hangfire);
+        private string _defaultSchemaName = HangfireConstants.DefaultSchemaName;
 
         /// <summary>
         /// Gets or set maximal distributed lock lifetime.  The default value is 00:10:00.

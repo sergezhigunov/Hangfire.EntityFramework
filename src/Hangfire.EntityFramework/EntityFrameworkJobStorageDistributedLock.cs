@@ -50,7 +50,7 @@ namespace Hangfire.EntityFramework
             {
                 TryRemoveDeadlock();
 
-                using (var context = Storage.CreateHangfireDbContext())
+                using (var context = Storage.CreateContext())
                 using (var transaction = context.Database.BeginTransaction())
                 {
                     if (!context.DistributedLocks.Any(x => x.Id == Resource))
@@ -95,7 +95,7 @@ namespace Hangfire.EntityFramework
 
         private void TryRemoveDeadlock()
         {
-            Storage.UseHangfireDbContext(context =>
+            Storage.UseContext(context =>
             {
                 using (var transaction = context.Database.BeginTransaction())
                 {
@@ -116,7 +116,7 @@ namespace Hangfire.EntityFramework
         {
             if (!Disposed)
             {
-                Storage.UseHangfireDbContext(context =>
+                Storage.UseContext(context =>
                 {
                     using (var transaction = context.Database.BeginTransaction())
                     {

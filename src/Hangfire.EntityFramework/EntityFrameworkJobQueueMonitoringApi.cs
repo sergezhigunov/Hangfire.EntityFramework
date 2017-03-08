@@ -21,7 +21,7 @@ namespace Hangfire.EntityFramework
 
         public string[] GetQueues()
         {
-            return Storage.UseHangfireDbContext(context => (
+            return Storage.UseContext(context => (
                 from queueItem in context.JobQueues
                 select queueItem.Queue).
                 Distinct().
@@ -32,7 +32,7 @@ namespace Hangfire.EntityFramework
         {
             queue = queue.ToLowerInvariant();
 
-            return Storage.UseHangfireDbContext(context => (
+            return Storage.UseContext(context => (
                 from item in context.JobQueues
                 where item.Queue == queue
                 orderby item.CreatedAt ascending
@@ -48,7 +48,7 @@ namespace Hangfire.EntityFramework
         {
             queue = queue.ToLowerInvariant();
 
-            long enqueuedCount = Storage.UseHangfireDbContext(context =>
+            long enqueuedCount = Storage.UseContext(context =>
                 context.JobQueues.Count(x => x.Queue == queue));
 
             return new JobQueueCounters { EnqueuedCount = enqueuedCount, };
