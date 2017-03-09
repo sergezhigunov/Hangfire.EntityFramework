@@ -97,7 +97,7 @@ namespace Hangfire.EntityFramework {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Non-negative value required..
+        ///   Looks up a localized string similar to Positive value required..
         /// </summary>
         internal static string NeedPositiveValue {
             get {

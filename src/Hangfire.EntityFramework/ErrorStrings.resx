@@ -130,7 +130,7 @@
     <value>Non-negative value required.</value>
   </data>
   <data name="NeedPositiveValue" xml:space="preserve">
-    <value>Non-negative value required.</value>
+    <value>Positive value required.</value>
   </data>
   <data name="QueuesCannotBeEmpty" xml:space="preserve">
     <value>Queues cannot be empty.</value>
