@@ -7,8 +7,7 @@ namespace Hangfire.EntityFramework.Utils
 {
     internal static class ConnectionUtils
     {
-        internal static string GetConnectionString() =>
-            "Server=(localdb)\\mssqllocaldb;Database=Hangfire.EntityFramework.Tests;Integrated Security=true;";
+        internal static string GetConnectionString() => "Hangfire.EntityFramework.Tests";
 
         internal static EntityFrameworkJobStorage CreateStorage()
         {
