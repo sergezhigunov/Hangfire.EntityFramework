@@ -2,7 +2,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using Hangfire.Annotations;
 using Hangfire.Storage;
 
@@ -12,54 +12,75 @@ namespace Hangfire.EntityFramework
     {
         private object ThisLock { get; } = new object();
 
-        private HangfireDbContext Context { get; }
+        private EntityFrameworkJobStorage Storage { get; }
 
-        private DbContextTransaction Transaction { get; }
+        private Guid QueueItemId { get; }
 
         public string Queue { get; }
 
         public string JobId { get; }
 
-        private bool Disposed { get; set; }
+        private bool Completed { get; set; }
 
         public EntityFrameworkFetchedJob(
-            [NotNull] HangfireDbContext context,
-            [NotNull] DbContextTransaction transaction,
+            Guid queueItemId,
             Guid jobId,
+            [NotNull] EntityFrameworkJobStorage storage,
             [NotNull] string queue)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (queue == null) throw new ArgumentNullException(nameof(queue));
+            if (storage == null) throw new ArgumentNullException(nameof(storage));
 
-            Context = context;
-            Transaction = transaction;
+            QueueItemId = queueItemId;
             JobId = jobId.ToString();
+            Storage = storage;
             Queue = queue;
         }
 
-        public void RemoveFromQueue()
+        public virtual void RemoveFromQueue()
         {
             lock (ThisLock)
-                Transaction.Commit();
-        }
-
-        public void Requeue()
-        {
-            lock (ThisLock)
-                Transaction.Rollback();
-        }
-
-        public void Dispose()
-        {
-            if (!Disposed)
-            lock (ThisLock)
-                if (!Disposed)
+                Storage.UseContext(context =>
                 {
-                    Transaction.Dispose();
-                    Context.Dispose();
-                    Disposed = true;
-                }
+                    if (!Completed)
+                    {
+                        var item = context.JobQueues.Attach(new HangfireJobQueueItem { Id = QueueItemId, });
+                        context.JobQueues.Remove(item);
+                        try
+                        {
+                            context.SaveChanges();
+                        }
+                        catch (DbUpdateException)
+                        {
+                            // Queue item already removed, database wins
+                        }
+                        Completed = true; 
+                    }
+                });
         }
+
+        public virtual void Requeue()
+        {
+            lock (ThisLock)
+                Storage.UseContext(context =>
+                {
+                    if (!Completed)
+                    {
+                        var item = context.JobQueueLookups.Attach(new HangfireJobQueueItemLookup { QueueItemId = QueueItemId, });
+                        context.JobQueueLookups.Remove(item);
+                        try
+                        {
+                            context.SaveChanges();
+                        }
+                        catch (DbUpdateException)
+                        {
+                            // Lookup already removed, database wins
+                        }
+                        Completed = true; 
+                    }
+                });
+        }
+
+        public virtual void Dispose() => Requeue();
     }
 }

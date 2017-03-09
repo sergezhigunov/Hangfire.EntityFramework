@@ -108,31 +108,18 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact, CleanDatabase]
-        public void GetEnqueuedJobIds_ReturnsEmptyCollection()
+        public void GetEnqueuedJobCount_ReturnsZeroes_WhenQueueNotExisits()
         {
             string queue = Guid.NewGuid().ToString();
             var api = CreateMonitoringApi();
 
-            var result = api.GetFetchedJobIds(queue, 5, 15);
+            var result = api.GetEnqueuedJobCount(queue);
 
-            Assert.Empty(result);
+            Assert.Equal(0, result);
         }
 
         [Fact, CleanDatabase]
-        public void GetJobQueueCounters_ReturnsZeroes_WhenQueueNotExisits()
-        {
-            string queue = Guid.NewGuid().ToString();
-            var api = CreateMonitoringApi();
-
-            var result = api.GetJobQueueCounters(queue);
-
-            Assert.NotNull(result);
-            Assert.Equal(0, result.EnqueuedCount);
-            Assert.Equal(0, result.FetchedCount);
-        }
-
-        [Fact, CleanDatabase]
-        public void GetJobQueueCounters_ReturnsCorrectCounters()
+        public void GetEnqueuedJobCount_ReturnsCorrectCounters()
         {
             var date = DateTime.UtcNow;
             string queue = Guid.NewGuid().ToString();
@@ -160,11 +147,9 @@ namespace Hangfire.EntityFramework
 
             var api = CreateMonitoringApi();
 
-            var result = api.GetJobQueueCounters(queue);
+            var result = api.GetEnqueuedJobCount(queue);
 
-            Assert.NotNull(result);
-            Assert.Equal(2, result.EnqueuedCount);
-            Assert.Equal(0, result.FetchedCount);
+            Assert.Equal(2, result);
         }
 
         private EntityFrameworkJobQueueMonitoringApi CreateMonitoringApi()

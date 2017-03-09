@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
@@ -13,7 +12,7 @@ namespace Hangfire.EntityFramework
 {
     internal class EntityFrameworkJobQueue : IPersistentJobQueue
     {
-        internal static readonly AutoResetEvent NewItemInQueueEvent = new AutoResetEvent(true);
+        internal static AutoResetEvent NewItemInQueueEvent { get; } = new AutoResetEvent(true);
 
         public EntityFrameworkJobStorage Storage { get; }
 
@@ -30,57 +29,41 @@ namespace Hangfire.EntityFramework
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException(ErrorStrings.QueuesCannotBeEmpty, nameof(queues));
 
-            HangfireJobQueueItem fetchedJob = null;
-            DbContextTransaction transaction = null;
-
             queues = queues.Select(x => x.ToLowerInvariant()).ToArray();
 
             do
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var context = Storage.CreateContext();
-                try
-                {
-                    transaction = context.Database.BeginTransaction();
-
-                    fetchedJob = (
-                        from item in context.JobQueues
-                        where queues.Contains(item.Queue)
-                        select item).
-                        FirstOrDefault();
-
-                    if (fetchedJob != null)
-                    {
-                        context.JobQueues.Remove(fetchedJob);
-                        try
+                foreach (var queue in queues)
+                    lock (string.Intern(queue))
+                        using (var context = Storage.CreateContext())
                         {
-                            context.SaveChanges();
+                            var queueItem = (
+                                from item in context.JobQueues
+                                where item.Queue == queue && item.Lookup == null
+                                select item).
+                                FirstOrDefault();
+                            if (queueItem != null)
+                            {
+                                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
+                                {
+                                    QueueItemId = queueItem.Id,
+                                    ServerHostId = EntityFrameworkJobStorage.ServerHostId,
+                                });
+                                try
+                                {
+                                    context.SaveChanges();
+                                    return new EntityFrameworkFetchedJob(queueItem.Id, queueItem.JobId, Storage, queue);
+                                }
+                                catch (DbUpdateException)
+                                {
+                                    continue;
+                                }
+                            }
                         }
-                        catch (DbUpdateConcurrencyException)
-                        {
-                            fetchedJob = null;
-                            continue;
-                        }
 
-                        return new EntityFrameworkFetchedJob(
-                            context,
-                            transaction,
-                            fetchedJob.JobId,
-                            fetchedJob.Queue);
-                    }
-                }
-                finally
-                {
-                    if (fetchedJob == null)
-                    {
-                        transaction?.Dispose();
-                        transaction = null;
-
-                        context.Dispose();
-                    }
-                }
-
+                cancellationToken.ThrowIfCancellationRequested();
                 WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, Storage.Options.QueuePollInterval);
             } while (true);
         }

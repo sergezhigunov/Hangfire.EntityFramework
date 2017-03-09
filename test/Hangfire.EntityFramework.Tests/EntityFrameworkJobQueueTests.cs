@@ -73,6 +73,7 @@ namespace Hangfire.EntityFramework
                 CreatedAt = DateTime.UtcNow,
                 InvocationData = string.Empty,
             };
+            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
             var jobQueueItem = new HangfireJobQueueItem
             {
                 Id = queueItemId,
@@ -85,6 +86,7 @@ namespace Hangfire.EntityFramework
             {
                 context.Jobs.Add(job);
                 context.JobQueues.Add(jobQueueItem);
+                context.ServerHosts.Add(host);
             });
 
             var queue = CreateJobQueue();
@@ -96,7 +98,7 @@ namespace Hangfire.EntityFramework
             EntityFrameworkFetchedJob fetchedJob = (EntityFrameworkFetchedJob)result;
             Assert.Equal(jobId.ToString(), fetchedJob.JobId);
             Assert.Equal("default", fetchedJob.Queue);
-            var jobInQueue = UseContext(context => context.JobQueues.SingleOrDefault());
+            var jobInQueue = UseContext(context => context.JobQueues.SingleOrDefault(x => x.Lookup == null));
             Assert.Null(jobInQueue);
         }
 

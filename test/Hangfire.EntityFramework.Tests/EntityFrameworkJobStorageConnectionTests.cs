@@ -108,13 +108,18 @@ namespace Hangfire.EntityFramework
 
             DateTime datetime = new DateTime(2017, 1, 1, 11, 22, 33);
 
+            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId };
             var servers = new[]
             {
-                new HangfireServer { Id = server1, Heartbeat = datetime },
-                new HangfireServer { Id = server2, Heartbeat = datetime },
+                new HangfireServer { Id = server1, Heartbeat = datetime, ServerHost = host, },
+                new HangfireServer { Id = server2, Heartbeat = datetime, ServerHost = host, },
             };
 
-            UseContextWithSavingChanges(context => context.Servers.AddRange(servers));
+            UseContextWithSavingChanges(context =>
+            {
+                context.ServerHosts.Add(host);
+                context.Servers.AddRange(servers);
+            });
 
             UseConnection(connection => connection.Heartbeat("server1"));
 
@@ -147,13 +152,22 @@ namespace Hangfire.EntityFramework
         {
             var serverId = "Server1";
 
-            var server = new HangfireServer { Id = serverId, Heartbeat = DateTime.UtcNow, };
+            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId,  };
+            var server = new HangfireServer { Id = serverId, Heartbeat = DateTime.UtcNow, ServerHost = host, };
 
-            UseContextWithSavingChanges(context => context.Servers.Add(server));
+            UseContextWithSavingChanges(context =>
+            {
+                context.ServerHosts.Add(host);
+                context.Servers.Add(server);
+            });
 
             UseConnection(connection => connection.RemoveServer(serverId));
 
-            Assert.True(UseContext(context => !context.Servers.Any(x => x.Id == serverId)));
+            UseContext(context =>
+            {
+                Assert.True(!context.ServerHosts.Any(x => x.Id == EntityFrameworkJobStorage.ServerHostId));
+                Assert.True(!context.Servers.Any(x => x.Id == serverId));
+            });
         }
 
         [Fact, CleanDatabase]
@@ -169,12 +183,17 @@ namespace Hangfire.EntityFramework
             string server1 = "server1";
             string server2 = "server2";
 
+            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
             var servers = new[]
             {
-                new HangfireServer { Id = server1, Heartbeat = DateTime.UtcNow.AddHours(-1) },
-                new HangfireServer { Id = server2, Heartbeat = DateTime.UtcNow.AddHours(-3) },
+                new HangfireServer { Id = server1, Heartbeat = DateTime.UtcNow.AddHours(-1), ServerHost = host, },
+                new HangfireServer { Id = server2, Heartbeat = DateTime.UtcNow.AddHours(-3), ServerHost = host, },
             };
-            UseContextWithSavingChanges(context => context.Servers.AddRange(servers));
+            UseContextWithSavingChanges(context =>
+            {
+                context.ServerHosts.Add(host);
+                context.Servers.AddRange(servers);
+            });
 
             UseConnection(connection => connection.RemoveTimedOutServers(TimeSpan.FromHours(2)));
 

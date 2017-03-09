@@ -11,6 +11,8 @@ namespace Hangfire.EntityFramework
 {
     internal class EntityFrameworkJobStorage : JobStorage
     {
+        internal static Guid ServerHostId { get; } = Guid.NewGuid();
+
         private EntityFrameworkJobStorageMonitoringApi MonitoringApi { get; }
         private CountersAggregator CountersAggregator { get; }
         private ExpirationManager ExpirationManager { get; }

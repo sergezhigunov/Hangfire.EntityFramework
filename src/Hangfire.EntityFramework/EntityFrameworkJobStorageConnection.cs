@@ -194,20 +194,22 @@ namespace Hangfire.EntityFramework
             if (serverId == null) throw new ArgumentNullException(nameof(serverId));
             if (context == null) throw new ArgumentNullException(nameof(context));
 
-            var data = new ServerData
+            var data = JobHelper.ToJson(new ServerData
             {
                 WorkerCount = context.WorkerCount,
                 Queues = context.Queues,
                 StartedAt = DateTime.UtcNow,
-            };
+            });
 
             Storage.UseContext(dbContext =>
             {
+                dbContext.ServerHosts.AddOrUpdate(new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, });
                 dbContext.Servers.AddOrUpdate(new HangfireServer
                 {
                     Id = serverId,
-                    Data = JobHelper.ToJson(data),
+                    Data = data,
                     Heartbeat = DateTime.UtcNow,
+                    ServerHostId = EntityFrameworkJobStorage.ServerHostId,
                 });
 
                 dbContext.SaveChanges();
@@ -220,7 +222,13 @@ namespace Hangfire.EntityFramework
 
             Storage.UseContext(context =>
             {
-                context.Entry(new HangfireServer { Id = serverId }).State = EntityState.Deleted;
+                context.Servers.RemoveRange(context.Servers.Where(x => x.Id == serverId));
+                context.SaveChanges();
+
+                context.ServerHosts.RemoveRange(
+                    from host in context.ServerHosts
+                    where !host.Servers.Any()
+                    select host);
                 context.SaveChanges();
             });
         }
@@ -258,7 +266,12 @@ namespace Hangfire.EntityFramework
 
                 foreach (var serverId in serverIds)
                     context.Entry(new HangfireServer { Id = serverId }).State = EntityState.Deleted;
+                context.SaveChanges();
 
+                context.ServerHosts.RemoveRange(
+                    from host in context.ServerHosts
+                    where !host.Servers.Any()
+                    select host);
                 context.SaveChanges();
 
                 return serverIds.Length;

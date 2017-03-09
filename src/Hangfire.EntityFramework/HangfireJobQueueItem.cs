@@ -29,5 +29,7 @@ namespace Hangfire.EntityFramework
         public DateTime? FetchedAt { get; set; }
 
         public virtual HangfireJob Job { get; set; }
+
+        public virtual HangfireJobQueueItemLookup Lookup { get; set; }
     }
 }

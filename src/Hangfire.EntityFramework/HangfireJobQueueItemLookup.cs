@@ -7,20 +7,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hangfire.EntityFramework
 {
-    internal class HangfireServer
+    internal class HangfireJobQueueItemLookup
     {
         [Key]
-        [MaxLength(100)]
-        public string Id { get; set; }
+        [ForeignKey(nameof(QueueItem))]
+        public Guid QueueItemId { get; set; }
 
         [ForeignKey(nameof(ServerHost))]
         public Guid ServerHostId { get; set; }
 
-        public string Data { get; set; }
-
-        [Index("IX_HangfireServer_Heartbeat")]
-        [DateTimePrecision(7)]
-        public DateTime Heartbeat { get; set; }
+        public virtual HangfireJobQueueItem QueueItem { get; set; }
 
         public virtual HangfireServerHost ServerHost { get; set; }
     }

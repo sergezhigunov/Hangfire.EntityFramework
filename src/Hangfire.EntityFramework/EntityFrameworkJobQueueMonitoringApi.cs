@@ -34,7 +34,7 @@ namespace Hangfire.EntityFramework
 
             return Storage.UseContext(context => (
                 from item in context.JobQueues
-                where item.Queue == queue
+                where item.Queue == queue && item.Lookup == null
                 orderby item.CreatedAt ascending
                 select item.JobId).
                 Skip(() => from).
@@ -42,16 +42,12 @@ namespace Hangfire.EntityFramework
                 ToArray());
         }
 
-        public Guid[] GetFetchedJobIds(string queue, int from, int perPage) => new Guid[0];
-
-        public JobQueueCounters GetJobQueueCounters(string queue)
+        public long GetEnqueuedJobCount(string queue)
         {
             queue = queue.ToLowerInvariant();
 
-            long enqueuedCount = Storage.UseContext(context =>
-                context.JobQueues.Count(x => x.Queue == queue));
-
-            return new JobQueueCounters { EnqueuedCount = enqueuedCount, };
+            return Storage.UseContext(context =>
+                context.JobQueues.Count(x => x.Queue == queue && x.Lookup == null));
         }
     }
 }

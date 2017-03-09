@@ -18,121 +18,111 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
-            UseContext(context =>
-            {
-                using (var transaction = context.Database.BeginTransaction())
-                    Assert.Throws<ArgumentNullException>("context",
-                        () => new EntityFrameworkFetchedJob(null, transaction, JobId, Queue));
-            });
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenTransactionIsNull()
-        {
-            UseContext(context => Assert.Throws<ArgumentNullException>("transaction",
-                () => new EntityFrameworkFetchedJob(context, null, JobId, Queue)));
+            Assert.Throws<ArgumentNullException>("storage",
+                () => new EntityFrameworkFetchedJob(Guid.Empty, Guid.Empty, null, Queue));
         }
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenQueueIsNull()
         {
-            UseContext(context =>
-            {
-                using (var transaction = context.Database.BeginTransaction())
-                    Assert.Throws<ArgumentNullException>("queue",
-                        () => new EntityFrameworkFetchedJob(context, transaction, JobId, null));
-            });
+            var storage = CreateStorage();
+
+            Assert.Throws<ArgumentNullException>("queue",
+                () => new EntityFrameworkFetchedJob(Guid.Empty, Guid.Empty, storage, null));
         }
 
-        [Fact]
+        [Fact, CleanDatabase]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
-            UseContext(context =>
+            var storage = CreateStorage();
+            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
+            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
+            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
+            UseContextWithSavingChanges(context =>
             {
-                using (var transaction = context.Database.BeginTransaction())
-                {
-                    using (var fetchedJob = new EntityFrameworkFetchedJob(context, transaction, JobId, Queue))
-                    {
-                        Assert.Equal(JobId.ToString(), fetchedJob.JobId);
-                        Assert.Equal(Queue, fetchedJob.Queue);
-                    }
-                }
+                context.Jobs.Add(job);
+                context.JobQueues.Add(queueItem);
+                context.ServerHosts.Add(host);
+                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup { QueueItem = queueItem, ServerHost = host, });
             });
+            using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue))
+            {
+                Assert.Equal(JobId.ToString(), fetchedJob.JobId);
+                Assert.Equal(Queue, fetchedJob.Queue);
+            };
         }
 
         [Fact, CleanDatabase]
         public void RemoveFromQueue_CorrectlyRemovesQueueItem()
         {
+            var storage = CreateStorage();
             var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
-            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue };
+            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
+            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
+                context.ServerHosts.Add(host);
+                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup { QueueItem = queueItem, ServerHost = host, });
             });
-            var contextToUse = CreateContext();
-            var transaction = contextToUse.Database.BeginTransaction();
-            var fetchedQueueItem = (
-                from item in contextToUse.JobQueues
-                where item.Queue == Queue
-                select item).
-                FirstOrDefault();
-            contextToUse.JobQueues.Remove(fetchedQueueItem);
-            contextToUse.SaveChanges();
-
-            using (var fetchedJob = new EntityFrameworkFetchedJob(contextToUse, transaction, fetchedQueueItem.JobId, Queue))
+            using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue))
                 fetchedJob.RemoveFromQueue();
+
+            UseContext(context =>
+            {
+                Assert.False(context.JobQueueLookups.Any());
+                Assert.False(context.JobQueues.Any());
+            });
         }
 
         [Fact, CleanDatabase]
         public void Requeue_CorrectlyReturnsItemBackToQueue()
         {
+            var storage = CreateStorage();
             var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
-            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue };
+            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
+            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
+                context.ServerHosts.Add(host);
+                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup { QueueItem = queueItem, ServerHost = host, });
             });
-            var contextToUse = CreateContext();
-            var transaction = contextToUse.Database.BeginTransaction();
-            var fetchedQueueItem = (
-                from item in contextToUse.JobQueues
-                where item.Queue == Queue
-                select item).
-                FirstOrDefault();
-            contextToUse.JobQueues.Remove(fetchedQueueItem);
-            contextToUse.SaveChanges();
-
-            using (var fetchedJob = new EntityFrameworkFetchedJob(contextToUse, transaction, fetchedQueueItem.JobId, Queue))
+            using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue))
                 fetchedJob.Requeue();
+
+            UseContext(context =>
+            {
+                Assert.False(context.JobQueueLookups.Any());
+                Assert.True(context.JobQueues.Any());
+            });
         }
 
         [Fact, CleanDatabase]
         public void Dispose_CorrectlyDisposeOwnedResources()
         {
+            var storage = CreateStorage();
             var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
-            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue };
+            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
+            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
+                context.ServerHosts.Add(host);
+                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup { QueueItem = queueItem, ServerHost = host, });
             });
-            var contextToUse = CreateContext();
-            var transaction = contextToUse.Database.BeginTransaction();
-            var fetchedQueueItem = (
-                from item in contextToUse.JobQueues
-                where item.Queue == Queue
-                select item).
-                FirstOrDefault();
-            contextToUse.JobQueues.Remove(fetchedQueueItem);
-            contextToUse.SaveChanges();
-            var fetchedJob = new EntityFrameworkFetchedJob(contextToUse, transaction, fetchedQueueItem.JobId, Queue);
+            var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue);
 
             fetchedJob.Dispose();
 
-            Assert.ThrowsAny<Exception>(() => transaction.Commit());
-            Assert.Throws<InvalidOperationException>(() => contextToUse.SaveChanges());
+            UseContext(context =>
+            {
+                Assert.False(context.JobQueueLookups.Any());
+                Assert.True(context.JobQueues.Any());
+            });
         }
     }
 }

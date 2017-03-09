@@ -37,13 +37,12 @@ namespace Hangfire.EntityFramework
             foreach (var tuple in tuples)
             {
                 var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
-                var counters = tuple.Monitoring.GetJobQueueCounters(tuple.Queue);
+                var enqueuedJobCount = tuple.Monitoring.GetEnqueuedJobCount(tuple.Queue);
                 var firstJobs = EnqueuedJobs(enqueuedJobIds);
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
                     Name = tuple.Queue,
-                    Length = counters.EnqueuedCount,
-                    Fetched = counters.FetchedCount,
+                    Length = enqueuedJobCount,
                     FirstJobs = firstJobs
                 });
             }
@@ -176,12 +175,8 @@ namespace Hangfire.EntityFramework
             return EnqueuedJobs(enqueuedJobIds.ToArray());
         }
 
-        public JobList<FetchedJobDto> FetchedJobs(string queue, int from, int perPage)
-        {
-            var queueApi = GetQueueApi(queue);
-            var fetchedJobIds = queueApi.GetFetchedJobIds(queue, from, perPage);
-            return FetchedJobs(fetchedJobIds.ToArray());
-        }
+        public JobList<FetchedJobDto> FetchedJobs(string queue, int from, int perPage) =>
+            new JobList<FetchedJobDto>(Enumerable.Empty<KeyValuePair<string, FetchedJobDto>>());
 
         public JobList<ProcessingJobDto> ProcessingJobs(int from, int count)
         {
@@ -246,16 +241,10 @@ namespace Hangfire.EntityFramework
         public long EnqueuedCount(string queue)
         {
             var queueApi = GetQueueApi(queue);
-            var counters = queueApi.GetJobQueueCounters(queue);
-            return counters.EnqueuedCount;
+            return queueApi.GetEnqueuedJobCount(queue);
         }
 
-        public long FetchedCount(string queue)
-        {
-            var queueApi = GetQueueApi(queue);
-            var counters = queueApi.GetJobQueueCounters(queue);
-            return counters.FetchedCount;
-        }
+        public long FetchedCount(string queue) => 0;
 
         public long FailedCount() => GetNumberOfJobsByStateName(FailedState.StateName);
 
@@ -295,25 +284,6 @@ namespace Hangfire.EntityFramework
                         State = sqlJob.ActualState.State.Name,
                         EnqueuedAt = stateData?.EnqueuedAt
                     });
-            });
-        }
-
-        private JobList<FetchedJobDto> FetchedJobs(Guid[] fetchedJobIds)
-        {
-            return UseHangfireDbContext(context =>
-            {
-                var jobs = (
-                    from job in context.Jobs.Include(x => x.ActualState.State)
-                    where fetchedJobIds.Contains(job.Id)
-                    orderby job.CreatedAt ascending
-                    select job).
-                    ToArray();
-
-                return new JobList<FetchedJobDto>(jobs.ToDictionary(x => x.Id.ToString(), x => new FetchedJobDto
-                {
-                    State = x.ActualState.State.Name,
-                    Job = DeserializeJob(x.InvocationData),
-                }));
             });
         }
 

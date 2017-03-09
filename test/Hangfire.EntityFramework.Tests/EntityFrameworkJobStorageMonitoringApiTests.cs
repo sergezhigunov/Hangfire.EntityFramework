@@ -73,7 +73,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, result.Count);
             var firstItem = result.First();
             Assert.Equal("default", firstItem.Name);
-            Assert.Equal(0, firstItem.Fetched);
+            Assert.Equal(null, firstItem.Fetched);
             Assert.Equal(1, firstItem.Length);
             Assert.Equal(1, firstItem.FirstJobs.Count());
             var firstJobKeyValuePair = firstItem.FirstJobs.First();
@@ -103,20 +103,24 @@ namespace Hangfire.EntityFramework
             var startedAt = new DateTime(2017, 1, 1, 11, 22, 33, DateTimeKind.Utc);
             var heartbeat = new DateTime(2017, 2, 2, 22, 33, 44, DateTimeKind.Utc);
             var queues = new[] { "critical", "default" };
-            var data = new ServerData
+            var data = JobHelper.ToJson(new ServerData
             {
                 WorkerCount = workerCount,
                 Queues = queues,
                 StartedAt = startedAt,
-            };
-
+            });
+            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
             var servers = new[]
             {
-                new HangfireServer { Id = serverId1, Heartbeat = heartbeat, Data = JobHelper.ToJson(data),  },
-                new HangfireServer { Id = serverId2, Heartbeat = heartbeat,  },
+                new HangfireServer { Id = serverId1, Heartbeat = heartbeat, Data = data, ServerHost = host,  },
+                new HangfireServer { Id = serverId2, Heartbeat = heartbeat, ServerHost = host,  },
             };
 
-            UseContextWithSavingChanges(context => context.Servers.AddRange(servers));
+            UseContextWithSavingChanges(context =>
+            {
+                context.ServerHosts.Add(host);
+                context.Servers.AddRange(servers);
+            });
 
             var result = UseMonitoringApi(api => api.Servers());
 
@@ -167,8 +171,9 @@ namespace Hangfire.EntityFramework
                 context.Counters.Add(new HangfireCounter { Id = Guid.NewGuid(), Key = "stats:succeeded", Value = 6 });
                 for (int i = 0; i < 7; i++)
                     context.Sets.Add(new HangfireSet { Key = "recurring-jobs", Value = Guid.NewGuid().ToString(), CreatedAt = DateTime.UtcNow, });
+                var host = context.ServerHosts.Add(new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, });
                 for (int i = 0; i < 8; i++)
-                    context.Servers.Add(new HangfireServer { Id = Guid.NewGuid().ToString(), Heartbeat = DateTime.UtcNow, });
+                    context.Servers.Add(new HangfireServer { Id = Guid.NewGuid().ToString(), Heartbeat = DateTime.UtcNow, ServerHostId = host.Id });
                 for (int i = 0; i < 9; i++)
                     AddJobWithQueueItemToContext(context, ScheduledState.StateName, Guid.NewGuid().ToString());
             });

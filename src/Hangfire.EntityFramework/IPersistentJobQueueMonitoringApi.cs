@@ -11,8 +11,6 @@ namespace Hangfire.EntityFramework
 
         Guid[] GetEnqueuedJobIds(string queue, int from, int perPage);
 
-        Guid[] GetFetchedJobIds(string queue, int from, int perPage);
-
-        JobQueueCounters GetJobQueueCounters(string queue);
+        long GetEnqueuedJobCount(string queue);
     }
 }
