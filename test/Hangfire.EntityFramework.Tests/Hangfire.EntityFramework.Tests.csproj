@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Copyright>Copyright (c) 2017 Sergey Zhigunov</Copyright>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <Authors>Sergey Zhigunov</Authors>
+    <TargetFramework>net452</TargetFramework>
+    <AssemblyName>Hangfire.EntityFramework.Tests</AssemblyName>
+    <PackageId>Hangfire.EntityFramework.Tests</PackageId>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <RootNamespace>Hangfire.EntityFramework</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Hangfire.EntityFramework\Hangfire.EntityFramework.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
+    <PackageReference Include="xunit.runner.console" Version="2.2.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
+    <PackageReference Include="Moq" Version="4.7.1" />
+    <PackageReference Include="xunit" Version="2.2.0" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net452' ">
+    <PackageReference Include="EntityFramework" Version="6.1.3" />
+    <PackageReference Include="HangFire.Core" Version="1.6.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+</Project>

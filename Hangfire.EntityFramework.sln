@@ -1,15 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.4
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3315D90E-8417-4570-ACB4-F471DA46314A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8DD38761-58A5-4406-8F71-044E31A9D16C}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hangfire.EntityFramework", "src\Hangfire.EntityFramework\Hangfire.EntityFramework.xproj", "{8E6A464D-1AE3-49E1-8D2E-59FC76F015E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.EntityFramework", "src\Hangfire.EntityFramework\Hangfire.EntityFramework.csproj", "{8E6A464D-1AE3-49E1-8D2E-59FC76F015E0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Hangfire.EntityFramework.Tests", "test\Hangfire.EntityFramework.Tests\Hangfire.EntityFramework.Tests.xproj", "{FB221F6A-0E71-4A9F-91AC-4688444A0577}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hangfire.EntityFramework.Tests", "test\Hangfire.EntityFramework.Tests\Hangfire.EntityFramework.Tests.csproj", "{FB221F6A-0E71-4A9F-91AC-4688444A0577}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
