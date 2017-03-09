@@ -9,7 +9,10 @@ using Hangfire.Storage;
 
 namespace Hangfire.EntityFramework
 {
-    internal class EntityFrameworkJobStorage : JobStorage
+    /// <summary>
+    /// Represents an Entity Framework based Hangfire Job Storage.
+    /// </summary>
+    public class EntityFrameworkJobStorage : JobStorage
     {
         internal static Guid ServerHostId { get; } = Guid.NewGuid();
 
@@ -20,10 +23,33 @@ namespace Hangfire.EntityFramework
         internal virtual PersistentJobQueueProviderCollection QueueProviders { get; }
         internal string NameOrConnectionString { get; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityFrameworkJobStorage"/> class with default options.
+        /// </summary>
+        /// <param name="nameOrConnectionString">
+        /// Either the database name or a connection string.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="nameOrConnectionString"/> parameter is <c>null</c>.
+        /// </exception>
         public EntityFrameworkJobStorage(string nameOrConnectionString)
             : this(nameOrConnectionString, new EntityFrameworkJobStorageOptions())
         { }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EntityFrameworkJobStorage"/> class with the specified options.
+        /// </summary>
+        /// <param name="nameOrConnectionString">
+        /// Either the database name or a connection string.
+        /// </param>
+        /// <param name="options">
+        /// Storage options.
+        /// </param>
+        /// <exception cref="ArgumentNullException">
+        /// <paramref name="nameOrConnectionString"/> parameter is <c>null</c>.
+        /// -or-
+        /// <paramref name="options"/> is <c>null</c>.
+        /// </exception>
         public EntityFrameworkJobStorage(string nameOrConnectionString, EntityFrameworkJobStorageOptions options)
         {
             if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
@@ -38,10 +64,28 @@ namespace Hangfire.EntityFramework
             ExpirationManager = new ExpirationManager(this, options.JobExpirationCheckInterval);
         }
 
+        /// <summary>
+        /// Gets a new instance of storage connection <see cref="EntityFrameworkJobStorageConnection"/>.
+        /// </summary>
+        /// <returns>
+        /// A new <see cref="EntityFrameworkJobStorageConnection"/> instance.
+        /// </returns>
         public override IStorageConnection GetConnection() => new EntityFrameworkJobStorageConnection(this);
 
-        public override IMonitoringApi GetMonitoringApi() => new EntityFrameworkJobStorageMonitoringApi(this);
+        /// <summary>
+        /// Returns Monitoring API instance.
+        /// </summary>
+        /// <returns>
+        /// An <see cref="IMonitoringApi"/> instance.
+        /// </returns>
+        public override IMonitoringApi GetMonitoringApi() => MonitoringApi;
 
+        /// <summary>
+        /// Returns of server component collection.
+        /// </summary>
+        /// <returns>
+        /// Collection of server components <see cref="IServerComponent"/>.
+        /// </returns>
 #pragma warning disable CS0618
         public override IEnumerable<IServerComponent> GetComponents()
 #pragma warning restore CS0618
