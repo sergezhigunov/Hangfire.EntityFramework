@@ -52,7 +52,7 @@ namespace Hangfire.EntityFramework
 
         public IList<ServerDto> Servers()
         {
-            var servers = UseHangfireDbContext(context => context.Servers.ToArray());
+            var servers = UseContext(context => context.Servers.ToArray());
 
             return servers.Select(server =>
             {
@@ -77,7 +77,7 @@ namespace Hangfire.EntityFramework
             if (!Guid.TryParse(jobId, out id))
                 return null;
 
-            return UseHangfireDbContext(context =>
+            return UseContext(context =>
             {
                 var job = context.Jobs.
                     Include(x => x.States).
@@ -109,63 +109,30 @@ namespace Hangfire.EntityFramework
 
         public StatisticsDto GetStatistics()
         {
-            Dictionary<string, long> statisticsDictionary = null;
-
-            var statistics = UseHangfireDbContext(context =>
-            {
-                statisticsDictionary = (
-                    from actualState in context.JobActualStates
-                    let name = actualState.State.Name
-                    group actualState by name into @group
-                    select new
-                    {
-                        @group.Key,
-                        Count = @group.LongCount()
-                    }).
-                    ToArray().
-                    ToDictionary(x => x.Key, x => x.Count);
-
-                var counterStatistics = (
-                    from counter in context.Counters
-                    where counter.Key == "stats:succeeded" || counter.Key == "stats:deleted"
-                    group counter by counter.Key into @group
-                    select new
-                    {
-                        @group.Key,
-                        Count = @group.Sum(x => x.Value),
-                    }).
-                    ToArray();
-
-                foreach (var counter in counterStatistics)
-                    statisticsDictionary[counter.Key] = counter.Count;
-
-                return new StatisticsDto
+            var result = UseContext(context => (
+                from stub in Enumerable.Range(1, 1)
+                let actualStates = context.JobActualStates
+                let counters = context.Counters
+                select new StatisticsDto
                 {
-                    Servers = context.Servers.LongCount(),
                     Recurring = context.Sets.LongCount(x => x.Key == "recurring-jobs"),
-                };
-            });
+                    Servers = context.Servers.LongCount(),
+                    Enqueued = actualStates.LongCount(x => x.State.Name == EnqueuedState.StateName),
+                    Failed = actualStates.LongCount(x => x.State.Name == FailedState.StateName),
+                    Processing = actualStates.LongCount(x => x.State.Name == ProcessingState.StateName),
+                    Scheduled = actualStates.LongCount(x => x.State.Name == ScheduledState.StateName),
+                    Deleted = counters.Where(x => x.Key == "stats:deleted").Sum(x => (long?)x.Value) ?? 0,
+                    Succeeded = counters.Where(x => x.Key == "stats:succeeded").Sum(x => (long?)x.Value) ?? 0,
+                }).
+                First());
 
-            long count;
+            result.Queues = (
+                from provider in Storage.QueueProviders
+                from queue in provider.GetJobQueueMonitoringApi().GetQueues()
+                select queue).
+                Count();
 
-            if (statisticsDictionary.TryGetValue(EnqueuedState.StateName, out count))
-                statistics.Enqueued = count;
-            if (statisticsDictionary.TryGetValue(FailedState.StateName, out count))
-                statistics.Failed = count;
-            if (statisticsDictionary.TryGetValue(ProcessingState.StateName, out count))
-                statistics.Processing = count;
-            if (statisticsDictionary.TryGetValue(ScheduledState.StateName, out count))
-                statistics.Scheduled = count;
-            if (statisticsDictionary.TryGetValue("stats:succeeded", out count))
-                statistics.Succeeded = count;
-            if (statisticsDictionary.TryGetValue("stats:deleted", out count))
-                statistics.Deleted = count;
-
-            statistics.Queues = Storage.QueueProviders
-                .SelectMany(x => x.GetJobQueueMonitoringApi().GetQueues())
-                .Count();
-
-            return statistics;
+            return result;
         }
 
         public JobList<EnqueuedJobDto> EnqueuedJobs(string queue, int from, int perPage)
@@ -255,10 +222,10 @@ namespace Hangfire.EntityFramework
         public long DeletedListCount() => GetNumberOfJobsByStateName(DeletedState.StateName);
 
         public IDictionary<DateTime, long> SucceededByDatesCount() =>
-            UseHangfireDbContext(context => GetTimelineStats("succeeded"));
+            UseContext(context => GetTimelineStats("succeeded"));
 
         public IDictionary<DateTime, long> FailedByDatesCount() =>
-            UseHangfireDbContext(context => GetTimelineStats("failed"));
+            UseContext(context => GetTimelineStats("failed"));
 
         public IDictionary<DateTime, long> HourlySucceededJobs() => GetHourlyTimelineStats("succeeded");
 
@@ -266,7 +233,7 @@ namespace Hangfire.EntityFramework
 
         private JobList<EnqueuedJobDto> EnqueuedJobs(Guid[] enqueuedJobIds)
         {
-            return UseHangfireDbContext(context =>
+            return UseContext(context =>
             {
                 var jobs = (
                     from job in context.Jobs.
@@ -293,7 +260,7 @@ namespace Hangfire.EntityFramework
             string stateName,
             Func<HangfireJob, Job, TStateData, TResult> selector)
         {
-            return UseHangfireDbContext(context =>
+            return UseContext(context =>
             {
                 var jobs = (
                     from job in context.Jobs.
@@ -337,7 +304,7 @@ namespace Hangfire.EntityFramework
 
         private long GetNumberOfJobsByStateName(string stateName)
         {
-            return UseHangfireDbContext(context => (
+            return UseContext(context => (
                 from actualState in context.JobActualStates
                 where actualState.State.Name == stateName
                 select actualState).
@@ -363,7 +330,7 @@ namespace Hangfire.EntityFramework
 
         private Dictionary<DateTime, long> GetTimelineStats(IDictionary<string, DateTime> keyMaps)
         {
-            var valuesMap = UseHangfireDbContext(context => (
+            var valuesMap = UseContext(context => (
                 from counter in context.Counters
                 where keyMaps.Keys.Contains(counter.Key)
                 group counter by counter.Key into groupByKey
@@ -381,7 +348,7 @@ namespace Hangfire.EntityFramework
             return keyMaps.ToDictionary(x => x.Value, x => valuesMap[x.Key]);
         }
 
-        private T UseHangfireDbContext<T>(Func<HangfireDbContext, T> func) => Storage.UseContext(func);
+        private T UseContext<T>(Func<HangfireDbContext, T> func) => Storage.UseContext(func);
 
         private static Job DeserializeJob(string invocationData)
         {
