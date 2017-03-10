@@ -387,7 +387,14 @@ namespace Hangfire.EntityFramework
         {
             var data = JobHelper.FromJson<InvocationData>(invocationData);
 
-            return data.Deserialize();
+            try
+            {
+                return data.Deserialize();
+            }
+            catch (JobLoadException)
+            {
+                return null;
+            }
         }
     }
 }
