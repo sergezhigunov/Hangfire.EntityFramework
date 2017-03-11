@@ -36,37 +36,44 @@ namespace Hangfire.EntityFramework
                 concurrencyExceptionThrown = false;
                 Storage.UseContext(context =>
                 {
-                    var itemsToRemove = (
+                    var key = (
                         from counter in context.Counters
                         group counter by counter.Key into @group
                         let count = @group.Count()
                         where count > 1
                         orderby count descending
-                        select new
-                        {
-                            @group.Key,
-                            Counters = @group.ToList(),
-                        }).FirstOrDefault();
+                        select @group.Key).
+                        FirstOrDefault();
 
-                    if (itemsToRemove != null)
+                    if (key != null)
                     {
-                        context.Counters.RemoveRange(itemsToRemove.Counters);
-                        context.Counters.Add(new HangfireCounter
-                        {
-                            Id = Guid.NewGuid(),
-                            Key = itemsToRemove.Key,
-                            Value = itemsToRemove.Counters.Sum(x => x.Value),
-                            ExpireAt = itemsToRemove.Counters.Max(x => x.ExpireAt),
-                        });
-                        removedCount += itemsToRemove.Counters.Count;
+                        var itemsToRemove = (
+                            from counter in context.Counters
+                            where counter.Key == key
+                            select counter).
+                            Take(1000).
+                            ToArray();
 
-                        try
+                        if (itemsToRemove.Length > 1)
                         {
-                            context.SaveChanges();
-                        }
-                        catch (DbUpdateConcurrencyException)
-                        {
-                            concurrencyExceptionThrown = true;
+                            context.Counters.RemoveRange(itemsToRemove);
+                            context.Counters.Add(new HangfireCounter
+                            {
+                                Id = Guid.NewGuid(),
+                                Key = key,
+                                Value = itemsToRemove.Sum(x => x.Value),
+                                ExpireAt = itemsToRemove.Max(x => x.ExpireAt),
+                            });
+                            removedCount += itemsToRemove.Length;
+
+                            try
+                            {
+                                context.SaveChanges();
+                            }
+                            catch (DbUpdateConcurrencyException)
+                            {
+                                concurrencyExceptionThrown = true;
+                            } 
                         }
                     }
                 });
