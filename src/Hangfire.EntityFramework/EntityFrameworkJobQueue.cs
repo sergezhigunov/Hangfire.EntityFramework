@@ -12,6 +12,8 @@ namespace Hangfire.EntityFramework
 {
     internal class EntityFrameworkJobQueue : IPersistentJobQueue
     {
+        private static object ThisLock { get; } = new object();
+
         internal static AutoResetEvent NewItemInQueueEvent { get; } = new AutoResetEvent(true);
 
         public EntityFrameworkJobStorage Storage { get; }
@@ -35,33 +37,33 @@ namespace Hangfire.EntityFramework
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                foreach (var queue in queues)
-                    lock (string.Intern(queue))
-                        using (var context = Storage.CreateContext())
+                lock (ThisLock)
+                    using (var context = Storage.CreateContext())
+                    {
+                        var queueItem = (
+                            from item in context.JobQueues
+                            where item.Lookup == null && queues.Contains(item.Queue)
+                            orderby item.CreatedAt ascending
+                            select item).
+                            FirstOrDefault();
+                        if (queueItem != null)
                         {
-                            var queueItem = (
-                                from item in context.JobQueues
-                                where item.Queue == queue && item.Lookup == null
-                                select item).
-                                FirstOrDefault();
-                            if (queueItem != null)
+                            context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
                             {
-                                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
-                                {
-                                    QueueItemId = queueItem.Id,
-                                    ServerHostId = EntityFrameworkJobStorage.ServerHostId,
-                                });
-                                try
-                                {
-                                    context.SaveChanges();
-                                    return new EntityFrameworkFetchedJob(queueItem.Id, queueItem.JobId, Storage, queue);
-                                }
-                                catch (DbUpdateException)
-                                {
-                                    continue;
-                                }
+                                QueueItemId = queueItem.Id,
+                                ServerHostId = EntityFrameworkJobStorage.ServerHostId,
+                            });
+                            try
+                            {
+                                context.SaveChanges();
+                                return new EntityFrameworkFetchedJob(queueItem.Id, queueItem.JobId, Storage, queueItem.Queue);
+                            }
+                            catch (DbUpdateException)
+                            {
+                                continue;
                             }
                         }
+                    }
 
                 cancellationToken.ThrowIfCancellationRequested();
                 WaitHandle.WaitAny(new[] { cancellationToken.WaitHandle, NewItemInQueueEvent }, Storage.Options.QueuePollInterval);

@@ -66,8 +66,11 @@ namespace Hangfire.EntityFramework
                 {
                     if (!Completed)
                     {
-                        var item = context.JobQueueLookups.Attach(new HangfireJobQueueItemLookup { QueueItemId = QueueItemId, });
-                        context.JobQueueLookups.Remove(item);
+                        var item = new HangfireJobQueueItem { Id = QueueItemId, CreatedAt = DateTime.UtcNow, Queue = string.Empty, };
+                        context.JobQueues.Attach(item);
+                        context.Entry(item).Property(x => x.CreatedAt).IsModified = true;
+                        var lookup = context.JobQueueLookups.Attach(new HangfireJobQueueItemLookup { QueueItemId = QueueItemId, });
+                        context.JobQueueLookups.Remove(lookup);
                         try
                         {
                             context.SaveChanges();

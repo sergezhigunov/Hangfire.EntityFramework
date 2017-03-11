@@ -15,7 +15,7 @@ namespace Hangfire.EntityFramework
         [ForeignKey(nameof(Job))]
         public Guid JobId { get; set; }
 
-        [Required]
+        [Required(AllowEmptyStrings = true)]
         [StringLength(50)]
         [Index("IX_HangfireJobQueue_QueFtchdAt", IsUnique = false)]
         public string Queue { get; set; }
