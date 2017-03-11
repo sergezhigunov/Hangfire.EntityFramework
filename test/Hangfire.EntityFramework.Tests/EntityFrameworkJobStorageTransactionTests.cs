@@ -33,7 +33,8 @@ namespace Hangfire.EntityFramework
             UseTransaction(transaction => transaction.ExpireJob(jobId.ToString(), TimeSpan.FromDays(1)));
 
             var job = GetTestJob(jobId);
-            Assert.True(DateTime.UtcNow.AddMinutes(-1) < job.ExpireAt && job.ExpireAt <= DateTime.UtcNow.AddDays(1));
+            var approxExpireAt = DateTime.UtcNow.AddDays(1);
+            Assert.True(approxExpireAt.AddMinutes(-1) < job.ExpireAt && job.ExpireAt < approxExpireAt.AddMinutes(1));
 
             var anotherJob = GetTestJob(anotherJobId);
             Assert.Null(anotherJob.ExpireAt);
