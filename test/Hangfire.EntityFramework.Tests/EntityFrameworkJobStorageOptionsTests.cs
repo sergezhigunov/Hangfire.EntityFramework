@@ -120,7 +120,7 @@ namespace Hangfire.EntityFramework
             Assert.Same(valueToSet, options.DefaultSchemaName);
         }
 
-        private static IEnumerable<object[]> GetNonPositiveTimestamps()
+        public static IEnumerable<object[]> GetNonPositiveTimestamps()
         {
             yield return new object[] { TimeSpan.MinValue, };
             yield return new object[] { new TimeSpan(-1), };
