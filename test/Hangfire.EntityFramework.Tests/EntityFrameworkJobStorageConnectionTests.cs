@@ -38,21 +38,21 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkJobStorageConnection(null));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AnnounceServer_ThrowsAnException_WhenServerIdIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("serverId",
                 () => connection.AnnounceServer(null, new ServerContext())));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AnnounceServer_ThrowsAnException_WhenContextIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("context",
                 () => connection.AnnounceServer("server", null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AnnounceServer_CreatesOrUpdatesARecord()
         {
             string serverId = "server";
@@ -93,14 +93,14 @@ namespace Hangfire.EntityFramework
             Assert.True(timestampBeforeBegin <= serverData.StartedAt && serverData.StartedAt <= timestampAfterEnd);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Heartbeat_ThrowsAnException_WhenServerIdIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("serverId",
                 () => connection.Heartbeat(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Heartbeat_UpdatesLastHeartbeat_OfTheServerWithGivenId()
         {
             string server1 = "server1";
@@ -140,14 +140,14 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveServer_ThrowsAnException_WhenServerIdIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("serverId",
                 () => connection.RemoveServer(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveServer_RemovesAServerRecord()
         {
             var serverId = "Server1";
@@ -170,14 +170,14 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveTimedOutServers_ThrowsAnException_WhenTimeOutIsNegative()
         {
             UseConnection(connection => Assert.Throws<ArgumentOutOfRangeException>("timeOut",
                 () => connection.RemoveTimedOutServers(new TimeSpan(-1))));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveTimedOutServers_DoItsWorkPerfectly()
         {
             string server1 = "server1";
@@ -201,7 +201,7 @@ namespace Hangfire.EntityFramework
             Assert.False(UseContext(context => context.Servers.Any(x => x.Id == server2)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void CreateWriteTransaction_ReturnsEntityFrameworkJobStorageTransactionInstance()
         {
             var result = UseConnection(connection => connection.CreateWriteTransaction());
@@ -211,7 +211,7 @@ namespace Hangfire.EntityFramework
                 Assert.IsType<EntityFrameworkJobStorageTransaction>(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AcquireLock_ReturnsEntityFrameworkJobStorageDistributedLockInstance()
         {
             var result = UseConnection(connection => connection.AcquireDistributedLock("1", TimeSpan.FromSeconds(1)));
@@ -221,7 +221,7 @@ namespace Hangfire.EntityFramework
                 Assert.IsType<EntityFrameworkJobStorageDistributedLock>(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void CreateExpiredJob_ThrowsAnException_WhenJobIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("job",
@@ -232,7 +232,7 @@ namespace Hangfire.EntityFramework
                     TimeSpan.Zero)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void CreateExpiredJob_ThrowsAnException_WhenParametersCollectionIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("parameters",
@@ -243,7 +243,7 @@ namespace Hangfire.EntityFramework
                     TimeSpan.Zero)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void CreateExpiredJob_CreatesAJobInTheStorage_AndSetsItsParameters()
         {
             var createdAt = new DateTime(2012, 12, 12, 12, 12, 12, DateTimeKind.Utc);
@@ -280,14 +280,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Value2", parameters["Key2"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetJobData_ThrowsAnException_WhenJobIdIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("jobId",
                 () => connection.GetJobData(null)));
         }
 
-        [Theory, CleanDatabase]
+        [Theory, RollbackTransaction]
         [InlineData("1")]
         [InlineData("00000000-0000-0000-0000-000000000000")]
         public void GetJobData_ReturnsNull_WhenThereIsNoSuchJob(string jobId)
@@ -297,7 +297,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetJobData_ReturnsResult_WhenJobExists()
         {
             var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Arguments"));
@@ -323,7 +323,7 @@ namespace Hangfire.EntityFramework
             Assert.True(result.CreatedAt < DateTime.UtcNow.AddMinutes(1));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetJobData_ReturnsJobLoadException_IfThereWasADeserializationException()
         {
             var invocationData = new InvocationData(null, null, null, string.Empty);
@@ -345,21 +345,21 @@ namespace Hangfire.EntityFramework
             Assert.NotNull(result.LoadException);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetParameter_ThrowsAnException_WhenJobIdIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("id",
                 () => connection.SetJobParameter(null, "name", "value")));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetParameter_ThrowsAnException_WhenNameIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("name",
                 () => connection.SetJobParameter("1", null, "value")));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetParameters_CreatesNewParameter_WhenParameterWithTheGivenNameDoesNotExists()
         {
             var parameterName = Guid.NewGuid().ToString();
@@ -381,7 +381,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(parameterValue, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetParameter_UpdatesValue_WhenParameterWithTheGivenName_AlreadyExists()
         {
             var parameterName = Guid.NewGuid().ToString();
@@ -408,7 +408,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(parameterAnotherValue, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetParameter_CanAcceptNulls_AsValues()
         {
             var parameterName = Guid.NewGuid().ToString();
@@ -429,21 +429,21 @@ namespace Hangfire.EntityFramework
             Assert.Equal(null, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetJobParameter_ThrowsAnException_WhenJobIdIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("id",
                 () => connection.GetJobParameter(null, "name")));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetJobParameter_ThrowsAnException_WhenNameIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("name",
                 () => connection.GetJobParameter("1", null)));
         }
 
-        [Theory, CleanDatabase]
+        [Theory, RollbackTransaction]
         [InlineData("1")]
         [InlineData("00000000-0000-0000-0000-000000000000")]
         public void GetJobParameter_ReturnsNull_WhenParameterDoesNotExists(string jobId)
@@ -453,7 +453,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(value);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetJobParameter_ReturnsParameterValue_WhenJobExists()
         {
             var parameterName = Guid.NewGuid().ToString();
@@ -473,14 +473,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal(parameterValue, value);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetStateData_ThrowsAnException_WhenJobIdIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("jobId",
                () => connection.GetStateData(null)));
         }
 
-        [Theory, CleanDatabase]
+        [Theory, RollbackTransaction]
         [InlineData("1")]
         [InlineData("00000000-0000-0000-0000-000000000000")]
         public void GetStateData_ReturnsNull_IfThereIsNoSuchState(string jobId)
@@ -490,7 +490,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetStateData_ReturnsCorrectData()
         {
             var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Arguments"));
@@ -523,14 +523,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Value", result.Data["Key"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetAllItemsFromSet_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetAllItemsFromSet(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetAllItemsFromSet_ReturnsEmptyCollection_WhenKeyDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -541,7 +541,7 @@ namespace Hangfire.EntityFramework
             Assert.Empty(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetAllItemsFromSet_ReturnsAllItems()
         {
             string setKey = Guid.NewGuid().ToString();
@@ -561,14 +561,14 @@ namespace Hangfire.EntityFramework
             Assert.Contains("2", result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetFirstByLowestScoreFromSet_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetFirstByLowestScoreFromSet(null, 0, 1)));
         }
 
-        [Theory, CleanDatabase]
+        [Theory, RollbackTransaction]
         [InlineData(-1.0, 3.0)]
         [InlineData(3.0, -1.0)]
         public void GetFirstByLowestScoreFromSet_ReturnsTheValueWithTheLowestScore(double fromScore, double toScore)
@@ -591,7 +591,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal("-1.0", result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetSetCount_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection =>
@@ -601,7 +601,7 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetSetCount_ReturnsZero_WhenSetDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -611,7 +611,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetSetCount_ReturnsNumberOfElements_InASet()
         {
             string set1 = Guid.NewGuid().ToString();
@@ -631,14 +631,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetRangeFromSet_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetRangeFromSet(null, 0, 1)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetRangeFromSet_ReturnsPagedElements()
         {
             string set1 = Guid.NewGuid().ToString();
@@ -661,14 +661,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal(new[] { "3", "4" }, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetSetTtl_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetSetTtl(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetSetTtl_ReturnsNegativeValue_WhenSetDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -678,7 +678,7 @@ namespace Hangfire.EntityFramework
             Assert.True(result < TimeSpan.Zero);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetSetTtl_ReturnsExpirationTime_OfAGivenSet()
         {
             string set1 = Guid.NewGuid().ToString();
@@ -698,21 +698,21 @@ namespace Hangfire.EntityFramework
             Assert.True(result < TimeSpan.FromMinutes(61));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.SetRangeInHash(null, new Dictionary<string, string>())));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("keyValuePairs",
                 () => connection.SetRangeInHash("some-hash", null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetRangeInHash_MergesAllRecords()
         {
             string key = Guid.NewGuid().ToString();
@@ -733,14 +733,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Value2", result["Key2"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetAllEntriesFromHash_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetAllEntriesFromHash(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetAllEntriesFromHash_ReturnsNull_IfHashDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -750,7 +750,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetAllEntriesFromHash_ReturnsAllKeysAndTheirValues()
         {
             string hash1 = Guid.NewGuid().ToString();
@@ -773,14 +773,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Value2", result["Key2"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetHashCount_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetHashCount(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetHashCount_ReturnsZero_WhenKeyDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -790,7 +790,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetHashCount_ReturnsNumber_OfHashFields()
         {
             string hash1 = Guid.NewGuid().ToString();
@@ -810,14 +810,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetHashTtl_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetHashTtl(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetHashTtl_ReturnsNegativeValue_WhenHashDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -827,7 +827,7 @@ namespace Hangfire.EntityFramework
             Assert.True(result < TimeSpan.Zero);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetHashTtl_ReturnsExpirationTimeForHash()
         {
             string hash1 = Guid.NewGuid().ToString();
@@ -847,7 +847,7 @@ namespace Hangfire.EntityFramework
             Assert.True(result < TimeSpan.FromMinutes(61));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetValueFromHash_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
@@ -855,14 +855,14 @@ namespace Hangfire.EntityFramework
 
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetValueFromHash_ThrowsAnException_WhenNameIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("name",
                 () => connection.GetValueFromHash("key", null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetValueFromHash_ReturnsNull_WhenHashDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -872,7 +872,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetValueFromHash_ReturnsValue_OfAGivenField()
         {
             string hash1 = Guid.NewGuid().ToString();
@@ -892,14 +892,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal("1", result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetCounter_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetCounter(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetCounter_ReturnsZero_WhenKeyDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -909,7 +909,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetCounter_ReturnsSumOfValues_InCounterTable()
         {
             string key1 = Guid.NewGuid().ToString();
@@ -929,14 +929,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetListCount_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetListCount(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetListCount_ReturnsZero_WhenListDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -946,7 +946,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetListCount_ReturnsTheNumberOfListElements()
         {
             string list1 = Guid.NewGuid().ToString();
@@ -966,14 +966,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetListTtl_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>(
                 () => connection.GetListTtl(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetListTtl_ReturnsNegativeValue_WhenListDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -983,7 +983,7 @@ namespace Hangfire.EntityFramework
             Assert.True(result < TimeSpan.Zero);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetListTtl_ReturnsExpirationTimeForList()
         {
             string list1 = Guid.NewGuid().ToString();
@@ -1003,14 +1003,14 @@ namespace Hangfire.EntityFramework
             Assert.True(result < TimeSpan.FromMinutes(61));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetRangeFromList_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetRangeFromList(null, 0, 1)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetRangeFromList_ReturnsAnEmptyList_WhenListDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -1020,7 +1020,7 @@ namespace Hangfire.EntityFramework
             Assert.Empty(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetRangeFromList_ReturnsAllEntries_WithinGivenBounds()
         {
             string list1 = Guid.NewGuid().ToString();
@@ -1042,14 +1042,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal(new[] { "4", "3" }, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetAllItemsFromList_ThrowsAnException_WhenKeyIsNull()
         {
             UseConnection(connection => Assert.Throws<ArgumentNullException>("key",
                 () => connection.GetAllItemsFromList(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetAllItemsFromList_ReturnsAnEmptyList_WhenListDoesNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -1058,7 +1058,7 @@ namespace Hangfire.EntityFramework
             Assert.Empty(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetAllItemsFromList_ReturnsAllItems_FromAGivenList()
         {
             string list1 = Guid.NewGuid().ToString();
@@ -1092,7 +1092,7 @@ namespace Hangfire.EntityFramework
                 () => connection.FetchNextJob(new string[0], new CancellationToken())));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void FetchNextJob_DelegatesItsExecution_ToTheQueue()
         {
             UseConnection(connection =>
@@ -1106,7 +1106,7 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void FetchNextJob_Throws_IfMultipleProvidersResolved()
         {
             UseConnection(connection =>

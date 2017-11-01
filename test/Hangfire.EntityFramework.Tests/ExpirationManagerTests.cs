@@ -34,7 +34,7 @@ namespace Hangfire.EntityFramework
                 () => new ExpirationManager(storage, new TimeSpan(0, 0, interval)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Execute_RemovesOutdatedRecords()
         {
             var storage = CreateStorage();
@@ -53,7 +53,7 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Execute_DoesNotRemoveEntries_WithNoExpirationTimeSet()
         {
             var storage = CreateStorage();
@@ -71,7 +71,7 @@ namespace Hangfire.EntityFramework
                 Assert.Equal(1, context.Hashes.Count());
             });
         }
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Execute_DoesNotRemoveEntries_WithFreshExpirationTime()
         {
             var storage = CreateStorage();

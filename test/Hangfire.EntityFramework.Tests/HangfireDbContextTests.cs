@@ -8,7 +8,7 @@ namespace Hangfire.EntityFramework
 {
     public class HangfireDbContextTests
     {
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Ctor()
         {
             string connectionString = ConnectionUtils.GetConnectionString();

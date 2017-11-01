@@ -22,7 +22,7 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkJobQueue(null));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsNull()
         {
             var queue = CreateJobQueue();
@@ -31,7 +31,7 @@ namespace Hangfire.EntityFramework
                 () => queue.Dequeue(null, CreateTimingOutCancellationToken()));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Dequeue_ShouldThrowAnException_WhenQueuesCollectionIsEmpty()
         {
             var queue = CreateJobQueue();
@@ -51,7 +51,7 @@ namespace Hangfire.EntityFramework
                 () => queue.Dequeue(DefaultQueues, cts.Token));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Dequeue_ShouldWaitIndefinitely_WhenThereAreNoJobs()
         {
             var cts = new CancellationTokenSource(200);
@@ -61,7 +61,7 @@ namespace Hangfire.EntityFramework
                 () => queue.Dequeue(DefaultQueues, cts.Token));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Dequeue_ShouldFetchAJob_FromTheSpecifiedQueue()
         {
             Guid jobId = Guid.NewGuid();
@@ -102,7 +102,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(jobInQueue);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Enqueue_AddsAJobToTheQueue()
         {
             Guid jobId = Guid.NewGuid();
@@ -126,7 +126,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(record.FetchedAt);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Enqueue_ShouldThrowAnException_WhenQueueIsNull()
         {
             var jobId = Guid.NewGuid().ToString();
@@ -136,7 +136,7 @@ namespace Hangfire.EntityFramework
                 () => queue.Enqueue(null, jobId));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Enqueue_ShouldThrowAnException_WhenJobIdIsNull()
         {
             var queue = CreateJobQueue();

@@ -24,7 +24,7 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkJobStorageMonitoringApi(null));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Queues_ReturnsEmptyList_WhenNoQueuesExists()
         {
             var result = UseMonitoringApi(api => api.Queues());
@@ -33,7 +33,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, result.Count);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Queues_ReturnsCorrectList()
         {
             Guid stateId = Guid.NewGuid();
@@ -85,7 +85,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(job.InvocationData, JobUtils.CreateInvocationData(firstJob.Job));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Servers_ReturnsEmptyList_WhenNoServersExists()
         {
             var result = UseMonitoringApi(api => api.Servers());
@@ -94,7 +94,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, result.Count);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Servers_ReturnsCorrectList()
         {
             string serverId1 = "server1";
@@ -137,7 +137,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(default(DateTime), server2.StartedAt);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetStatistics_ReturnsZeroes_WhenDatabaseClean()
         {
             var result = UseMonitoringApi(api => api.GetStatistics());
@@ -154,7 +154,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, result.Succeeded);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetStatistics_ReturnsCorrectCounts()
         {
             UseContextWithSavingChanges(context =>
@@ -191,7 +191,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(6, result.Succeeded);
         }
 
-        [Theory, CleanDatabase]
+        [Theory, RollbackTransaction]
         [InlineData(null)]
         [InlineData("1")]
         [InlineData("00000000-0000-0000-0000-000000000000")]
@@ -202,7 +202,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void JobDetails_ReturnsCorrectResult()
         {
             var timestamp = DateTime.UtcNow;
@@ -249,7 +249,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(jobParameters, result.Properties);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SucceededByDatesCount_ReturnsCorrectResult()
         {
             var today = DateTime.UtcNow.Date;
@@ -269,7 +269,7 @@ namespace Hangfire.EntityFramework
             Assert.All(result, item => Assert.Equal(dictionaryDates[item.Key], item.Value));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void FailedByDatesCount_ReturnsCorrectResult()
         {
             var today = DateTime.UtcNow.Date;
@@ -289,7 +289,7 @@ namespace Hangfire.EntityFramework
             Assert.All(result, item => Assert.Equal(dictionaryDates[item.Key], item.Value));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void HourlySucceededJobs_ReturnsCorrectResult()
         {
             var now = DateTime.UtcNow;
@@ -313,7 +313,7 @@ namespace Hangfire.EntityFramework
             Assert.All(result, item => Assert.Equal(dictionaryDates[item.Key], item.Value));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void HourlyFailedJobs_ReturnsCorrectResult()
         {
             var now = DateTime.UtcNow;
@@ -337,7 +337,7 @@ namespace Hangfire.EntityFramework
             Assert.All(result, item => Assert.Equal(dictionaryDates[item.Key], item.Value));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ScheduledCount_ReturnsCorrectResult()
         {
             UseContextWithSavingChanges(context =>
@@ -351,7 +351,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(3, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void FailedCount_ReturnsCorrectResult()
         {
             UseContextWithSavingChanges(context =>
@@ -365,7 +365,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(3, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ProcessingCount_ReturnsCorrectResult()
         {
             UseContextWithSavingChanges(context =>
@@ -379,7 +379,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(3, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SucceededListCount_ReturnsCorrectResult()
         {
             UseContextWithSavingChanges(context =>
@@ -393,7 +393,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(3, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void DeletedListCount_ReturnsCorrectResult()
         {
             UseContextWithSavingChanges(context =>
@@ -407,7 +407,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(3, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void EnqueuedCount_ReturnsCorrectResult()
         {
             UseContextWithSavingChanges(context =>
@@ -421,7 +421,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(3, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void FetchedCount_ReturnsZero()
         {
             var result = UseMonitoringApi(api => api.FetchedCount("queue"));
@@ -429,7 +429,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SucceededJobs_ReturnsCorrectResult()
         {
             var now = DateTime.UtcNow;
@@ -484,7 +484,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(jobs[2].Id.ToString(), result[1].Key);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ProcessingJobs_ReturnsCorrectResult()
         {
             var now = DateTime.UtcNow;
@@ -537,7 +537,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(jobs[2].Id.ToString(), result[1].Key);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ScheduledJobs_ReturnsCorrectResult()
         {
             var now = DateTime.UtcNow;
@@ -589,7 +589,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(jobs[2].Id.ToString(), result[1].Key);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void FailedJobs_ReturnsCorrectResult()
         {
             var now = DateTime.UtcNow;
@@ -647,7 +647,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(jobs[2].Id.ToString(), result[1].Key);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void DeletedJobs_ReturnsCorrectResult()
         {
             var now = DateTime.UtcNow;
@@ -700,7 +700,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(jobs[2].Id.ToString(), result[1].Key);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void EnqueuedJobs_ReturnsCorrectResult()
         {
             var now = DateTime.UtcNow;
@@ -758,7 +758,7 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void FetchedJobs_ReturnsEmptyResult()
         {
             var result = UseMonitoringApi(api => api.FetchedJobs("queue", 0, 2));

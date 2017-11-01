@@ -42,7 +42,7 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkJobStorageDistributedLock(storage, "resource", tooLargeTimeout));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Ctor_ThrowsAnException_WhenResourceIsNull()
         {
             var storage = CreateStorage();
@@ -51,7 +51,7 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkJobStorageDistributedLock(storage, null, Timeout));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Ctor_ThrowsAnException_WhenResourceIsEmpty()
         {
             var storage = CreateStorage();
@@ -60,7 +60,7 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkJobStorageDistributedLock(storage, string.Empty, Timeout));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Ctor_AcquiresExclusiveApplicationLock()
         {
             string resource = Guid.NewGuid().ToString();
@@ -76,7 +76,7 @@ namespace Hangfire.EntityFramework
             Assert.True(start <= record.CreatedAt && record.CreatedAt <= end);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Ctor_ThrowsAnException_IfLockCanNotBeGranted()
         {
             string resource = Guid.NewGuid().ToString();
@@ -107,7 +107,7 @@ namespace Hangfire.EntityFramework
             thread.Join();
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Dispose_ReleasesExclusiveApplicationLock()
         {
             string resource = Guid.NewGuid().ToString();

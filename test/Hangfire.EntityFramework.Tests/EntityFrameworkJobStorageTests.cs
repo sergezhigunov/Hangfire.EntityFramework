@@ -27,7 +27,7 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkJobStorage(string.Empty, null));
         }
 
-        [Fact, CleanDatabase(isolationLevel: IsolationLevel.ReadUncommitted)]
+        [Fact, RollbackTransaction(isolationLevel: IsolationLevel.ReadUncommitted)]
         public void GetMonitoringApi_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();
@@ -35,7 +35,7 @@ namespace Hangfire.EntityFramework
             Assert.NotNull(api);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetConnection_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();
@@ -45,7 +45,7 @@ namespace Hangfire.EntityFramework
             }
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetComponents_ReturnsCorrectSequence()
         {
             var storage = CreateStorage();

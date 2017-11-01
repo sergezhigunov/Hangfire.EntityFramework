@@ -31,7 +31,7 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkFetchedJob(Guid.Empty, Guid.Empty, storage, null));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
             var storage = CreateStorage();
@@ -52,7 +52,7 @@ namespace Hangfire.EntityFramework
             };
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveFromQueue_CorrectlyRemovesQueueItem()
         {
             var storage = CreateStorage();
@@ -76,7 +76,7 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Requeue_CorrectlyReturnsItemBackToQueue()
         {
             var storage = CreateStorage();
@@ -100,7 +100,7 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Dispose_CorrectlyDisposeOwnedResources()
         {
             var storage = CreateStorage();

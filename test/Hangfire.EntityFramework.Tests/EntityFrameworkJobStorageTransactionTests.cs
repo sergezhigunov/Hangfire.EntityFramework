@@ -24,7 +24,7 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkJobStorageTransaction(null));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ExpireJob_SetsJobExpirationData()
         {
             Guid jobId = InsertTestJob();
@@ -40,7 +40,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(anotherJob.ExpireAt);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void PersistJob_ClearsTheJobExpirationData()
         {
             Guid jobId = InsertTestJob(DateTime.UtcNow);
@@ -55,7 +55,7 @@ namespace Hangfire.EntityFramework
             Assert.NotNull(anotherJob.ExpireAt);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetJobState_AppendsAStateAndSetItToTheJob()
         {
             Guid jobId = InsertTestJob();
@@ -86,7 +86,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Value", data["Name"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AddJobState_JustAddsANewRecordInATable()
         {
             Guid jobId = InsertTestJob();
@@ -113,7 +113,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Value", data["Name"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AddToQueue_CallsEnqueue_OnTargetPersistentQueue()
         {
             var id = InsertTestJob();
@@ -127,7 +127,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(result.FetchedAt);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void IncrementCounter_AddsRecordToCounterTable_WithPositiveValue()
         {
             string key = Guid.NewGuid().ToString();
@@ -141,7 +141,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(record.ExpireAt);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void IncrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet()
         {
             string key = Guid.NewGuid().ToString();
@@ -160,7 +160,7 @@ namespace Hangfire.EntityFramework
             Assert.True(expireAt < DateTime.UtcNow.AddHours(25));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void IncrementCounter_WithExistingKey_AddsAnotherRecord()
         {
             string key = Guid.NewGuid().ToString();
@@ -178,7 +178,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, sum);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void DecrementCounter_AddsRecordToCounterTable_WithNegativeValue()
         {
             string key = Guid.NewGuid().ToString();
@@ -192,7 +192,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(record.ExpireAt);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void DecrementCounter_WithExpiry_AddsARecord_WithExpirationTimeSet()
         {
             string key = Guid.NewGuid().ToString();
@@ -211,7 +211,7 @@ namespace Hangfire.EntityFramework
             Assert.True(expireAt < DateTime.UtcNow.AddHours(25));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void DecrementCounter_WithExistingKey_AddsAnotherRecord()
         {
             string key = Guid.NewGuid().ToString();
@@ -229,7 +229,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(-2, sum);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AddToSet_AddsARecord_IfThereIsNo_SuchKeyAndValue()
         {
             string key = Guid.NewGuid().ToString();
@@ -243,7 +243,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0.0, record.Score, 2);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AddToSet_AddsARecord_WhenKeyIsExists_ButValuesAreDifferent()
         {
             string key = Guid.NewGuid().ToString();
@@ -259,7 +259,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AddToSet_DoesNotAddARecord_WhenBothKeyAndValueAreExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -275,7 +275,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AddToSet_WithScore_AddsARecordWithScore_WhenBothKeyAndValueAreNotExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -289,7 +289,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(3.2, record.Score, 3);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AddToSet_WithScore_UpdatesAScore_WhenBothKeyAndValueAreExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -305,7 +305,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(3.2, record.Score, 3);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveFromSet_RemovesARecord_WithGivenKeyAndValue()
         {
             string key = Guid.NewGuid().ToString();
@@ -321,7 +321,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveFromSet_DoesNotRemoveRecord_WithSameKey_AndDifferentValue()
         {
             string key = Guid.NewGuid().ToString();
@@ -337,7 +337,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveFromSet_DoesNotRemoveRecord_WithSameValue_AndDifferentKey()
         {
             string key = Guid.NewGuid().ToString();
@@ -353,7 +353,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void InsertToList_AddsARecord_WithGivenValues()
         {
             string key = Guid.NewGuid().ToString();
@@ -366,7 +366,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal("my-value", record.Value);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void InsertToList_AddsAnotherRecord_WhenBothKeyAndValueAreExist()
         {
             string key = Guid.NewGuid().ToString();
@@ -382,7 +382,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveFromList_RemovesAllRecords_WithGivenKeyAndValue()
         {
             string key = Guid.NewGuid().ToString();
@@ -399,7 +399,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveFromList_DoesNotRemoveRecords_WithSameKey_ButDifferentValue()
         {
             string key = Guid.NewGuid().ToString();
@@ -415,7 +415,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveFromList_DoesNotRemoveRecords_WithSameValue_ButDifferentKey()
         {
             string key = Guid.NewGuid().ToString();
@@ -431,7 +431,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void TrimList_TrimsAList_ToASpecifiedRange()
         {
             string key = Guid.NewGuid().ToString();
@@ -452,7 +452,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal("2", records[1].Value);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void TrimList_RemovesRecordsToEnd_IfKeepAndingAt_GreaterThanMaxElementIndex()
         {
             string key = Guid.NewGuid().ToString();
@@ -470,7 +470,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void TrimList_RemovesAllRecords_WhenStartingFromValue_GreaterThanMaxElementIndex()
         {
             string key = Guid.NewGuid().ToString();
@@ -484,7 +484,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void TrimList_RemovesAllRecords_IfStartFromGreaterThanEndingAt()
         {
             string key = Guid.NewGuid().ToString();
@@ -498,7 +498,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void TrimList_RemovesRecords_OnlyOfAGivenKey()
         {
             string key = Guid.NewGuid().ToString();
@@ -513,21 +513,21 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, recordCount);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
                 () => transaction.SetRangeInHash(null, new Dictionary<string, string>())));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("keyValuePairs",
                 () => transaction.SetRangeInHash("some-hash", null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void SetRangeInHash_MergesAllRecords()
         {
             string key = Guid.NewGuid().ToString();
@@ -547,14 +547,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Value2", result["Key2"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveHash_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
                 () => transaction.RemoveHash(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveHash_RemovesAllHashRecords()
         {
             string key = Guid.NewGuid().ToString();
@@ -571,21 +571,21 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, count);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AddRangeToSet_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction =>Assert.Throws<ArgumentNullException>("key",
                 () => transaction.AddRangeToSet(null, new List<string>())));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AddRangeToSet_ThrowsAnException_WhenItemsValueIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("items",
                 () => transaction.AddRangeToSet("my-set", null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void AddRangeToSet_AddsAllItems_ToAGivenSet()
         {
             string setId = Guid.NewGuid().ToString();
@@ -602,14 +602,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal(items, records);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveSet_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
                 () => transaction.RemoveSet( null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void RemoveSet_RemovesASet_WithAGivenKey()
         {
             var sets = new[]
@@ -625,14 +625,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal("set-2", record.Key);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ExpireHash_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
                 () => transaction.ExpireHash(null, TimeSpan.FromMinutes(5))));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ExpireHash_SetsExpirationTimeOnAHash_WithGivenKey()
         {
             var hashes = new[]
@@ -651,14 +651,14 @@ namespace Hangfire.EntityFramework
             Assert.Null(records["hash-2"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ExpireSet_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
                 () => transaction.ExpireSet(null, new TimeSpan(0, 0, 45))));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ExpireSet_SetsExpirationTime_OnASet_WithGivenKey()
         {
             var sets = new[]
@@ -676,14 +676,14 @@ namespace Hangfire.EntityFramework
             Assert.Null(records["set-2"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ExpireList_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
                 () => transaction.ExpireList(null, new TimeSpan(0, 0, 45))));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void ExpireList_SetsExpirationTime_OnAList_WithGivenKey()
         {
             var lists = new[]
@@ -701,14 +701,14 @@ namespace Hangfire.EntityFramework
             Assert.Null(records["list-2"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void PersistHash_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
                 () => transaction.PersistHash(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void PersistHash_ClearsExpirationTime_OnAGivenHash()
         {
             var hashes = new[]
@@ -725,14 +725,14 @@ namespace Hangfire.EntityFramework
             Assert.NotNull(records["hash-2"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void PersistSet_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
                 () => transaction.PersistSet(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void PersistSet_ClearsExpirationTime_OnAGivenHash()
         {
             var sets = new[]
@@ -749,14 +749,14 @@ namespace Hangfire.EntityFramework
             Assert.NotNull(records["set-2"]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void PersistList_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
                 () => transaction.PersistList(null)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void PersistList_ClearsExpirationTime_OnAGivenHash()
         {
             var lists = new[]

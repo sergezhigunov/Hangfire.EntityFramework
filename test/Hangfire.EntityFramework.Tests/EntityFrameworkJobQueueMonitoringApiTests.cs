@@ -19,7 +19,7 @@ namespace Hangfire.EntityFramework
                 () => new EntityFrameworkJobQueueMonitoringApi(null));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetQueues_ReturnsEmptyCollection_WhenQueuedItemsNotExisits()
         {
             var api = CreateMonitoringApi();
@@ -29,7 +29,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, queues.Count());
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetQueues_ReturnsAllGivenQueues_IfQueuesIsEmpty()
         {
             var date = DateTime.UtcNow;
@@ -61,7 +61,7 @@ namespace Hangfire.EntityFramework
             Assert.All(queues, queue => Assert.True(jobIds.Contains(Guid.Parse(queue))));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetEnqueuedJobIds_ReturnsEmptyCollection_IfQueueIsEmpty()
         {
             string queue = Guid.NewGuid().ToString();
@@ -72,7 +72,7 @@ namespace Hangfire.EntityFramework
             Assert.Empty(result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetEnqueuedJobIds_ReturnsCorrectResult()
         {
             var date = DateTime.UtcNow;
@@ -107,7 +107,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(jobIds[4], result[1]);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetEnqueuedJobCount_ReturnsZeroes_WhenQueueNotExisits()
         {
             string queue = Guid.NewGuid().ToString();
@@ -118,7 +118,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(0, result);
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void GetEnqueuedJobCount_ReturnsCorrectCounters()
         {
             var date = DateTime.UtcNow;

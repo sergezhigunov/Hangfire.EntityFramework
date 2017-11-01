@@ -33,7 +33,7 @@ namespace Hangfire.EntityFramework
                 () => new CountersAggregator(storage, new TimeSpan(0, 0, seconds)));
         }
 
-        [Fact, CleanDatabase]
+        [Fact, RollbackTransaction]
         public void Execute_DoWorkCorrectly()
         {
             UseContextWithSavingChanges(context =>
