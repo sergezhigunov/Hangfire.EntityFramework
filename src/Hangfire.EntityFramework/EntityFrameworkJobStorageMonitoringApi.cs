@@ -15,6 +15,10 @@ namespace Hangfire.EntityFramework
 {
     internal class EntityFrameworkJobStorageMonitoringApi : IMonitoringApi
     {
+        private const string DeletedCounterName = "stats:deleted";
+        private const string SucceededCounterName = "stats:succeeded";
+        private const string RecurringJobsSetName = "recurring-jobs";
+
         private EntityFrameworkJobStorage Storage { get; }
 
         public EntityFrameworkJobStorageMonitoringApi([NotNull] EntityFrameworkJobStorage storage)
@@ -109,22 +113,48 @@ namespace Hangfire.EntityFramework
 
         public StatisticsDto GetStatistics()
         {
-            var result = UseContext(context => (
-                from stub in Enumerable.Range(1, 1)
-                let actualStates = context.JobActualStates
-                let counters = context.Counters
-                select new StatisticsDto
+            var result = UseContext(context =>
+            {
+                var stateCounts = (
+                    from actualState in context.JobActualStates
+                    let name = actualState.State.Name
+                    where
+                        name == EnqueuedState.StateName ||
+                        name == FailedState.StateName ||
+                        name == ProcessingState.StateName ||
+                        name == ScheduledState.StateName
+                    group actualState by name into @group
+                    select new
+                    {
+                        StateName = @group.Key,
+                        Count = @group.LongCount(),
+                    }).ToDictionary(x => x.StateName, x => x.Count);
+
+                var counters = (
+                    from counter in context.Counters
+                    let name = counter.Key
+                    where
+                        name == SucceededCounterName ||
+                        name == DeletedCounterName
+                    group counter by name into @group
+                    select new
+                    {
+                        CounterName = @group.Key,
+                        Sum = @group.Sum(x => x.Value),
+                    }).ToDictionary(x => x.CounterName, x => x.Sum);
+
+                return new StatisticsDto
                 {
-                    Recurring = context.Sets.LongCount(x => x.Key == "recurring-jobs"),
+                    Recurring = context.Sets.LongCount(x => x.Key == RecurringJobsSetName),
                     Servers = context.Servers.LongCount(),
-                    Enqueued = actualStates.LongCount(x => x.State.Name == EnqueuedState.StateName),
-                    Failed = actualStates.LongCount(x => x.State.Name == FailedState.StateName),
-                    Processing = actualStates.LongCount(x => x.State.Name == ProcessingState.StateName),
-                    Scheduled = actualStates.LongCount(x => x.State.Name == ScheduledState.StateName),
-                    Deleted = counters.Where(x => x.Key == "stats:deleted").Sum(x => (long?)x.Value) ?? 0,
-                    Succeeded = counters.Where(x => x.Key == "stats:succeeded").Sum(x => (long?)x.Value) ?? 0,
-                }).
-                First());
+                    Enqueued = stateCounts.TryGetValue(EnqueuedState.StateName, out long count) ? count : 0,
+                    Failed = stateCounts.TryGetValue(FailedState.StateName, out count) ? count : 0,
+                    Processing = stateCounts.TryGetValue(ProcessingState.StateName, out count) ? count : 0,
+                    Scheduled = stateCounts.TryGetValue(ScheduledState.StateName, out count) ? count : 0,
+                    Deleted = counters.TryGetValue(DeletedCounterName, out count) ? count : 0,
+                    Succeeded = counters.TryGetValue(SucceededCounterName, out count) ? count : 0,
+                };
+            });
 
             result.Queues = (
                 from provider in Storage.QueueProviders
