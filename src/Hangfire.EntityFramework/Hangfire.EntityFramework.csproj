@@ -26,9 +26,10 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup>
     <PackageReference Include="EntityFramework" Version="6.2.0" />
     <PackageReference Include="HangFire.Core" Version="1.6.17" />
+    <PackageReference Include="Microsoft.Net.Compilers" Version="2.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <Reference Include="System.Data" />
     <Reference Include="System" />
