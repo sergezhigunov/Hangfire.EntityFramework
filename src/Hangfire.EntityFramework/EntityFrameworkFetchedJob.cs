@@ -22,6 +22,8 @@ namespace Hangfire.EntityFramework
 
         private bool Completed { get; set; }
 
+        private bool Disposed { get; set; }
+
         public EntityFrameworkFetchedJob(
             Guid queueItemId,
             Guid jobId,
@@ -84,6 +86,23 @@ namespace Hangfire.EntityFramework
                 });
         }
 
-        public virtual void Dispose() => Requeue();
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!Disposed)
+            {
+                if (disposing)
+                {
+                    Requeue();
+                    Disposed = true;
+                }
+            }
+        }
+
     }
 }

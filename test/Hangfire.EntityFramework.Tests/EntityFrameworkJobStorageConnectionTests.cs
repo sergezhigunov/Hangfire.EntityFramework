@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -59,12 +60,12 @@ namespace Hangfire.EntityFramework
             string serverId = "server";
             var serverContext1 = new ServerContext
             {
-                Queues = new[] { "critical", "default" },
+                Queues = new[] { "CRITICAL", "DEFAULT" },
                 WorkerCount = 4
             };
             var serverContext2 = new ServerContext
             {
-                Queues = new[] { "default" },
+                Queues = new[] { "DEFAULT" },
                 WorkerCount = 1000
             };
 
@@ -1099,7 +1100,7 @@ namespace Hangfire.EntityFramework
             UseConnection(connection =>
             {
                 var token = new CancellationToken();
-                var queues = new[] { "default" };
+                var queues = new[] { "DEFAULT" };
 
                 connection.FetchNextJob(queues, token);
 
@@ -1114,10 +1115,10 @@ namespace Hangfire.EntityFramework
             {
                 var token = new CancellationToken();
                 var anotherProvider = new Mock<IPersistentJobQueueProvider>();
-                Providers.Add(anotherProvider.Object, new[] { "critical" });
+                Providers.Add(anotherProvider.Object, new[] { "CRITICAL" });
 
                 Assert.Throws<InvalidOperationException>(
-                    () => connection.FetchNextJob(new[] { "critical", "default" }, token));
+                    () => connection.FetchNextJob(new[] { "CRITICAL", "DEFAULT" }, token));
             });
         }
 
@@ -1141,6 +1142,8 @@ namespace Hangfire.EntityFramework
         [ExcludeFromCodeCoverage]
         [SuppressMessage("Usage", "xUnit1013")]
         public void SampleMethod(string value)
-        { }
+        {
+            Debug.WriteLine("SampleMethod executed. value = '{0}'", new[] { value });
+        }
     }
 }

@@ -114,21 +114,30 @@ namespace Hangfire.EntityFramework
 
         public void Dispose()
         {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
             if (!Disposed)
             {
-                Storage.UseContext(context =>
+                if (disposing)
                 {
-                    using (var transaction = context.Database.BeginTransaction())
+                    Storage.UseContext(context =>
                     {
-                        if (context.DistributedLocks.Any(x => x.Id == Resource))
+                        using (var transaction = context.Database.BeginTransaction())
                         {
-                            context.Entry(new HangfireDistributedLock { Id = Resource }).State = EntityState.Deleted;
-                            context.SaveChanges();
+                            if (context.DistributedLocks.Any(x => x.Id == Resource))
+                            {
+                                context.Entry(new HangfireDistributedLock { Id = Resource }).State = EntityState.Deleted;
+                                context.SaveChanges();
+                            }
+                            transaction.Commit();
                         }
-                        transaction.Commit();
-                    }
-                });
-                Disposed = true;
+                    });
+                    Disposed = true;
+                }
             }
         }
     }

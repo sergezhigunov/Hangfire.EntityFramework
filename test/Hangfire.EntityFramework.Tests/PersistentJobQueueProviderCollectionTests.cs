@@ -72,9 +72,9 @@ namespace Hangfire.EntityFramework
             Mock<IPersistentJobQueueProvider> defaultProvider = new Mock<IPersistentJobQueueProvider>();
             Mock<IPersistentJobQueueProvider> otherProvider = new Mock<IPersistentJobQueueProvider>();
             var collection = new PersistentJobQueueProviderCollection(defaultProvider.Object);
-            collection.Add(otherProvider.Object, new[] { "queue" });
+            collection.Add(otherProvider.Object, new[] { "QUEUE" });
 
-            var provider = collection.GetProvider("queue");
+            var provider = collection.GetProvider("QUEUE");
 
             Assert.Same(otherProvider.Object, provider);
         }
@@ -99,8 +99,8 @@ namespace Hangfire.EntityFramework
             Mock<IPersistentJobQueueProvider> defaultProvider = new Mock<IPersistentJobQueueProvider>();
             Mock<IPersistentJobQueueProvider> otherProvider = new Mock<IPersistentJobQueueProvider>();
             var collection = new PersistentJobQueueProviderCollection(defaultProvider.Object);
-            collection.Add(defaultProvider.Object, new[] { "default" });
-            collection.Add(otherProvider.Object, new[] { "other1", "other2" });
+            collection.Add(defaultProvider.Object, new[] { "DEFAULT" });
+            collection.Add(otherProvider.Object, new[] { "OTHER1", "OTHER2" });
 
             var result = collection.ToArray();
             var nonGenericResult = ((IEnumerable)collection).Cast<object>().ToArray();

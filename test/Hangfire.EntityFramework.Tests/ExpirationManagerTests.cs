@@ -38,7 +38,7 @@ namespace Hangfire.EntityFramework
         public void Execute_RemovesOutdatedRecords()
         {
             var storage = CreateStorage();
-            CreateExpirationEntries(storage, DateTime.UtcNow.AddMonths(-1));
+            CreateExpirationEntries(DateTime.UtcNow.AddMonths(-1));
             var manager = new ExpirationManager(storage, CheckInterval);
 
             manager.Execute(CancellationTokenSource.Token);
@@ -57,7 +57,7 @@ namespace Hangfire.EntityFramework
         public void Execute_DoesNotRemoveEntries_WithNoExpirationTimeSet()
         {
             var storage = CreateStorage();
-            CreateExpirationEntries(storage, null);
+            CreateExpirationEntries(null);
             var manager = new ExpirationManager(storage, CheckInterval);
 
             manager.Execute(CancellationTokenSource.Token);
@@ -75,7 +75,7 @@ namespace Hangfire.EntityFramework
         public void Execute_DoesNotRemoveEntries_WithFreshExpirationTime()
         {
             var storage = CreateStorage();
-            CreateExpirationEntries(storage, DateTime.UtcNow.AddMonths(1));
+            CreateExpirationEntries(DateTime.UtcNow.AddMonths(1));
             var manager = new ExpirationManager(storage, CheckInterval);
 
             manager.Execute(CancellationTokenSource.Token);
@@ -90,7 +90,7 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        private void CreateExpirationEntries(EntityFrameworkJobStorage storage, DateTime? expireAt)
+        private void CreateExpirationEntries(DateTime? expireAt)
         {
             UseContextWithSavingChanges(context =>
             {

@@ -118,12 +118,12 @@ namespace Hangfire.EntityFramework
         {
             var id = InsertTestJob();
 
-            UseTransaction(transaction => transaction.AddToQueue("default", id.ToString()));
+            UseTransaction(transaction => transaction.AddToQueue("DEFAULT", id.ToString()));
 
             var result = UseContext(context => context.JobQueues.Single());
 
             Assert.Equal(id, result.JobId);
-            Assert.Equal("default", result.Queue);
+            Assert.Equal("DEFAULT", result.Queue);
             Assert.Null(result.FetchedAt);
         }
 

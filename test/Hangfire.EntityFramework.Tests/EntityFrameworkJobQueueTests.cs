@@ -14,7 +14,7 @@ namespace Hangfire.EntityFramework
 
     public class EntityFrameworkJobQueueTests
     {
-        private static readonly string[] DefaultQueues = { "default" };
+        private static readonly string[] DefaultQueues = { "DEFAULT" };
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
@@ -98,7 +98,7 @@ namespace Hangfire.EntityFramework
             Assert.IsType<EntityFrameworkFetchedJob>(result);
             EntityFrameworkFetchedJob fetchedJob = (EntityFrameworkFetchedJob)result;
             Assert.Equal(jobId.ToString(), fetchedJob.JobId);
-            Assert.Equal("default", fetchedJob.Queue);
+            Assert.Equal("DEFAULT", fetchedJob.Queue);
             var jobInQueue = UseContext(context => context.JobQueues.SingleOrDefault(x => x.Lookup == null));
             Assert.Null(jobInQueue);
         }
@@ -143,7 +143,7 @@ namespace Hangfire.EntityFramework
             var queue = CreateJobQueue();
 
             Assert.Throws<ArgumentNullException>("jobId",
-                () => queue.Enqueue("queue", null));
+                () => queue.Enqueue("QUEUE", null));
         }
 
         private static CancellationToken CreateTimingOutCancellationToken()
@@ -151,9 +151,6 @@ namespace Hangfire.EntityFramework
             var source = new CancellationTokenSource(TimeSpan.FromSeconds(10));
             return source.Token;
         }
-
-        [SuppressMessage("Usage", "xUnit1013")]
-        public static void Sample(string arg1, string arg2) { }
 
         private static EntityFrameworkJobQueue CreateJobQueue()
         {

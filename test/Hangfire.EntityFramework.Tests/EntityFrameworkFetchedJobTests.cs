@@ -12,7 +12,7 @@ namespace Hangfire.EntityFramework
 
     public class EntityFrameworkFetchedJobTests
     {
-        private const string Queue = "queue";
+        private const string Queue = "QUEUE";
         private static readonly Guid JobId = Guid.NewGuid();
 
         [Fact]

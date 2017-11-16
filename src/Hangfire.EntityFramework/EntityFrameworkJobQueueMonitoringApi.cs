@@ -30,7 +30,7 @@ namespace Hangfire.EntityFramework
 
         public Guid[] GetEnqueuedJobIds(string queue, int from, int perPage)
         {
-            queue = queue.ToLowerInvariant();
+            queue = queue.ToUpperInvariant();
 
             return Storage.UseContext(context => (
                 from item in context.JobQueues
@@ -44,7 +44,7 @@ namespace Hangfire.EntityFramework
 
         public long GetEnqueuedJobCount(string queue)
         {
-            queue = queue.ToLowerInvariant();
+            queue = queue.ToUpperInvariant();
 
             return Storage.UseContext(context =>
                 context.JobQueues.Count(x => x.Queue == queue && x.Lookup == null));

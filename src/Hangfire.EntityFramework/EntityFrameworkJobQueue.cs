@@ -31,7 +31,7 @@ namespace Hangfire.EntityFramework
             if (queues == null) throw new ArgumentNullException(nameof(queues));
             if (queues.Length == 0) throw new ArgumentException(ErrorStrings.QueuesCannotBeEmpty, nameof(queues));
 
-            queues = queues.Select(x => x.ToLowerInvariant()).ToArray();
+            queues = queues.Select(x => x.ToUpperInvariant()).ToArray();
 
             do
             {
@@ -76,7 +76,7 @@ namespace Hangfire.EntityFramework
             if (jobId == null) throw new ArgumentNullException(nameof(jobId));
 
             Guid id = Guid.Parse(jobId);
-            queue = queue.ToLowerInvariant();
+            queue = queue.ToUpperInvariant();
 
             Storage.UseContext(context =>
             {

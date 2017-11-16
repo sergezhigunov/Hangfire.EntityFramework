@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Hangfire.Common;
@@ -56,7 +57,7 @@ namespace Hangfire.EntityFramework
                 Id = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
                 Job = job,
-                Queue = "default",
+                Queue = "DEFAULT",
             };
 
             UseContextWithSavingChanges(context =>
@@ -72,7 +73,7 @@ namespace Hangfire.EntityFramework
             Assert.NotNull(result);
             Assert.Equal(1, result.Count);
             var firstItem = result.First();
-            Assert.Equal("default", firstItem.Name);
+            Assert.Equal("DEFAULT", firstItem.Name);
             Assert.Null(firstItem.Fetched);
             Assert.Equal(1, firstItem.Length);
             Assert.Single(firstItem.FirstJobs);
@@ -102,7 +103,7 @@ namespace Hangfire.EntityFramework
             var workerCount = 4;
             var startedAt = new DateTime(2017, 1, 1, 11, 22, 33, DateTimeKind.Utc);
             var heartbeat = new DateTime(2017, 2, 2, 22, 33, 44, DateTimeKind.Utc);
-            var queues = new[] { "critical", "default" };
+            var queues = new[] { "CRITICAL", "DEFAULT" };
             var data = JobHelper.ToJson(new ServerData
             {
                 WorkerCount = workerCount,
@@ -175,7 +176,7 @@ namespace Hangfire.EntityFramework
                 for (int i = 0; i < 8; i++)
                     context.Servers.Add(new HangfireServer { Id = Guid.NewGuid().ToString(), Heartbeat = DateTime.UtcNow, ServerHostId = host.Id });
                 for (int i = 0; i < 9; i++)
-                    AddJobWithQueueItemToContext(context, ScheduledState.StateName, Guid.NewGuid().ToString());
+                    AddJobWithQueueItemToContext(context, Guid.NewGuid().ToString());
             });
             var result = UseMonitoringApi(api => api.GetStatistics());
 
@@ -413,10 +414,10 @@ namespace Hangfire.EntityFramework
             UseContextWithSavingChanges(context =>
             {
                 for (int i = 0; i < 3; i++)
-                    AddJobWithQueueItemToContext(context, EnqueuedState.StateName, "queue");
+                    AddJobWithQueueItemToContext(context, "QUEUE");
             });
 
-            var result = UseMonitoringApi(api => api.EnqueuedCount("queue"));
+            var result = UseMonitoringApi(api => api.EnqueuedCount("QUEUE"));
 
             Assert.Equal(3, result);
         }
@@ -424,7 +425,7 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void FetchedCount_ReturnsZero()
         {
-            var result = UseMonitoringApi(api => api.FetchedCount("queue"));
+            var result = UseMonitoringApi(api => api.FetchedCount("QUEUE"));
 
             Assert.Equal(0, result);
         }
@@ -731,7 +732,7 @@ namespace Hangfire.EntityFramework
                 Id = Guid.NewGuid(),
                 Job = jobs[x],
                 CreatedAt = DateTime.UtcNow,
-                Queue = "queue",
+                Queue = "QUEUE",
             }).ToArray();
 
             UseContextWithSavingChanges(context =>
@@ -743,7 +744,7 @@ namespace Hangfire.EntityFramework
                 context.JobQueues.AddRange(queueItems);
             });
 
-            var result = UseMonitoringApi(api => api.EnqueuedJobs("queue", 1, 2));
+            var result = UseMonitoringApi(api => api.EnqueuedJobs("QUEUE", 1, 2));
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Count);
@@ -761,7 +762,7 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void FetchedJobs_ReturnsEmptyResult()
         {
-            var result = UseMonitoringApi(api => api.FetchedJobs("queue", 0, 2));
+            var result = UseMonitoringApi(api => api.FetchedJobs("QUEUE", 0, 2));
 
             Assert.NotNull(result);
             Assert.Empty(result);
@@ -777,7 +778,7 @@ namespace Hangfire.EntityFramework
             return job.Id;
         }
 
-        private Guid AddJobWithQueueItemToContext(HangfireDbContext context, string stateName, string queue)
+        private Guid AddJobWithQueueItemToContext(HangfireDbContext context, string queue)
         {
             var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty };
             var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = queue, };
@@ -796,6 +797,8 @@ namespace Hangfire.EntityFramework
         [ExcludeFromCodeCoverage]
         [SuppressMessage("Usage", "xUnit1013")]
         public void SampleMethod(string value)
-        { }
+        {
+            Debug.WriteLine("SampleMethod executed. value = '{0}'", new[] { value });
+        }
     }
 }
