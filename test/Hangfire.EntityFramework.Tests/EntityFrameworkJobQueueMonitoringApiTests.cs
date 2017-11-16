@@ -26,7 +26,7 @@ namespace Hangfire.EntityFramework
 
             var queues = api.GetQueues();
 
-            Assert.Equal(0, queues.Count());
+            Assert.Empty(queues);
         }
 
         [Fact, RollbackTransaction]
@@ -58,7 +58,7 @@ namespace Hangfire.EntityFramework
             var queues = api.GetQueues();
 
             Assert.Equal(5, queues.Count());
-            Assert.All(queues, queue => Assert.True(jobIds.Contains(Guid.Parse(queue))));
+            Assert.All(queues, queue => Assert.Contains(Guid.Parse(queue), jobIds));
         }
 
         [Fact, RollbackTransaction]

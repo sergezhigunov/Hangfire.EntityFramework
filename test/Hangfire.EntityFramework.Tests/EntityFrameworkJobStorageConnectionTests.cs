@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Hangfire.Common;
@@ -426,7 +427,7 @@ namespace Hangfire.EntityFramework
                 select parameter.Value).
                 Single());
 
-            Assert.Equal(null, result);
+            Assert.Null(result);
         }
 
         [Fact, RollbackTransaction]
@@ -1137,6 +1138,8 @@ namespace Hangfire.EntityFramework
             return result;
         }
 
+        [ExcludeFromCodeCoverage]
+        [SuppressMessage("Usage", "xUnit1013")]
         public void SampleMethod(string value)
         { }
     }

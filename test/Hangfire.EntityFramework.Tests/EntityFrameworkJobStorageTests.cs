@@ -53,8 +53,8 @@ namespace Hangfire.EntityFramework
             var components = storage.GetComponents().ToArray();
 
             Assert.Equal(2, components.Count());
-            Assert.True(components.Any(x => x is CountersAggregator));
-            Assert.True(components.Any(x => x is ExpirationManager));
+            Assert.Contains(components, x => x is CountersAggregator);
+            Assert.Contains(components, x => x is ExpirationManager);
         }
     }
 }

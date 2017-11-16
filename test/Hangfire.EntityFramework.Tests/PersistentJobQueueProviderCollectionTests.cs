@@ -88,7 +88,7 @@ namespace Hangfire.EntityFramework
             var result = collection.ToArray();
             var nonGenericResult = ((IEnumerable)collection).Cast<object>().ToArray();
 
-            Assert.Equal(1, result.Length);
+            Assert.Single(result);
             Assert.Equal(result, nonGenericResult);
             Assert.Equal(defaultProvider.Object, result.Single());
         }
@@ -107,8 +107,8 @@ namespace Hangfire.EntityFramework
 
             Assert.Equal(2, result.Length);
             Assert.Equal(result, nonGenericResult);
-            Assert.True(result.Contains(defaultProvider.Object));
-            Assert.True(result.Contains(otherProvider.Object));
+            Assert.Contains(defaultProvider.Object, result);
+            Assert.Contains(otherProvider.Object, result);
         }
     }
 }

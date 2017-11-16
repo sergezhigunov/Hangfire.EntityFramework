@@ -82,7 +82,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
             var data = JobHelper.FromJson<Dictionary<string, string>>(jobState.Data);
-            Assert.Equal(1, data.Count);
+            Assert.Single(data);
             Assert.Equal("Value", data["Name"]);
         }
 
@@ -109,7 +109,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
             var data = JobHelper.FromJson<Dictionary<string, string>>(jobState.Data);
-            Assert.Equal(1, data.Count);
+            Assert.Single(data);
             Assert.Equal("Value", data["Name"]);
         }
 

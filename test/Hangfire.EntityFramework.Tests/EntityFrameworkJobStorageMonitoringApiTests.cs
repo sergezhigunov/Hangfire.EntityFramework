@@ -73,14 +73,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, result.Count);
             var firstItem = result.First();
             Assert.Equal("default", firstItem.Name);
-            Assert.Equal(null, firstItem.Fetched);
+            Assert.Null(firstItem.Fetched);
             Assert.Equal(1, firstItem.Length);
-            Assert.Equal(1, firstItem.FirstJobs.Count());
+            Assert.Single(firstItem.FirstJobs);
             var firstJobKeyValuePair = firstItem.FirstJobs.First();
             Assert.Equal(job.Id.ToString(), firstJobKeyValuePair.Key);
             var firstJob = firstJobKeyValuePair.Value;
-            Assert.Equal(null, firstJob.EnqueuedAt);
-            Assert.Equal(true, firstJob.InEnqueuedState);
+            Assert.Null(firstJob.EnqueuedAt);
+            Assert.True(firstJob.InEnqueuedState);
             Assert.Equal("State", firstJob.State);
             Assert.Equal(job.InvocationData, JobUtils.CreateInvocationData(firstJob.Job));
         }
@@ -473,7 +473,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, result.Count);
             Assert.All(result, item =>
             {
-                Assert.NotNull(item);
+                Assert.NotNull(item.Key);
                 var value = item.Value;
                 Assert.NotNull(value);
                 Assert.Equal(123 + 456, value.TotalDuration);
@@ -527,7 +527,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, result.Count);
             Assert.All(result, item =>
             {
-                Assert.NotNull(item);
+                Assert.NotNull(item.Key);
                 var value = item.Value;
                 Assert.NotNull(value);
                 Assert.Equal("ServerId", value.ServerId);
@@ -579,7 +579,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, result.Count);
             Assert.All(result, item =>
             {
-                Assert.NotNull(item);
+                Assert.NotNull(item.Key);
                 var value = item.Value;
                 Assert.NotNull(value);
                 Assert.Equal(now, value.EnqueueAt);
@@ -634,7 +634,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, result.Count);
             Assert.All(result, item =>
             {
-                Assert.NotNull(item);
+                Assert.NotNull(item.Key);
                 var value = item.Value;
                 Assert.NotNull(value);
                 Assert.Equal(now, value.FailedAt);
@@ -691,7 +691,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, result.Count);
             Assert.All(result, item =>
             {
-                Assert.NotNull(item);
+                Assert.NotNull(item.Key);
                 var value = item.Value;
                 Assert.NotNull(value);
                 Assert.Equal(now, value.DeletedAt);
@@ -749,9 +749,9 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, result.Count);
             Assert.All(result, item =>
             {
-                Assert.NotNull(item);
+                Assert.NotNull(item.Key);
                 var id = Guid.Parse(item.Key);
-                Assert.True(jobs.Any(x => x.Id == id));
+                Assert.Contains(jobs, x => x.Id == id);
                 var value = item.Value;
                 Assert.NotNull(value);
                 Assert.Equal(now, value.EnqueuedAt);
@@ -794,6 +794,7 @@ namespace Hangfire.EntityFramework
 
 
         [ExcludeFromCodeCoverage]
+        [SuppressMessage("Usage", "xUnit1013")]
         public void SampleMethod(string value)
         { }
     }

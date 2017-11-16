@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Hangfire.EntityFramework.Utils;
@@ -151,6 +152,7 @@ namespace Hangfire.EntityFramework
             return source.Token;
         }
 
+        [SuppressMessage("Usage", "xUnit1013")]
         public static void Sample(string arg1, string arg2) { }
 
         private static EntityFrameworkJobQueue CreateJobQueue()
