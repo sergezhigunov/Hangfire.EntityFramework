@@ -133,7 +133,7 @@ namespace Hangfire.EntityFramework
                 {
                     job.InvocationData,
                     job.CreatedAt,
-                    StateName = job.ActualState.State.Name,
+                    State = job.ActualState.State.State,
                 }).
                 FirstOrDefault());
 
@@ -143,7 +143,7 @@ namespace Hangfire.EntityFramework
 
             var jobData = new JobData
             {
-                State = jobInfo.StateName,
+                State = jobInfo.State.ToStateName(),
                 CreatedAt = jobInfo.CreatedAt,
             };
 
@@ -173,7 +173,7 @@ namespace Hangfire.EntityFramework
                 let state = actualState.State
                 select new
                 {
-                    state.Name,
+                    state.State,
                     state.Reason,
                     state.Data,
                 }).
@@ -184,7 +184,7 @@ namespace Hangfire.EntityFramework
             return new StateData
             {
                 Data = JobHelper.FromJson<Dictionary<string, string>>(stateInfo.Data),
-                Name = stateInfo.Name,
+                Name = stateInfo.State.ToStateName(),
                 Reason = stateInfo.Reason,
             };
         }

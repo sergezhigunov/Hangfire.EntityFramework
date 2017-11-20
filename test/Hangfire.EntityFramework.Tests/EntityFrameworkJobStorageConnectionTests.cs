@@ -11,6 +11,7 @@ using System.Threading;
 using Hangfire.Common;
 using Hangfire.EntityFramework.Utils;
 using Hangfire.Server;
+using Hangfire.States;
 using Hangfire.Storage;
 using Moq;
 using Xunit;
@@ -310,7 +311,7 @@ namespace Hangfire.EntityFramework
                 var stateId = Guid.NewGuid();
 
                 context.Jobs.Add(new HangfireJob { Id = jobId, InvocationData = invocationData, CreatedAt = DateTime.UtcNow, });
-                context.JobStates.Add(new HangfireJobState { Id = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, Name = "Succeeded", });
+                context.JobStates.Add(new HangfireJobState { Id = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, State = JobState.Succeeded, });
                 context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
             });
 
@@ -318,7 +319,7 @@ namespace Hangfire.EntityFramework
 
             Assert.NotNull(result);
             Assert.NotNull(result.Job);
-            Assert.Equal("Succeeded", result.State);
+            Assert.Equal(SucceededState.StateName, result.State);
             Assert.Equal("Arguments", result.Job.Args[0]);
             Assert.Null(result.LoadException);
             Assert.True(DateTime.UtcNow.AddMinutes(-1) < result.CreatedAt);
@@ -338,7 +339,7 @@ namespace Hangfire.EntityFramework
                 var stateId = Guid.NewGuid();
 
                 context.Jobs.Add(new HangfireJob { Id = jobId, InvocationData = serializedInvocationData, CreatedAt = DateTime.UtcNow });
-                context.JobStates.Add(new HangfireJobState { Id = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, Name = "Succeeded", });
+                context.JobStates.Add(new HangfireJobState { Id = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, State = JobState.Succeeded, });
                 context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
             });
 
@@ -509,7 +510,7 @@ namespace Hangfire.EntityFramework
                     Id = stateId,
                     JobId = jobId,
                     CreatedAt = DateTime.UtcNow,
-                    Name = "Name",
+                    State = JobState.Awaiting,
                     Reason = "Reason",
                     Data = data
                 });
@@ -520,7 +521,7 @@ namespace Hangfire.EntityFramework
 
             Assert.NotNull(result);
 
-            Assert.Equal("Name", result.Name);
+            Assert.Equal(AwaitingState.StateName, result.Name);
             Assert.Equal("Reason", result.Reason);
             Assert.Equal("Value", result.Data["Key"]);
         }

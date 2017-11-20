@@ -78,7 +78,7 @@ namespace Hangfire.EntityFramework
             {
                 Id = stateId,
                 JobId = jobId,
-                Name = state.Name,
+                State = JobStateExtensions.ToJobState(state.Name),
                 Reason = state.Reason,
                 Data = JobHelper.ToJson(state.SerializeData()),
                 CreatedAt = DateTime.UtcNow,

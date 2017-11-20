@@ -103,7 +103,7 @@ namespace Hangfire.EntityFramework
                         {
                             CreatedAt = x.CreatedAt,
                             Reason = x.Reason,
-                            StateName = x.Name,
+                            StateName = x.State.ToStateName(),
                             Data = JobHelper.FromJson<Dictionary<string, string>>(x.Data),
                         }).
                         ToList(),
@@ -117,18 +117,18 @@ namespace Hangfire.EntityFramework
             {
                 var stateCounts = (
                     from actualState in context.JobActualStates
-                    let name = actualState.State.Name
+                    let state = actualState.State.State
                     where
-                        name == EnqueuedState.StateName ||
-                        name == FailedState.StateName ||
-                        name == ProcessingState.StateName ||
-                        name == ScheduledState.StateName
-                    group actualState by name into @group
+                        state == JobState.Enqueued ||
+                        state == JobState.Failed ||
+                        state == JobState.Processing ||
+                        state == JobState.Scheduled
+                    group actualState by state into @group
                     select new
                     {
-                        StateName = @group.Key,
+                        State = @group.Key,
                         Count = @group.LongCount(),
-                    }).ToDictionary(x => x.StateName, x => x.Count);
+                    }).ToDictionary(x => x.State, x => x.Count);
 
                 var counters = (
                     from counter in context.Counters
@@ -147,10 +147,10 @@ namespace Hangfire.EntityFramework
                 {
                     Recurring = context.Sets.LongCount(x => x.Key == RecurringJobsSetName),
                     Servers = context.Servers.LongCount(),
-                    Enqueued = stateCounts.TryGetValue(EnqueuedState.StateName, out long count) ? count : 0,
-                    Failed = stateCounts.TryGetValue(FailedState.StateName, out count) ? count : 0,
-                    Processing = stateCounts.TryGetValue(ProcessingState.StateName, out count) ? count : 0,
-                    Scheduled = stateCounts.TryGetValue(ScheduledState.StateName, out count) ? count : 0,
+                    Enqueued = stateCounts.TryGetValue(JobState.Enqueued, out long count) ? count : 0,
+                    Failed = stateCounts.TryGetValue(JobState.Failed, out count) ? count : 0,
+                    Processing = stateCounts.TryGetValue(JobState.Processing, out count) ? count : 0,
+                    Scheduled = stateCounts.TryGetValue(JobState.Scheduled, out count) ? count : 0,
                     Deleted = counters.TryGetValue(DeletedCounterName, out count) ? count : 0,
                     Succeeded = counters.TryGetValue(SucceededCounterName, out count) ? count : 0,
                 };
@@ -177,7 +177,7 @@ namespace Hangfire.EntityFramework
 
         public JobList<ProcessingJobDto> ProcessingJobs(int from, int count)
         {
-            return GetJobs<ProcessingJobDto, ProcessingStateData>(from, count, ProcessingState.StateName,
+            return GetJobs<ProcessingJobDto, ProcessingStateData>(from, count, JobState.Processing,
                 (sqlJob, job, stateData) => new ProcessingJobDto
                 {
                     Job = job,
@@ -188,7 +188,7 @@ namespace Hangfire.EntityFramework
 
         public JobList<ScheduledJobDto> ScheduledJobs(int from, int count)
         {
-            return GetJobs<ScheduledJobDto, ScheduledStateData>(from, count, ScheduledState.StateName,
+            return GetJobs<ScheduledJobDto, ScheduledStateData>(from, count, JobState.Scheduled,
                 (sqlJob, job, stateData) => new ScheduledJobDto
                 {
                     Job = job,
@@ -199,7 +199,7 @@ namespace Hangfire.EntityFramework
 
         public JobList<SucceededJobDto> SucceededJobs(int from, int count)
         {
-            return GetJobs<SucceededJobDto, SucceededStateData>(from, count, SucceededState.StateName,
+            return GetJobs<SucceededJobDto, SucceededStateData>(from, count, JobState.Succeeded,
                 (sqlJob, job, stateData) => new SucceededJobDto
                 {
                     Job = job,
@@ -211,7 +211,7 @@ namespace Hangfire.EntityFramework
 
         public JobList<FailedJobDto> FailedJobs(int from, int count)
         {
-            return GetJobs<FailedJobDto, FailedStateData>(from, count, FailedState.StateName,
+            return GetJobs<FailedJobDto, FailedStateData>(from, count, JobState.Failed,
                 (sqlJob, job, stateData) => new FailedJobDto
                 {
                     Job = job,
@@ -225,7 +225,7 @@ namespace Hangfire.EntityFramework
 
         public JobList<DeletedJobDto> DeletedJobs(int from, int count)
         {
-            return GetJobs<DeletedJobDto, DeletedStateData>(from, count, DeletedState.StateName,
+            return GetJobs<DeletedJobDto, DeletedStateData>(from, count, JobState.Deleted,
                 (sqlJob, job, stateData) => new DeletedJobDto
                 {
                     Job = job,
@@ -233,7 +233,7 @@ namespace Hangfire.EntityFramework
                 });
         }
 
-        public long ScheduledCount() => GetNumberOfJobsByStateName(ScheduledState.StateName);
+        public long ScheduledCount() => GetNumberOfJobsByStateName(JobState.Scheduled);
 
         public long EnqueuedCount(string queue)
         {
@@ -243,13 +243,13 @@ namespace Hangfire.EntityFramework
 
         public long FetchedCount(string queue) => 0;
 
-        public long FailedCount() => GetNumberOfJobsByStateName(FailedState.StateName);
+        public long FailedCount() => GetNumberOfJobsByStateName(JobState.Failed);
 
-        public long ProcessingCount() => GetNumberOfJobsByStateName(ProcessingState.StateName);
+        public long ProcessingCount() => GetNumberOfJobsByStateName(JobState.Processing);
 
-        public long SucceededListCount() => GetNumberOfJobsByStateName(SucceededState.StateName);
+        public long SucceededListCount() => GetNumberOfJobsByStateName(JobState.Succeeded);
 
-        public long DeletedListCount() => GetNumberOfJobsByStateName(DeletedState.StateName);
+        public long DeletedListCount() => GetNumberOfJobsByStateName(JobState.Deleted);
 
         public IDictionary<DateTime, long> SucceededByDatesCount() =>
             UseContext(context => GetTimelineStats("succeeded"));
@@ -278,7 +278,7 @@ namespace Hangfire.EntityFramework
                     (sqlJob, job, stateData) => new EnqueuedJobDto
                     {
                         Job = job,
-                        State = sqlJob.ActualState.State.Name,
+                        State = sqlJob.ActualState.State.State.ToStateName(),
                         EnqueuedAt = stateData?.EnqueuedAt
                     });
             });
@@ -287,7 +287,7 @@ namespace Hangfire.EntityFramework
         private JobList<TResult> GetJobs<TResult, TStateData>(
             int from,
             int count,
-            string stateName,
+            JobState state,
             Func<HangfireJob, Job, TStateData, TResult> selector)
         {
             return UseContext(context =>
@@ -295,7 +295,7 @@ namespace Hangfire.EntityFramework
                 var jobs = (
                     from job in context.Jobs.
                     Include(x => x.ActualState.State)
-                    where job.ActualState.State.Name == stateName
+                    where job.ActualState.State.State == state
                     orderby job.CreatedAt descending
                     select job).
                     Skip(() => from).
@@ -332,11 +332,11 @@ namespace Hangfire.EntityFramework
             return provider.GetJobQueueMonitoringApi();
         }
 
-        private long GetNumberOfJobsByStateName(string stateName)
+        private long GetNumberOfJobsByStateName(JobState state)
         {
             return UseContext(context => (
                 from actualState in context.JobActualStates
-                where actualState.State.Name == stateName
+                where actualState.State.State == state
                 select actualState).
                 LongCount());
         }

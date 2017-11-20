@@ -62,7 +62,7 @@ namespace Hangfire.EntityFramework
             Guid anotherJobId = InsertTestJob();
 
             var state = new Mock<IState>();
-            state.Setup(x => x.Name).Returns("State");
+            state.Setup(x => x.Name).Returns(AwaitingState.StateName);
             state.Setup(x => x.Reason).Returns("Reason");
             state.Setup(x => x.SerializeData()).
                 Returns(new Dictionary<string, string> { { "Name", "Value" } });
@@ -72,13 +72,13 @@ namespace Hangfire.EntityFramework
             DateTime endTimestamp = DateTime.UtcNow.AddSeconds(1);
 
             var job = GetTestJob(jobId);
-            Assert.Equal("State", job.ActualState.State.Name);
+            Assert.Equal(JobState.Awaiting, job.ActualState.State.State);
 
             var anotherJob = GetTestJob(anotherJobId);
             Assert.Null(anotherJob.ActualState);
 
             var jobState = job.ActualState.State;
-            Assert.Equal("State", jobState.Name);
+            Assert.Equal(JobState.Awaiting, jobState.State);
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
             var data = JobHelper.FromJson<Dictionary<string, string>>(jobState.Data);
@@ -92,7 +92,7 @@ namespace Hangfire.EntityFramework
             Guid jobId = InsertTestJob();
 
             var state = new Mock<IState>();
-            state.Setup(x => x.Name).Returns("State");
+            state.Setup(x => x.Name).Returns(AwaitingState.StateName);
             state.Setup(x => x.Reason).Returns("Reason");
             state.Setup(x => x.SerializeData()).
                 Returns(new Dictionary<string, string> { { "Name", "Value" } });
@@ -105,7 +105,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(job.ActualState);
 
             var jobState = job.States.Single();
-            Assert.Equal("State", jobState.Name);
+            Assert.Equal(JobState.Awaiting, jobState.State);
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
             var data = JobHelper.FromJson<Dictionary<string, string>>(jobState.Data);
