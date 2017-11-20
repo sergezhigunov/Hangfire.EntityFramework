@@ -120,6 +120,12 @@
   <data name="CannotRetrieveQueueProviderForQueue" xml:space="preserve">
     <value>Cannot retrieve provider instances registered for the folowing queues: {0}.</value>
   </data>
+  <data name="InvalidJobState" xml:space="preserve">
+    <value>The job state '{0}' is invalid.</value>
+  </data>
+  <data name="JobStateNotSupported" xml:space="preserve">
+    <value>The job state '{0}' is not supported.</value>
+  </data>
   <data name="LockTimedOutOnResource" xml:space="preserve">
     <value>Could not place a lock on the resource {0}. Lock timed out.</value>
   </data>
