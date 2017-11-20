@@ -94,7 +94,7 @@ namespace Hangfire.EntityFramework
                 {
                     CreatedAt = job.CreatedAt,
                     ExpireAt = job.ExpireAt,
-                    Job = DeserializeJob(job.InvocationData),
+                    Job = DeserializeJob(job),
                     Properties = job.Parameters.
                         ToDictionary(x => x.Name, x => x.Value),
                     History = job.States.
@@ -314,10 +314,10 @@ namespace Hangfire.EntityFramework
             {
                 var dto = default(TResult);
 
-                if (!string.IsNullOrWhiteSpace(job.InvocationData))
+                if (!string.IsNullOrWhiteSpace(job.ClrType) && !string.IsNullOrWhiteSpace(job.Method))
                 {
                     TStateData stateData = JobHelper.FromJson<TStateData>(job.ActualState.State.Data);
-                    dto = selector(job, DeserializeJob(job.InvocationData), stateData);
+                    dto = selector(job, DeserializeJob(job), stateData);
                 }
 
                 result.Add(new KeyValuePair<string, TResult>(job.Id.ToString(), dto));
@@ -380,9 +380,13 @@ namespace Hangfire.EntityFramework
 
         private T UseContext<T>(Func<HangfireDbContext, T> func) => Storage.UseContext(func);
 
-        private static Job DeserializeJob(string invocationData)
+        private static Job DeserializeJob(HangfireJob job)
         {
-            var data = JobHelper.FromJson<InvocationData>(invocationData);
+            var data = new InvocationData(
+                job.ClrType,
+                job.Method,
+                job.ParameterTypes,
+                job.Arguments);
 
             try
             {

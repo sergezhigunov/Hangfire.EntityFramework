@@ -10,16 +10,15 @@ namespace Hangfire.EntityFramework.Utils
 {
     internal static class JobUtils
     {
-        public static string CreateInvocationData(Expression<Action> methodCall)
+        public static InvocationData CreateInvocationData(Expression<Action> methodCall)
         {
             var job = Job.FromExpression(methodCall);
             return CreateInvocationData(job);
         }
 
-        public static string CreateInvocationData(Job job)
+        public static InvocationData CreateInvocationData(Job job)
         {
-            var invocationData = InvocationData.Serialize(job);
-            return JobHelper.ToJson(invocationData);
+            return InvocationData.Serialize(job);
         }
     }
 }

@@ -14,8 +14,15 @@ namespace Hangfire.EntityFramework
         [Key]
         public Guid Id { get; set; }
 
-        [Required(AllowEmptyStrings = true)]
-        public string InvocationData { get; set; }
+        [StringLength(512)]
+        public string ClrType { get; set; }
+
+        [StringLength(512)]
+        public string Method { get; set; }
+
+        public string ParameterTypes { get; set; }
+
+        public string Arguments { get; set; }
 
         [DateTimePrecision(7)]
         [Index("IX_HangfireJob_CreatedAt", IsUnique = false)]

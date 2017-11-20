@@ -38,7 +38,6 @@ namespace Hangfire.EntityFramework
             {
                 Id = x,
                 CreatedAt = DateTime.UtcNow,
-                InvocationData = string.Empty
             });
             var jobQueueItems = jobIds.Select(x => new HangfireJobQueueItem
             {
@@ -82,7 +81,6 @@ namespace Hangfire.EntityFramework
             {
                 Id = x,
                 CreatedAt = DateTime.UtcNow,
-                InvocationData = string.Empty
             });
             var jobQueueItems = jobIds.Select(x => new HangfireJobQueueItem
             {
@@ -128,7 +126,6 @@ namespace Hangfire.EntityFramework
             {
                 Id = x,
                 CreatedAt = DateTime.UtcNow,
-                InvocationData = string.Empty
             });
             var jobQueueItems = jobIds.Select(x => new HangfireJobQueueItem
             {

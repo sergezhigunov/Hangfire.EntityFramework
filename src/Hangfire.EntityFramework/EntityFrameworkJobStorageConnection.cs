@@ -47,7 +47,10 @@ namespace Hangfire.EntityFramework
                     Id = jobId,
                     CreatedAt = createdAt,
                     ExpireAt = createdAt + expireIn,
-                    InvocationData = JobHelper.ToJson(invocationData),
+                    ClrType = invocationData.Type,
+                    Method = invocationData.Method,
+                    ParameterTypes = invocationData.ParameterTypes,
+                    Arguments = invocationData.Arguments,
                 });
 
                 foreach (var parameter in parameters)
@@ -120,7 +123,8 @@ namespace Hangfire.EntityFramework
 
         public override JobData GetJobData(string jobId)
         {
-            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+            if (jobId == null)
+                throw new ArgumentNullException(nameof(jobId));
 
             Guid id;
             if (!Guid.TryParse(jobId, out id))
@@ -131,7 +135,10 @@ namespace Hangfire.EntityFramework
                 where job.Id == id
                 select new
                 {
-                    job.InvocationData,
+                    job.ClrType,
+                    job.Method,
+                    job.ParameterTypes,
+                    job.Arguments,
                     job.CreatedAt,
                     State = job.ActualState.State.State,
                 }).
@@ -139,7 +146,11 @@ namespace Hangfire.EntityFramework
 
             if (jobInfo == null) return null;
 
-            var invocationData = JobHelper.FromJson<InvocationData>(jobInfo.InvocationData);
+            var invocationData = new InvocationData(
+                jobInfo.ClrType,
+                jobInfo.Method,
+                jobInfo.ParameterTypes,
+                jobInfo.Arguments);
 
             var jobData = new JobData
             {

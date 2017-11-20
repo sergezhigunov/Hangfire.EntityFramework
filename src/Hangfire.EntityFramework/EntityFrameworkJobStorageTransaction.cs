@@ -35,7 +35,6 @@ namespace Hangfire.EntityFramework
                 {
                     Id = Guid.Parse(jobId),
                     ExpireAt = DateTime.UtcNow + expireIn,
-                    InvocationData = string.Empty,
                 };
                 context.Jobs.Attach(job);
                 context.Entry(job).Property(x => x.ExpireAt).IsModified = true;
@@ -49,7 +48,6 @@ namespace Hangfire.EntityFramework
                 var job = new HangfireJob
                 {
                     Id = Guid.Parse(jobId),
-                    InvocationData = string.Empty,
                 };
                 context.Jobs.Attach(job);
                 context.Entry(job).Property(x => x.ExpireAt).IsModified = true;

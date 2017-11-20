@@ -72,7 +72,6 @@ namespace Hangfire.EntityFramework
             {
                 Id = jobId,
                 CreatedAt = DateTime.UtcNow,
-                InvocationData = string.Empty,
             };
             var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
             var jobQueueItem = new HangfireJobQueueItem
@@ -112,7 +111,6 @@ namespace Hangfire.EntityFramework
             {
                 Id = jobId,
                 CreatedAt = DateTime.UtcNow,
-                InvocationData = string.Empty,
             };
 
             UseContextWithSavingChanges(context => context.Jobs.Add(job));

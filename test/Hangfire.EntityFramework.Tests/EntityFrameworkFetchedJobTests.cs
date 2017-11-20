@@ -35,7 +35,7 @@ namespace Hangfire.EntityFramework
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
             var storage = CreateStorage();
-            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
+            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, };
             var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
             var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
             UseContextWithSavingChanges(context =>
@@ -56,7 +56,7 @@ namespace Hangfire.EntityFramework
         public void RemoveFromQueue_CorrectlyRemovesQueueItem()
         {
             var storage = CreateStorage();
-            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
+            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, };
             var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
             var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
             UseContextWithSavingChanges(context =>
@@ -80,7 +80,7 @@ namespace Hangfire.EntityFramework
         public void Requeue_CorrectlyReturnsItemBackToQueue()
         {
             var storage = CreateStorage();
-            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
+            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, };
             var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
             var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
             UseContextWithSavingChanges(context =>
@@ -104,7 +104,7 @@ namespace Hangfire.EntityFramework
         public void Dispose_CorrectlyDisposeOwnedResources()
         {
             var storage = CreateStorage();
-            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, };
+            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, };
             var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
             var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
             UseContextWithSavingChanges(context =>

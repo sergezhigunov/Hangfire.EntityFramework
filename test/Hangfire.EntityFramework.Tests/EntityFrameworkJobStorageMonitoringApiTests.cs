@@ -38,13 +38,18 @@ namespace Hangfire.EntityFramework
         public void Queues_ReturnsCorrectList()
         {
             Guid stateId = Guid.NewGuid();
+            var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test"));
 
             var job = new HangfireJob
             {
                 Id = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
-                InvocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test")),
+                ClrType = invocationData.Type,
+                Method = invocationData.Method,
+                ParameterTypes = invocationData.ParameterTypes,
+                Arguments = invocationData.Arguments,
             };
+
             var state = new HangfireJobState
             {
                 Id = Guid.NewGuid(),
@@ -52,6 +57,7 @@ namespace Hangfire.EntityFramework
                 CreatedAt = DateTime.UtcNow,
                 State =  JobState.Awaiting,
             };
+
             var jobQueueItem = new HangfireJobQueueItem
             {
                 Id = Guid.NewGuid(),
@@ -83,7 +89,11 @@ namespace Hangfire.EntityFramework
             Assert.Null(firstJob.EnqueuedAt);
             Assert.True(firstJob.InEnqueuedState);
             Assert.Equal(AwaitingState.StateName, firstJob.State);
-            Assert.Equal(job.InvocationData, JobUtils.CreateInvocationData(firstJob.Job));
+            var firstJobInvocationData = JobUtils.CreateInvocationData(firstJob.Job);
+            Assert.Equal(job.ClrType, firstJobInvocationData.Type);
+            Assert.Equal(job.Method, firstJobInvocationData.Method);
+            Assert.Equal(job.ParameterTypes, firstJobInvocationData.ParameterTypes);
+            Assert.Equal(job.Arguments, firstJobInvocationData.Arguments);
         }
 
         [Fact, RollbackTransaction]
@@ -443,14 +453,20 @@ namespace Hangfire.EntityFramework
                 { "Result", "789" },
             };
 
+            var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test"));
+
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
                     Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
-                    InvocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test")),
+                    ClrType = invocationData.Type,
+                    Method = invocationData.Method,
+                    ParameterTypes = invocationData.ParameterTypes,
+                    Arguments = invocationData.Arguments,
                 }).
                 ToArray();
+
             var states = jobs.Select(x => new HangfireJobState
             {
                 Id = Guid.NewGuid(),
@@ -497,14 +513,20 @@ namespace Hangfire.EntityFramework
                 { "ServerName", "ServerName" },
             };
 
+            var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test"));
+
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
                     Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
-                    InvocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test")),
+                    ClrType = invocationData.Type,
+                    Method = invocationData.Method,
+                    ParameterTypes = invocationData.ParameterTypes,
+                    Arguments = invocationData.Arguments,
                 }).
                 ToArray();
+
             var states = jobs.Select(x => new HangfireJobState
             {
                 Id = Guid.NewGuid(),
@@ -549,14 +571,20 @@ namespace Hangfire.EntityFramework
                 { "ScheduledAt",  JobHelper.SerializeDateTime(now.AddSeconds(1)) },
             };
 
+            var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test"));
+
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
                     Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
-                    InvocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test")),
+                    ClrType = invocationData.Type,
+                    Method = invocationData.Method,
+                    ParameterTypes = invocationData.ParameterTypes,
+                    Arguments = invocationData.Arguments,
                 }).
                 ToArray();
+
             var states = jobs.Select(x => new HangfireJobState
             {
                 Id = Guid.NewGuid(),
@@ -603,14 +631,20 @@ namespace Hangfire.EntityFramework
                 { "ExceptionType",  "ExceptionType" },
             };
 
+            var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test"));
+
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
                     Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
-                    InvocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test")),
+                    ClrType = invocationData.Type,
+                    Method = invocationData.Method,
+                    ParameterTypes = invocationData.ParameterTypes,
+                    Arguments = invocationData.Arguments,
                 }).
                 ToArray();
+
             var states = jobs.Select(x => new HangfireJobState
             {
                 Id = Guid.NewGuid(),
@@ -661,14 +695,20 @@ namespace Hangfire.EntityFramework
                 { "ExceptionType",  "ExceptionType" },
             };
 
+            var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test"));
+
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
                     Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
-                    InvocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test")),
+                    ClrType = invocationData.Type,
+                    Method = invocationData.Method,
+                    ParameterTypes = invocationData.ParameterTypes,
+                    Arguments = invocationData.Arguments,
                 }).
                 ToArray();
+
             var states = jobs.Select(x => new HangfireJobState
             {
                 Id = Guid.NewGuid(),
@@ -711,14 +751,20 @@ namespace Hangfire.EntityFramework
                 { "EnqueuedAt",  JobHelper.SerializeDateTime(now) },
             };
 
+            var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test"));
+
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
                     Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
-                    InvocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test")),
+                    ClrType = invocationData.Type,
+                    Method = invocationData.Method,
+                    ParameterTypes = invocationData.ParameterTypes,
+                    Arguments = invocationData.Arguments,
                 }).
                 ToArray();
+
             var states = jobs.Select(x => new HangfireJobState
             {
                 Id = Guid.NewGuid(),
@@ -770,7 +816,7 @@ namespace Hangfire.EntityFramework
 
         private Guid AddJobWithStateToContext(HangfireDbContext context, JobState jobState, string data = null)
         {
-            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty };
+            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, };
             var state = new HangfireJobState { Id = Guid.NewGuid(), Job = job, CreatedAt = DateTime.UtcNow, State = jobState, Data = data, };
             context.Jobs.Add(job);
             context.JobStates.Add(state);
@@ -780,7 +826,7 @@ namespace Hangfire.EntityFramework
 
         private Guid AddJobWithQueueItemToContext(HangfireDbContext context, string queue)
         {
-            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty };
+            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, };
             var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = queue, };
             context.Jobs.Add(job);
             context.JobQueues.Add(queueItem);

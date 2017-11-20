@@ -95,7 +95,7 @@ namespace Hangfire.EntityFramework
             UseContextWithSavingChanges(context =>
             {
                 context.Counters.Add(new HangfireCounter { Id = Guid.NewGuid(), Key = "test", ExpireAt = expireAt });
-                context.Jobs.Add(new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, InvocationData = string.Empty, ExpireAt = expireAt });
+                context.Jobs.Add(new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, ExpireAt = expireAt });
                 context.Lists.Add(new HangfireListItem { Key = "test", ExpireAt = expireAt });
                 context.Sets.Add(new HangfireSet { Key = "test", Value = "test", CreatedAt = DateTime.UtcNow, ExpireAt = expireAt });
                 context.Hashes.Add(new HangfireHash { Key = "test", Field = "test", ExpireAt = expireAt });
