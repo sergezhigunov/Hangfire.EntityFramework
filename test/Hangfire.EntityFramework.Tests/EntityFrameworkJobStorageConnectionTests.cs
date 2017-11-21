@@ -273,7 +273,7 @@ namespace Hangfire.EntityFramework
             var invocationData = new InvocationData(
                 hangfireJob.ClrType,
                 hangfireJob.Method,
-                hangfireJob.ParameterTypes,
+                hangfireJob.ArgumentTypes,
                 hangfireJob.Arguments);
 
             var job = invocationData.Deserialize();
@@ -319,7 +319,7 @@ namespace Hangfire.EntityFramework
                     Id = jobId,
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
-                    ParameterTypes = invocationData.ParameterTypes,
+                    ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
                 });
@@ -354,7 +354,7 @@ namespace Hangfire.EntityFramework
                     Id = jobId,
                     ClrType = invocationData.Type,
                     Method = invocationData.Type,
-                    ParameterTypes = invocationData.ParameterTypes,
+                    ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
                 });
@@ -528,7 +528,7 @@ namespace Hangfire.EntityFramework
                     Id = jobId,
                     ClrType = invocationData.Type,
                     Method = invocationData.Type,
-                    ParameterTypes = invocationData.ParameterTypes,
+                    ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
                 });

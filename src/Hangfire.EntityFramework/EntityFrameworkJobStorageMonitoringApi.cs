@@ -385,7 +385,7 @@ namespace Hangfire.EntityFramework
             var data = new InvocationData(
                 job.ClrType,
                 job.Method,
-                job.ParameterTypes,
+                job.ArgumentTypes,
                 job.Arguments);
 
             try

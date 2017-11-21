@@ -46,7 +46,7 @@ namespace Hangfire.EntityFramework
                 CreatedAt = DateTime.UtcNow,
                 ClrType = invocationData.Type,
                 Method = invocationData.Method,
-                ParameterTypes = invocationData.ParameterTypes,
+                ArgumentTypes = invocationData.ParameterTypes,
                 Arguments = invocationData.Arguments,
             };
 
@@ -92,7 +92,7 @@ namespace Hangfire.EntityFramework
             var firstJobInvocationData = JobUtils.CreateInvocationData(firstJob.Job);
             Assert.Equal(job.ClrType, firstJobInvocationData.Type);
             Assert.Equal(job.Method, firstJobInvocationData.Method);
-            Assert.Equal(job.ParameterTypes, firstJobInvocationData.ParameterTypes);
+            Assert.Equal(job.ArgumentTypes, firstJobInvocationData.ParameterTypes);
             Assert.Equal(job.Arguments, firstJobInvocationData.Arguments);
         }
 
@@ -462,7 +462,7 @@ namespace Hangfire.EntityFramework
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
-                    ParameterTypes = invocationData.ParameterTypes,
+                    ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                 }).
                 ToArray();
@@ -522,7 +522,7 @@ namespace Hangfire.EntityFramework
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
-                    ParameterTypes = invocationData.ParameterTypes,
+                    ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                 }).
                 ToArray();
@@ -580,7 +580,7 @@ namespace Hangfire.EntityFramework
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
-                    ParameterTypes = invocationData.ParameterTypes,
+                    ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                 }).
                 ToArray();
@@ -640,7 +640,7 @@ namespace Hangfire.EntityFramework
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
-                    ParameterTypes = invocationData.ParameterTypes,
+                    ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                 }).
                 ToArray();
@@ -704,7 +704,7 @@ namespace Hangfire.EntityFramework
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
-                    ParameterTypes = invocationData.ParameterTypes,
+                    ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                 }).
                 ToArray();
@@ -760,7 +760,7 @@ namespace Hangfire.EntityFramework
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
-                    ParameterTypes = invocationData.ParameterTypes,
+                    ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                 }).
                 ToArray();

@@ -20,7 +20,7 @@ namespace Hangfire.EntityFramework
         [StringLength(512)]
         public string Method { get; set; }
 
-        public string ParameterTypes { get; set; }
+        public string ArgumentTypes { get; set; }
 
         public string Arguments { get; set; }
 

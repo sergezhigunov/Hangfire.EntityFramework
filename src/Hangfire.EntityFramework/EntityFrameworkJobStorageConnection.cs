@@ -49,7 +49,7 @@ namespace Hangfire.EntityFramework
                     ExpireAt = createdAt + expireIn,
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
-                    ParameterTypes = invocationData.ParameterTypes,
+                    ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                 });
 
@@ -137,7 +137,7 @@ namespace Hangfire.EntityFramework
                 {
                     job.ClrType,
                     job.Method,
-                    job.ParameterTypes,
+                    job.ArgumentTypes,
                     job.Arguments,
                     job.CreatedAt,
                     State = job.ActualState.State.State,
@@ -149,7 +149,7 @@ namespace Hangfire.EntityFramework
             var invocationData = new InvocationData(
                 jobInfo.ClrType,
                 jobInfo.Method,
-                jobInfo.ParameterTypes,
+                jobInfo.ArgumentTypes,
                 jobInfo.Arguments);
 
             var jobData = new JobData
