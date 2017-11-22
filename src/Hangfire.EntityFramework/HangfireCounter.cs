@@ -14,13 +14,13 @@ namespace Hangfire.EntityFramework
 
         [Required]
         [StringLength(100)]
-        [Index("IX_HangfireCounter_Key", IsUnique = false)]
+        [Index(IsUnique = false)]
         public string Key { get; set; }
 
         public long Value { get; set; }
 
         [DateTimePrecision(7)]
-        [Index("IX_HangfireCounter_ExpireAt", IsUnique = false)]
+        [Index(IsUnique = false)]
         public DateTime? ExpireAt { get; set; }
     }
 }

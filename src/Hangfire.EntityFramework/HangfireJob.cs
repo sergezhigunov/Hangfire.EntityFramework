@@ -25,11 +25,11 @@ namespace Hangfire.EntityFramework
         public string Arguments { get; set; }
 
         [DateTimePrecision(7)]
-        [Index("IX_HangfireJob_CreatedAt", IsUnique = false)]
+        [Index(IsUnique = false)]
         public DateTime CreatedAt { get; set; }
 
         [DateTimePrecision(7)]
-        [Index("IX_HangfireJob_ExpireAt", IsUnique = false)]
+        [Index(IsUnique = false)]
         public DateTime? ExpireAt { get; set; }
 
         public virtual HangfireJobActualState ActualState { get; set; }

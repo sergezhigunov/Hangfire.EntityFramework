@@ -15,7 +15,7 @@ namespace Hangfire.EntityFramework
         [ForeignKey(nameof(Job))]
         public Guid JobId { get; set; }
 
-        [Index("IX_HangfireJobState_State", IsUnique = false)]
+        [Index(IsUnique = false)]
         public JobState State { get; set; }
 
         [StringLength(100)]
@@ -24,7 +24,7 @@ namespace Hangfire.EntityFramework
         public string Data { get; set; }
 
         [DateTimePrecision(7)]
-        [Index("IX_HangfireJobState_CreatedAt", IsUnique = false)]
+        [Index(IsUnique = false)]
         public DateTime CreatedAt { get; set; }
 
         public virtual HangfireJob Job { get; set; }

@@ -14,7 +14,7 @@ namespace Hangfire.EntityFramework
         public string Id { get; set; }
 
         [DateTimePrecision(7)]
-        [Index("IX_HangfireDistrLock_CreatedAt", IsUnique = false)]
+        [Index(IsUnique = false)]
         public DateTime CreatedAt { get; set; }
     }
 }
