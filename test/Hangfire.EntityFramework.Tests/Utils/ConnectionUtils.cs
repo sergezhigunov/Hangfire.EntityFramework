@@ -17,13 +17,13 @@ namespace Hangfire.EntityFramework.Utils
 
         internal static HangfireDbContext CreateContext()
         {
-            var storage = new EntityFrameworkJobStorage(GetConnectionString());
+            var storage = CreateStorage();
             return storage.CreateContext();
         }
 
         internal static void UseContext(Action<HangfireDbContext> action)
         {
-            var storage = new EntityFrameworkJobStorage(GetConnectionString());
+            var storage = CreateStorage();
             storage.UseContext(action);
         }
 
@@ -36,7 +36,7 @@ namespace Hangfire.EntityFramework.Utils
 
         internal static void UseContextWithSavingChanges(Action<HangfireDbContext> action)
         {
-            var storage = new EntityFrameworkJobStorage(GetConnectionString());
+            var storage = CreateStorage();
             storage.UseContext(context =>
             {
                 action(context);
@@ -46,7 +46,7 @@ namespace Hangfire.EntityFramework.Utils
 
         internal static void UseConnection(Action<EntityFrameworkJobStorageConnection> action)
         {
-            var storage = new EntityFrameworkJobStorage(GetConnectionString());
+            var storage = CreateStorage();
 
             using (var connection = new EntityFrameworkJobStorageConnection(storage))
                 action(connection);
@@ -61,7 +61,7 @@ namespace Hangfire.EntityFramework.Utils
 
         internal static void UseTransaction(Action<EntityFrameworkJobStorageTransaction> action)
         {
-            var storage = new EntityFrameworkJobStorage(GetConnectionString());
+            var storage = CreateStorage();
 
             using (var transaction = new EntityFrameworkJobStorageTransaction(storage))
             {
