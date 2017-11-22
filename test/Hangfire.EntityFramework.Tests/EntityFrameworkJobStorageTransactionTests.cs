@@ -124,7 +124,6 @@ namespace Hangfire.EntityFramework
 
             Assert.Equal(id, result.JobId);
             Assert.Equal("DEFAULT", result.Queue);
-            Assert.Null(result.FetchedAt);
         }
 
         [Fact, RollbackTransaction]

@@ -122,7 +122,6 @@ namespace Hangfire.EntityFramework
             var record = UseContext(context => context.JobQueues.Single());
             Assert.Equal(jobId, record.JobId);
             Assert.Equal(queueName, record.Queue);
-            Assert.Null(record.FetchedAt);
         }
 
         [Fact, RollbackTransaction]
