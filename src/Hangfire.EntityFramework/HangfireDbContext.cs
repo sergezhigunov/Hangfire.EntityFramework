@@ -75,7 +75,7 @@ namespace Hangfire.EntityFramework
                 if (propertyType == typeof(DateTime) ||
                     propertyType == typeof(DateTime?) ||
                     propertyType == typeof(DateTimeOffset) ||
-                    propertyType == typeof(DateTimeOffset))
+                    propertyType == typeof(DateTimeOffset?))
                     configuration.HasPrecision(attribute.Value);
             }
         }
