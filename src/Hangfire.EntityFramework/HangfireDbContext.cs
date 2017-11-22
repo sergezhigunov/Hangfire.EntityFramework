@@ -48,7 +48,6 @@ namespace Hangfire.EntityFramework
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Conventions.Remove<PluralizingTableNameConvention>();
             modelBuilder.Conventions.Add<DateTimePrecisionConvention>();
 
             if (DefaultSchemaName != null)
