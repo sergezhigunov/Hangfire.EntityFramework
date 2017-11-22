@@ -18,7 +18,7 @@ namespace Hangfire.EntityFramework
 
         public string Data { get; set; }
 
-        [Index("IX_HangfireServer_Heartbeat")]
+        [Index]
         [DateTimePrecision(7)]
         public DateTime Heartbeat { get; set; }
 
