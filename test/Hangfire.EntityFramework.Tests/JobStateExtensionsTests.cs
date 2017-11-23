@@ -25,7 +25,7 @@ namespace Hangfire.EntityFramework
         [MemberData(nameof(GetStateNameMapping))]
         public void ToStateName_ReturnsCorrectResult(Enum stateValue, string stateName)
         {
-            JobState state = (JobState)stateValue;
+            var state = (JobState)stateValue;
 
             var actualStateName = JobStateExtensions.ToStateName(state);
 
@@ -51,7 +51,7 @@ namespace Hangfire.EntityFramework
         [MemberData(nameof(GetStateNameMapping))]
         public void ToJobState_ReturnsCorrectResult(Enum stateValue, string stateName)
         {
-            JobState state = (JobState)stateValue;
+            var state = (JobState)stateValue;
 
             var actualState = JobStateExtensions.ToJobState(stateName);
 

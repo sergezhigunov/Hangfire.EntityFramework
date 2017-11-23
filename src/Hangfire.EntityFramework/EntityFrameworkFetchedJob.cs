@@ -30,8 +30,11 @@ namespace Hangfire.EntityFramework
             [NotNull] EntityFrameworkJobStorage storage,
             [NotNull] string queue)
         {
-            if (queue == null) throw new ArgumentNullException(nameof(queue));
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (queue == null)
+                throw new ArgumentNullException(nameof(queue));
+
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
 
             QueueItemId = queueItemId;
             JobId = jobId.ToString();

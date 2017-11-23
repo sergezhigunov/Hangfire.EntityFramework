@@ -21,7 +21,7 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void Ctor_SavesDefaultProviderCorrectly()
         {
-            Mock<IPersistentJobQueueProvider> defaultProvider = new Mock<IPersistentJobQueueProvider>();
+            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
 
             var collection = new PersistentJobQueueProviderCollection(defaultProvider.Object);
 
@@ -31,7 +31,7 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void Add_ThrowsAnException_WhenProviderIsNull()
         {
-            Mock<IPersistentJobQueueProvider> defaultProvider = new Mock<IPersistentJobQueueProvider>();
+            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
             var collection = new PersistentJobQueueProviderCollection(defaultProvider.Object);
 
             Assert.Throws<ArgumentNullException>("provider", () => collection.Add(null, new string[0]));
@@ -40,7 +40,7 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void Add_ThrowsAnException_WhenQueuesIsNull()
         {
-            Mock<IPersistentJobQueueProvider> defaultProvider = new Mock<IPersistentJobQueueProvider>();
+            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
             var collection = new PersistentJobQueueProviderCollection(defaultProvider.Object);
 
             Assert.Throws<ArgumentNullException>("queues", () => collection.Add(defaultProvider.Object, null));
@@ -49,7 +49,7 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void GetProvider_ThrowsAnException_WhenQueueIsNull()
         {
-            Mock<IPersistentJobQueueProvider> defaultProvider = new Mock<IPersistentJobQueueProvider>();
+            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
             var collection = new PersistentJobQueueProviderCollection(defaultProvider.Object);
 
             Assert.Throws<ArgumentNullException>("queue", () => collection.GetProvider(null));
@@ -58,7 +58,7 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void GetProvider_ReturnsDefaultProvider_WhenQueueIsNotMapped()
         {
-            Mock<IPersistentJobQueueProvider> defaultProvider = new Mock<IPersistentJobQueueProvider>();
+            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
             var collection = new PersistentJobQueueProviderCollection(defaultProvider.Object);
 
             var provider = collection.GetProvider(string.Empty);
@@ -69,8 +69,8 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void GetProvider_ReturnsCorrectProvider_WhenQueueIsMapped()
         {
-            Mock<IPersistentJobQueueProvider> defaultProvider = new Mock<IPersistentJobQueueProvider>();
-            Mock<IPersistentJobQueueProvider> otherProvider = new Mock<IPersistentJobQueueProvider>();
+            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
+            var otherProvider = new Mock<IPersistentJobQueueProvider>();
             var collection = new PersistentJobQueueProviderCollection(defaultProvider.Object);
             collection.Add(otherProvider.Object, new[] { "QUEUE" });
 
@@ -82,7 +82,7 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void GetEnumerator_ReturnsDefaultProvider_WhenOtherProviderNotSet()
         {
-            Mock<IPersistentJobQueueProvider> defaultProvider = new Mock<IPersistentJobQueueProvider>();
+            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
             var collection = new PersistentJobQueueProviderCollection(defaultProvider.Object);
 
             var result = collection.ToArray();
@@ -96,8 +96,8 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void GetEnumerator_ReturnsDistinctProviders_WhenMulipleOtherProvidersSet()
         {
-            Mock<IPersistentJobQueueProvider> defaultProvider = new Mock<IPersistentJobQueueProvider>();
-            Mock<IPersistentJobQueueProvider> otherProvider = new Mock<IPersistentJobQueueProvider>();
+            var defaultProvider = new Mock<IPersistentJobQueueProvider>();
+            var otherProvider = new Mock<IPersistentJobQueueProvider>();
             var collection = new PersistentJobQueueProviderCollection(defaultProvider.Object);
             collection.Add(defaultProvider.Object, new[] { "DEFAULT" });
             collection.Add(otherProvider.Object, new[] { "OTHER1", "OTHER2" });

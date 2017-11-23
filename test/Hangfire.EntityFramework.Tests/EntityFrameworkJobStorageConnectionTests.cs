@@ -111,11 +111,25 @@ namespace Hangfire.EntityFramework
 
             DateTime datetime = new DateTime(2017, 1, 1, 11, 22, 33);
 
-            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId };
+            var host = new HangfireServerHost
+            {
+                Id = EntityFrameworkJobStorage.ServerHostId,
+            };
+
             var servers = new[]
             {
-                new HangfireServer { Id = server1, Heartbeat = datetime, ServerHost = host, },
-                new HangfireServer { Id = server2, Heartbeat = datetime, ServerHost = host, },
+                new HangfireServer
+                {
+                    Id = server1,
+                    Heartbeat = datetime,
+                    ServerHost = host,
+                },
+                new HangfireServer
+                {
+                    Id = server2,
+                    Heartbeat = datetime,
+                    ServerHost = host,
+                },
             };
 
             UseContextWithSavingChanges(context =>
@@ -155,8 +169,17 @@ namespace Hangfire.EntityFramework
         {
             var serverId = "Server1";
 
-            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId,  };
-            var server = new HangfireServer { Id = serverId, Heartbeat = DateTime.UtcNow, ServerHost = host, };
+            var host = new HangfireServerHost
+            {
+                Id = EntityFrameworkJobStorage.ServerHostId,
+            };
+
+            var server = new HangfireServer
+            {
+                Id = serverId,
+                Heartbeat = DateTime.UtcNow,
+                ServerHost = host,
+            };
 
             UseContextWithSavingChanges(context =>
             {
@@ -186,12 +209,27 @@ namespace Hangfire.EntityFramework
             string server1 = "server1";
             string server2 = "server2";
 
-            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
+            var host = new HangfireServerHost
+            {
+                Id = EntityFrameworkJobStorage.ServerHostId,
+            };
+
             var servers = new[]
             {
-                new HangfireServer { Id = server1, Heartbeat = DateTime.UtcNow.AddHours(-1), ServerHost = host, },
-                new HangfireServer { Id = server2, Heartbeat = DateTime.UtcNow.AddHours(-3), ServerHost = host, },
+                new HangfireServer
+                {
+                    Id = server1,
+                    Heartbeat = DateTime.UtcNow.AddHours(-1),
+                    ServerHost = host,
+                },
+                new HangfireServer
+                {
+                    Id = server2,
+                    Heartbeat = DateTime.UtcNow.AddHours(-3),
+                    ServerHost = host,
+                },
             };
+
             UseContextWithSavingChanges(context =>
             {
                 context.ServerHosts.Add(host);
@@ -253,7 +291,11 @@ namespace Hangfire.EntityFramework
 
             var jobId = UseConnection(connection => connection.CreateExpiredJob(
                 Job.FromExpression(() => SampleMethod("argument")),
-                new Dictionary<string, string> { ["Key1"] = "Value1", ["Key2"] = "Value2", },
+                new Dictionary<string, string>
+                {
+                    ["Key1"] = "Value1",
+                    ["Key2"] = "Value2",
+                },
                 createdAt,
                 TimeSpan.FromDays(1)));
 
@@ -323,8 +365,20 @@ namespace Hangfire.EntityFramework
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
                 });
-                context.JobStates.Add(new HangfireJobState { Id = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, State = JobState.Succeeded, });
-                context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
+
+                context.JobStates.Add(new HangfireJobState
+                {
+                    Id = stateId,
+                    JobId = jobId,
+                    CreatedAt = DateTime.UtcNow,
+                    State = JobState.Succeeded,
+                });
+
+                context.JobActualStates.Add(new HangfireJobActualState
+                {
+                    StateId = stateId,
+                    JobId = jobId,
+                });
             });
 
             var result = UseConnection(connection => connection.GetJobData(jobId.ToString()));
@@ -358,8 +412,20 @@ namespace Hangfire.EntityFramework
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
                 });
-                context.JobStates.Add(new HangfireJobState { Id = stateId, JobId = jobId, CreatedAt = DateTime.UtcNow, State = JobState.Succeeded, });
-                context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
+
+                context.JobStates.Add(new HangfireJobState
+                {
+                    Id = stateId,
+                    JobId = jobId,
+                    CreatedAt = DateTime.UtcNow,
+                    State = JobState.Succeeded,
+                });
+
+                context.JobActualStates.Add(new HangfireJobActualState
+                {
+                    StateId = stateId,
+                    JobId = jobId,
+                });
             });
 
             var result = UseConnection(connection => connection.GetJobData(jobId.ToString()));
@@ -388,7 +454,11 @@ namespace Hangfire.EntityFramework
             var parameterValue = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { Id = jobId, CreatedAt = DateTime.UtcNow, };
+            var job = new HangfireJob
+            {
+                Id = jobId,
+                CreatedAt = DateTime.UtcNow,
+            };
 
             UseContextWithSavingChanges(context => context.Jobs.Add(job));
 
@@ -411,12 +481,21 @@ namespace Hangfire.EntityFramework
             var parameterAnotherValue = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { Id = jobId, CreatedAt = DateTime.UtcNow, };
+            var job = new HangfireJob
+            {
+                Id = jobId,
+                CreatedAt = DateTime.UtcNow,
+            };
 
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.Add(job);
-                context.JobParameters.Add(new HangfireJobParameter { JobId = jobId, Name = parameterName, Value = parameterValue });
+                context.JobParameters.Add(new HangfireJobParameter
+                {
+                    JobId = jobId,
+                    Name = parameterName,
+                    Value = parameterValue,
+                });
             });
 
             UseConnection(connection => connection.SetJobParameter(jobId.ToString(), parameterName, parameterAnotherValue));
@@ -436,7 +515,11 @@ namespace Hangfire.EntityFramework
             var parameterName = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { Id = jobId, CreatedAt = DateTime.UtcNow, };
+            var job = new HangfireJob
+            {
+                Id = jobId,
+                CreatedAt = DateTime.UtcNow,
+            };
 
             UseContextWithSavingChanges(context => context.Jobs.Add(job));
 
@@ -482,12 +565,21 @@ namespace Hangfire.EntityFramework
             var parameterValue = Guid.NewGuid().ToString();
 
             var jobId = Guid.NewGuid();
-            var job = new HangfireJob { Id = jobId, CreatedAt = DateTime.UtcNow, };
+            var job = new HangfireJob
+            {
+                Id = jobId,
+                CreatedAt = DateTime.UtcNow,
+            };
 
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.Add(job);
-                context.JobParameters.Add(new HangfireJobParameter { JobId = jobId, Name = parameterName, Value = parameterValue });
+                context.JobParameters.Add(new HangfireJobParameter
+                {
+                    JobId = jobId,
+                    Name = parameterName,
+                    Value = parameterValue,
+                });
             });
 
             var value = UseConnection(connection => connection.GetJobParameter(jobId.ToString(), parameterName));
@@ -517,7 +609,10 @@ namespace Hangfire.EntityFramework
         {
             var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Arguments"));
             var jobId = Guid.NewGuid();
-            var data = JobHelper.ToJson(new Dictionary<string, string> { ["Key"] = "Value", });
+            var data = JobHelper.ToJson(new Dictionary<string, string>
+            {
+                ["Key"] = "Value",
+            });
 
             UseContextWithSavingChanges(context =>
             {
@@ -532,6 +627,7 @@ namespace Hangfire.EntityFramework
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
                 });
+
                 context.JobStates.Add(new HangfireJobState
                 {
                     Id = stateId,
@@ -541,6 +637,7 @@ namespace Hangfire.EntityFramework
                     Reason = "Reason",
                     Data = data
                 });
+
                 context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
             });
 
@@ -578,8 +675,18 @@ namespace Hangfire.EntityFramework
 
             var sets = new[]
             {
-                new HangfireSet { Key = setKey, Value = "1", CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = setKey, Value = "2", CreatedAt = DateTime.UtcNow },
+                new HangfireSet
+                {
+                    Key = setKey,
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = setKey,
+                    Value = "2",
+                    CreatedAt = DateTime.UtcNow,
+                },
             };
 
             UseContextWithSavingChanges(context => context.Sets.AddRange(sets));
@@ -608,10 +715,34 @@ namespace Hangfire.EntityFramework
 
             var sets = new[]
             {
-                new HangfireSet { Key = set1, Value = "1.0", Score = 1.0,  CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = set1, Value = "-1.0", Score = -1.0,  CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = set1, Value = "-5.0", Score = -5.0,  CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = set2, Value = "-2.0", Score = -2.0,  CreatedAt = DateTime.UtcNow },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "1.0",
+                    Score = 1.0,
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "-1.0",
+                    Score = -1.0,
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "-5.0",
+                    Score = -5.0,
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = set2,
+                    Value = "-2.0",
+                    Score = -2.0,
+                    CreatedAt = DateTime.UtcNow,
+                },
             };
 
             UseContextWithSavingChanges(context => context.Sets.AddRange(sets));
@@ -649,9 +780,24 @@ namespace Hangfire.EntityFramework
 
             var sets = new[]
             {
-                new HangfireSet { Key = set1, Value = "1", CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = set2, Value = "1", CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = set1, Value = "2", CreatedAt = DateTime.UtcNow },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = set2,
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "2",
+                    CreatedAt = DateTime.UtcNow,
+                },
             };
 
             UseContextWithSavingChanges(context => context.Sets.AddRange(sets));
@@ -676,12 +822,42 @@ namespace Hangfire.EntityFramework
 
             var sets = new[]
             {
-                new HangfireSet { Key = set1, Value = "1", CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = set1, Value = "2", CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = set1, Value = "3", CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = set1, Value = "4", CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = set2, Value = "4", CreatedAt = DateTime.UtcNow },
-                new HangfireSet { Key = set1, Value = "5", CreatedAt = DateTime.UtcNow },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "2",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "3",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "4",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = set2,
+                    Value = "4",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "5",
+                    CreatedAt = DateTime.UtcNow,
+                },
             };
 
             UseContextWithSavingChanges(context => context.Sets.AddRange(sets));
@@ -716,8 +892,19 @@ namespace Hangfire.EntityFramework
 
             var sets = new[]
             {
-                new HangfireSet { Key = set1, Value = "1", CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddHours(1) },
-                new HangfireSet { Key = set2, Value = "2", CreatedAt = DateTime.UtcNow },
+                new HangfireSet
+                {
+                    Key = set1,
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                    ExpireAt = DateTime.UtcNow.AddHours(1),
+                },
+                new HangfireSet
+                {
+                    Key = set2,
+                    Value = "2",
+                    CreatedAt = DateTime.UtcNow,
+                },
             };
 
             UseContextWithSavingChanges(context => context.Sets.AddRange(sets));
@@ -788,9 +975,24 @@ namespace Hangfire.EntityFramework
 
             var hangfireHashes = new[]
             {
-                new HangfireHash { Key = hash1, Field = "Key1", Value = "Value1", },
-                new HangfireHash { Key = hash1, Field = "Key2", Value = "Value2", },
-                new HangfireHash { Key = hash2, Field = "Key3", Value = "Value3", },
+                new HangfireHash
+                {
+                    Key = hash1,
+                    Field = "Key1",
+                    Value = "Value1",
+                },
+                new HangfireHash
+                {
+                    Key = hash1,
+                    Field = "Key2",
+                    Value = "Value2",
+                },
+                new HangfireHash
+                {
+                    Key = hash2,
+                    Field = "Key3",
+                    Value = "Value3",
+                },
             };
 
             UseContextWithSavingChanges(context => context.Hashes.AddRange(hangfireHashes));
@@ -828,9 +1030,21 @@ namespace Hangfire.EntityFramework
 
             var hangfireHashes = new[]
             {
-                new HangfireHash { Key = hash1, Field = "field-1", },
-                new HangfireHash { Key = hash1, Field = "field-2", },
-                new HangfireHash { Key = hash2, Field = "field-1", },
+                new HangfireHash
+                {
+                    Key = hash1,
+                    Field = "field-1",
+                },
+                new HangfireHash
+                {
+                    Key = hash1,
+                    Field = "field-2",
+                },
+                new HangfireHash
+                {
+                    Key = hash2,
+                    Field = "field-1",
+                },
             };
 
             UseContextWithSavingChanges(context => context.Hashes.AddRange(hangfireHashes));
@@ -865,8 +1079,17 @@ namespace Hangfire.EntityFramework
 
             var hangfireHashes = new[]
             {
-                new HangfireHash { Key = hash1, Field = "field", ExpireAt = DateTime.UtcNow.AddHours(1) },
-                new HangfireHash { Key = hash2, Field = "field", },
+                new HangfireHash
+                {
+                    Key = hash1,
+                    Field = "field",
+                    ExpireAt = DateTime.UtcNow.AddHours(1),
+                },
+                new HangfireHash
+                {
+                    Key = hash2,
+                    Field = "field",
+                },
             };
 
             UseContextWithSavingChanges(context => context.Hashes.AddRange(hangfireHashes));
@@ -910,9 +1133,24 @@ namespace Hangfire.EntityFramework
 
             var hangfireHashes = new[]
             {
-                new HangfireHash { Key = hash1, Field = "field-1", Value = "1", },
-                new HangfireHash { Key = hash1, Field = "field-2", Value = "2", },
-                new HangfireHash { Key = hash2, Field = "field-1", Value = "3", },
+                new HangfireHash
+                {
+                    Key = hash1,
+                    Field = "field-1",
+                    Value = "1",
+                },
+                new HangfireHash
+                {
+                    Key = hash1,
+                    Field = "field-2",
+                    Value = "2",
+                },
+                new HangfireHash
+                {
+                    Key = hash2,
+                    Field = "field-1",
+                    Value = "3",
+                },
             };
 
             UseContextWithSavingChanges(context => context.Hashes.AddRange(hangfireHashes));
@@ -947,9 +1185,24 @@ namespace Hangfire.EntityFramework
 
             var counters = new[]
             {
-                new HangfireCounter { Id = Guid.NewGuid(), Key = key1, Value = 1, },
-                new HangfireCounter { Id = Guid.NewGuid(), Key = key2, Value = 1, },
-                new HangfireCounter { Id = Guid.NewGuid(), Key = key1, Value = 1, },
+                new HangfireCounter
+                {
+                    Id = Guid.NewGuid(),
+                    Key = key1,
+                    Value = 1,
+                },
+                new HangfireCounter
+                {
+                    Id = Guid.NewGuid(),
+                    Key = key2,
+                    Value = 1,
+                },
+                new HangfireCounter
+                {
+                    Id = Guid.NewGuid(),
+                    Key = key1,
+                    Value = 1,
+                },
             };
 
             UseContextWithSavingChanges(context => context.Counters.AddRange(counters));
@@ -984,9 +1237,21 @@ namespace Hangfire.EntityFramework
 
             var lists = new[]
             {
-                new HangfireListItem { Key = list1, Position = 0, },
-                new HangfireListItem { Key = list1, Position = 1, },
-                new HangfireListItem { Key = list2, Position = 0, },
+                new HangfireListItem
+                {
+                    Key = list1,
+                    Position = 0,
+                },
+                new HangfireListItem
+                {
+                    Key = list1,
+                    Position = 1,
+                },
+                new HangfireListItem
+                {
+                    Key = list2,
+                    Position = 0,
+                },
             };
 
             UseContextWithSavingChanges(context => context.Lists.AddRange(lists));
@@ -1021,8 +1286,17 @@ namespace Hangfire.EntityFramework
 
             var lists = new[]
             {
-                new HangfireListItem { Key = list1, Position = 0, ExpireAt = DateTime.UtcNow.AddHours(1) },
-                new HangfireListItem { Key = list2, Position = 0, },
+                new HangfireListItem
+                {
+                    Key = list1,
+                    Position = 0,
+                    ExpireAt = DateTime.UtcNow.AddHours(1)
+                },
+                new HangfireListItem
+                {
+                    Key = list2,
+                    Position = 0,
+                },
             };
 
             UseContextWithSavingChanges(context => context.Lists.AddRange(lists));
@@ -1058,11 +1332,36 @@ namespace Hangfire.EntityFramework
 
             var lists = new[]
             {
-                new HangfireListItem { Key = list1, Position = 0, Value = "1", },
-                new HangfireListItem { Key = list2, Position = 0, Value = "2", },
-                new HangfireListItem { Key = list1, Position = 1, Value = "3", },
-                new HangfireListItem { Key = list1, Position = 2, Value = "4", },
-                new HangfireListItem { Key = list1, Position = 3, Value = "5", },
+                new HangfireListItem
+                {
+                    Key = list1,
+                    Position = 0,
+                    Value = "1",
+                },
+                new HangfireListItem
+                {
+                    Key = list2,
+                    Position = 0,
+                    Value = "2",
+                },
+                new HangfireListItem
+                {
+                    Key = list1,
+                    Position = 1,
+                    Value = "3",
+                },
+                new HangfireListItem
+                {
+                    Key = list1,
+                    Position = 2,
+                    Value = "4",
+                },
+                new HangfireListItem
+                {
+                    Key = list1,
+                    Position = 3,
+                    Value = "5",
+                },
             };
 
             UseContextWithSavingChanges(context => context.Lists.AddRange(lists));
@@ -1096,9 +1395,24 @@ namespace Hangfire.EntityFramework
 
             var lists = new[]
             {
-                new HangfireListItem { Key = list1, Position = 0, Value = "1", },
-                new HangfireListItem { Key = list2, Position = 0, Value = "2", },
-                new HangfireListItem { Key = list1, Position = 1, Value = "3", },
+                new HangfireListItem
+                {
+                    Key = list1,
+                    Position = 0,
+                    Value = "1",
+                },
+                new HangfireListItem
+                {
+                    Key = list2,
+                    Position = 0,
+                    Value = "2",
+                },
+                new HangfireListItem
+                {
+                    Key = list1,
+                    Position = 1,
+                    Value = "3"
+                , },
             };
 
             UseContextWithSavingChanges(context => context.Lists.AddRange(lists));

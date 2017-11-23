@@ -34,11 +34,13 @@ namespace Hangfire.EntityFramework
         {
             var date = DateTime.UtcNow;
             Guid[] jobIds = Enumerable.Repeat(0, 5).Select(x => Guid.NewGuid()).ToArray();
+
             var jobs = jobIds.Select(x => new HangfireJob
             {
                 Id = x,
                 CreatedAt = DateTime.UtcNow,
             });
+
             var jobQueueItems = jobIds.Select(x => new HangfireJobQueueItem
             {
                 Id = Guid.NewGuid(),
@@ -46,6 +48,7 @@ namespace Hangfire.EntityFramework
                 Queue = x.ToString(),
                 JobId = x
             });
+
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.AddRange(jobs);
@@ -77,11 +80,13 @@ namespace Hangfire.EntityFramework
             var date = DateTime.UtcNow;
             string queue = Guid.NewGuid().ToString();
             Guid[] jobIds = Enumerable.Repeat(0, 10).Select(x => Guid.NewGuid()).ToArray();
+
             var jobs = jobIds.Select(x => new HangfireJob
             {
                 Id = x,
                 CreatedAt = DateTime.UtcNow,
             });
+
             var jobQueueItems = jobIds.Select(x => new HangfireJobQueueItem
             {
                 Id = Guid.NewGuid(),
@@ -122,18 +127,22 @@ namespace Hangfire.EntityFramework
             var date = DateTime.UtcNow;
             string queue = Guid.NewGuid().ToString();
             Guid[] jobIds = Enumerable.Repeat(0, 3).Select(x => Guid.NewGuid()).ToArray();
+
             var jobs = jobIds.Select(x => new HangfireJob
             {
                 Id = x,
                 CreatedAt = DateTime.UtcNow,
             });
+
             var jobQueueItems = jobIds.Select(x => new HangfireJobQueueItem
             {
                 Id = Guid.NewGuid(),
                 CreatedAt = date += new TimeSpan(0, 0, 1),
                 Queue = queue,
                 JobId = x
-            }).ToArray();
+            }).
+            ToArray();
+
             jobQueueItems.Last().Queue = Guid.NewGuid().ToString();
 
             UseContextWithSavingChanges(context =>

@@ -17,15 +17,19 @@ namespace Hangfire.EntityFramework
 
         public PersistentJobQueueProviderCollection(IPersistentJobQueueProvider defaultProvider)
         {
-            if (defaultProvider == null) throw new ArgumentNullException(nameof(defaultProvider));
+            if (defaultProvider == null)
+                throw new ArgumentNullException(nameof(defaultProvider));
 
             DefaultProvider = defaultProvider;
         }
 
         public void Add(IPersistentJobQueueProvider provider, IEnumerable<string> queues)
         {
-            if (provider == null) throw new ArgumentNullException(nameof(provider));
-            if (queues == null) throw new ArgumentNullException(nameof(queues));
+            if (provider == null)
+                throw new ArgumentNullException(nameof(provider));
+
+            if (queues == null)
+                throw new ArgumentNullException(nameof(queues));
 
             foreach (var queue in queues)
                 ProvidersByQueue.Add(queue, provider);
@@ -33,16 +37,19 @@ namespace Hangfire.EntityFramework
 
         public virtual IPersistentJobQueueProvider GetProvider(string queue)
         {
-            if (queue == null) throw new ArgumentNullException(nameof(queue));
+            if (queue == null)
+                throw new ArgumentNullException(nameof(queue));
 
-            return ProvidersByQueue.ContainsKey(queue)
-                ? ProvidersByQueue[queue]
-                : DefaultProvider;
+            return
+                ProvidersByQueue.ContainsKey(queue) ?
+                ProvidersByQueue[queue] :
+                DefaultProvider;
         }
 
         public IEnumerator<IPersistentJobQueueProvider> GetEnumerator()
         {
-            return Enumerable.Repeat(DefaultProvider, 1).Union(ProvidersByQueue.Values).GetEnumerator();
+            return Enumerable.Repeat(DefaultProvider, 1).
+                Union(ProvidersByQueue.Values).GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

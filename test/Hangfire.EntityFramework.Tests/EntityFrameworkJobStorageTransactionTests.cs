@@ -65,7 +65,10 @@ namespace Hangfire.EntityFramework
             state.Setup(x => x.Name).Returns(AwaitingState.StateName);
             state.Setup(x => x.Reason).Returns("Reason");
             state.Setup(x => x.SerializeData()).
-                Returns(new Dictionary<string, string> { { "Name", "Value" } });
+                Returns(new Dictionary<string, string>
+                {
+                    ["Name"] = "Value",
+                });
 
             DateTime beginTimestamp = DateTime.UtcNow.AddSeconds(-1);
             UseTransaction(transaction => transaction.SetJobState(jobId.ToString(), state.Object));
@@ -95,7 +98,10 @@ namespace Hangfire.EntityFramework
             state.Setup(x => x.Name).Returns(AwaitingState.StateName);
             state.Setup(x => x.Reason).Returns("Reason");
             state.Setup(x => x.SerializeData()).
-                Returns(new Dictionary<string, string> { { "Name", "Value" } });
+                Returns(new Dictionary<string, string>
+                {
+                    ["Name"] = "Value",
+                });
 
             DateTime beginTimestamp = DateTime.UtcNow.AddSeconds(-1);
             UseTransaction(transaction => transaction.AddJobState(jobId.ToString(), state.Object));
@@ -104,7 +110,7 @@ namespace Hangfire.EntityFramework
             var job = GetTestJob(jobId);
             Assert.Null(job.ActualState);
 
-            var jobState = job.States.Single();
+            var jobState = Assert.Single(job.States);
             Assert.Equal(JobState.Awaiting, jobState.State);
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
@@ -455,11 +461,26 @@ namespace Hangfire.EntityFramework
         public void TrimList_RemovesRecordsToEnd_IfKeepAndingAt_GreaterThanMaxElementIndex()
         {
             string key = Guid.NewGuid().ToString();
-            UseContextWithSavingChanges(context => context.Lists.AddRange(new []
+            UseContextWithSavingChanges(context => context.Lists.AddRange(new[]
             {
-                new HangfireListItem { Key = key, Position = 0, Value = "0", },
-                new HangfireListItem { Key = key, Position = 1, Value = "1", },
-                new HangfireListItem { Key = key, Position = 2, Value = "2", },
+                new HangfireListItem
+                {
+                    Key = key,
+                    Position = 0,
+                    Value = "0",
+                },
+                new HangfireListItem
+                {
+                    Key = key,
+                    Position = 1,
+                    Value = "1",
+                },
+                new HangfireListItem
+                {
+                    Key = key,
+                    Position = 2,
+                    Value = "2",
+                },
             }));
 
             UseTransaction(transaction => transaction.TrimList(key, 1, 100));
@@ -474,7 +495,12 @@ namespace Hangfire.EntityFramework
         {
             string key = Guid.NewGuid().ToString();
             UseContextWithSavingChanges(context => context.Lists.
-                Add(new HangfireListItem { Key = key, Position = 0, Value = "0", }));
+                Add(new HangfireListItem
+                {
+                    Key = key,
+                    Position = 0,
+                    Value = "0",
+                }));
 
             UseTransaction(transaction => transaction.TrimList(key, 1, 100));
 
@@ -488,7 +514,12 @@ namespace Hangfire.EntityFramework
         {
             string key = Guid.NewGuid().ToString();
             UseContextWithSavingChanges(context => context.Lists.
-                Add(new HangfireListItem { Key = key, Position = 0, Value = "0", }));
+                Add(new HangfireListItem
+                {
+                    Key = key,
+                    Position = 0,
+                    Value = "0",
+                }));
 
             UseTransaction(transaction => transaction.TrimList(key, 1, 0));
 
@@ -503,7 +534,12 @@ namespace Hangfire.EntityFramework
             string key = Guid.NewGuid().ToString();
             string anotherKey = Guid.NewGuid().ToString();
             UseContextWithSavingChanges(context => context.Lists.
-                Add(new HangfireListItem { Key = key, Position = 0, Value = "0", }));
+                Add(new HangfireListItem
+                {
+                    Key = key,
+                    Position = 0,
+                    Value = "0",
+                }));
 
             UseTransaction(transaction => transaction.TrimList(anotherKey, 1, 0));
 
@@ -562,6 +598,7 @@ namespace Hangfire.EntityFramework
                 ["Key1"] = "Value1",
                 ["Key2"] = "Value2",
             };
+
             UseTransaction(transaction => transaction.SetRangeInHash(key, keyValuePairs));
 
             UseTransaction(transaction => transaction.RemoveHash(key));
@@ -573,7 +610,7 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void AddRangeToSet_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction =>Assert.Throws<ArgumentNullException>("key",
+            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
                 () => transaction.AddRangeToSet(null, new List<string>())));
         }
 
@@ -588,7 +625,12 @@ namespace Hangfire.EntityFramework
         public void AddRangeToSet_AddsAllItems_ToAGivenSet()
         {
             string setId = Guid.NewGuid().ToString();
-            var items = new List<string> { "1", "2", "3" };
+            var items = new List<string>
+            {
+                "1",
+                "2",
+                "3",
+            };
 
             UseTransaction(transaction => transaction.AddRangeToSet(setId, items));
 
@@ -605,7 +647,7 @@ namespace Hangfire.EntityFramework
         public void RemoveSet_ThrowsAnException_WhenKeyIsNull()
         {
             UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.RemoveSet( null)));
+                () => transaction.RemoveSet(null)));
         }
 
         [Fact, RollbackTransaction]
@@ -613,8 +655,18 @@ namespace Hangfire.EntityFramework
         {
             var sets = new[]
             {
-                new HangfireSet { Key = "set-1", Value = "1", CreatedAt = DateTime.UtcNow, },
-                new HangfireSet { Key = "set-2", Value = "1", CreatedAt = DateTime.UtcNow, },
+                new HangfireSet
+                {
+                    Key = "set-1",
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = "set-2",
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                },
             };
             UseContextWithSavingChanges(context => context.Sets.AddRange(sets));
 
@@ -636,9 +688,18 @@ namespace Hangfire.EntityFramework
         {
             var hashes = new[]
             {
-                new HangfireHash { Key = "hash-1", Field = "field", },
-                new HangfireHash { Key = "hash-2", Field = "field", },
+                new HangfireHash
+                {
+                    Key = "hash-1",
+                    Field = "field",
+                },
+                new HangfireHash
+                {
+                    Key = "hash-2",
+                    Field = "field",
+                },
             };
+
             UseContextWithSavingChanges(context => context.Hashes.AddRange(hashes));
 
             UseTransaction(transaction => transaction.ExpireHash("hash-1", new TimeSpan(1, 0, 0)));
@@ -662,9 +723,20 @@ namespace Hangfire.EntityFramework
         {
             var sets = new[]
             {
-                new HangfireSet { Key = "set-1", Value = "1", CreatedAt = DateTime.UtcNow, },
-                new HangfireSet { Key = "set-2", Value = "1", CreatedAt = DateTime.UtcNow, },
+                new HangfireSet
+                {
+                    Key = "set-1",
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new HangfireSet
+                {
+                    Key = "set-2",
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                },
             };
+
             UseContextWithSavingChanges(context => context.Sets.AddRange(sets));
 
             UseTransaction(transaction => transaction.ExpireSet("set-1", new TimeSpan(1, 0, 0)));
@@ -687,9 +759,20 @@ namespace Hangfire.EntityFramework
         {
             var lists = new[]
             {
-                new HangfireListItem { Key = "list-1", Value = "1", Position = 0, },
-                new HangfireListItem { Key = "list-2", Value = "1", Position = 0, },
+                new HangfireListItem
+                {
+                    Key = "list-1",
+                    Value = "1",
+                    Position = 0,
+                },
+                new HangfireListItem
+                {
+                    Key = "list-2",
+                    Value = "1",
+                    Position = 0,
+                },
             };
+
             UseContextWithSavingChanges(context => context.Lists.AddRange(lists));
 
             UseTransaction(transaction => transaction.ExpireList("list-1", new TimeSpan(1, 0, 0)));
@@ -712,8 +795,18 @@ namespace Hangfire.EntityFramework
         {
             var hashes = new[]
             {
-                new HangfireHash { Key = "hash-1", Field = "field", ExpireAt = DateTime.UtcNow.AddDays(1), },
-                new HangfireHash { Key = "hash-2", Field = "field", ExpireAt = DateTime.UtcNow.AddDays(1), },
+                new HangfireHash
+                {
+                    Key = "hash-1",
+                    Field = "field",
+                    ExpireAt = DateTime.UtcNow.AddDays(1)
+                },
+                new HangfireHash
+                {
+                    Key = "hash-2",
+                    Field = "field",
+                    ExpireAt = DateTime.UtcNow.AddDays(1),
+                },
             };
             UseContextWithSavingChanges(context => context.Hashes.AddRange(hashes));
 
@@ -736,9 +829,22 @@ namespace Hangfire.EntityFramework
         {
             var sets = new[]
             {
-                new HangfireSet { Key = "set-1", Value = "1", CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddDays(1), },
-                new HangfireSet { Key = "set-2", Value = "1", CreatedAt = DateTime.UtcNow, ExpireAt = DateTime.UtcNow.AddDays(1), },
+                new HangfireSet
+                {
+                    Key = "set-1",
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                    ExpireAt = DateTime.UtcNow.AddDays(1),
+                },
+                new HangfireSet
+                {
+                    Key = "set-2",
+                    Value = "1",
+                    CreatedAt = DateTime.UtcNow,
+                    ExpireAt = DateTime.UtcNow.AddDays(1),
+                },
             };
+
             UseContextWithSavingChanges(context => context.Sets.AddRange(sets));
 
             UseTransaction(transaction => transaction.PersistSet("set-1"));
@@ -760,8 +866,20 @@ namespace Hangfire.EntityFramework
         {
             var lists = new[]
             {
-                new HangfireListItem { Key = "list-1", Value = "1", Position = 0, ExpireAt = DateTime.UtcNow.AddDays(1), },
-                new HangfireListItem { Key = "list-2", Value = "1", Position = 0, ExpireAt = DateTime.UtcNow.AddDays(1), },
+                new HangfireListItem
+                {
+                    Key = "list-1",
+                    Value = "1",
+                    Position = 0,
+                    ExpireAt = DateTime.UtcNow.AddDays(1),
+                },
+                new HangfireListItem
+                {
+                    Key = "list-2",
+                    Value = "1",
+                    Position = 0,
+                    ExpireAt = DateTime.UtcNow.AddDays(1),
+                },
             };
             UseContextWithSavingChanges(context => context.Lists.AddRange(lists));
 
@@ -774,9 +892,14 @@ namespace Hangfire.EntityFramework
 
         private Guid InsertTestJob(DateTime? expireAt = null)
         {
-            Guid jobId = Guid.NewGuid();
+            var jobId = Guid.NewGuid();
             UseContextWithSavingChanges(context => context.Jobs.
-                Add(new HangfireJob { Id = jobId, CreatedAt = DateTime.UtcNow, ExpireAt = expireAt }));
+                Add(new HangfireJob
+                {
+                    Id = jobId,
+                    CreatedAt = DateTime.UtcNow,
+                    ExpireAt = expireAt,
+                }));
 
             return jobId;
         }

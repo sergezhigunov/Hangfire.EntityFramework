@@ -22,7 +22,8 @@ namespace Hangfire.EntityFramework
 
         public EntityFrameworkJobStorageTransaction([NotNull] EntityFrameworkJobStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
 
             Storage = storage;
         }
@@ -36,7 +37,9 @@ namespace Hangfire.EntityFramework
                     Id = Guid.Parse(jobId),
                     ExpireAt = DateTime.UtcNow + expireIn,
                 };
+
                 context.Jobs.Attach(job);
+
                 context.Entry(job).Property(x => x.ExpireAt).IsModified = true;
             });
         }
@@ -49,7 +52,9 @@ namespace Hangfire.EntityFramework
                 {
                     Id = Guid.Parse(jobId),
                 };
+
                 context.Jobs.Attach(job);
+
                 context.Entry(job).Property(x => x.ExpireAt).IsModified = true;
             });
         }
@@ -60,7 +65,12 @@ namespace Hangfire.EntityFramework
             {
                 Guid id = Guid.Parse(jobId);
                 Guid stateId = AddJobStateToContext(context, id, state);
-                context.JobActualStates.AddOrUpdate(new HangfireJobActualState { JobId = id, StateId = stateId, });
+
+                context.JobActualStates.AddOrUpdate(new HangfireJobActualState
+                {
+                    JobId = id,
+                    StateId = stateId,
+                });
             });
         }
 
@@ -72,6 +82,7 @@ namespace Hangfire.EntityFramework
         private Guid AddJobStateToContext(HangfireDbContext context, Guid jobId, IState state)
         {
             Guid stateId = Guid.NewGuid();
+
             var jobState = new HangfireJobState
             {
                 Id = stateId,
@@ -81,7 +92,9 @@ namespace Hangfire.EntityFramework
                 Data = JobHelper.ToJson(state.SerializeData()),
                 CreatedAt = DateTime.UtcNow,
             };
+
             context.JobStates.Add(jobState);
+
             return stateId;
         }
 
@@ -141,7 +154,7 @@ namespace Hangfire.EntityFramework
                     CreatedAt = DateTime.UtcNow,
                     Key = key,
                     Score = score,
-                    Value = value
+                    Value = value,
                 };
 
                 context.Sets.AddOrUpdate(set);
@@ -159,7 +172,11 @@ namespace Hangfire.EntityFramework
                     entry.State = EntityState.Detached;
 
                 if (context.Sets.Any(x => x.Key == key && x.Value == value))
-                    context.Entry(new HangfireSet { Key = key, Value = value }).State = EntityState.Deleted;
+                    context.Entry(new HangfireSet
+                    {
+                        Key = key,
+                        Value = value
+                    }).State = EntityState.Deleted;
             });
         }
 
@@ -177,7 +194,11 @@ namespace Hangfire.EntityFramework
 
                 foreach (var item in items)
                 {
-                    var set = new HangfireSet { Key = key, Value = item, };
+                    var set = new HangfireSet
+                    {
+                        Key = key,
+                        Value = item,
+                    };
 
                     if (exisitingFields.Contains(item))
                     {
@@ -195,22 +216,34 @@ namespace Hangfire.EntityFramework
 
         public override void ExpireSet([NotNull] string key, TimeSpan expireIn)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             EnqueueCommand(context =>
             {
                 var ids = (
-                from item in context.Sets
-                where item.Key == key
-                select new { item.Key, item.Value }).
-                ToArray();
+                    from item in context.Sets
+                    where item.Key == key
+                    select new
+                    {
+                        item.Key,
+                        item.Value,
+                    }).
+                    ToArray();
 
                 DateTime expireAt = DateTime.UtcNow.Add(expireIn);
 
                 foreach (var id in ids)
                 {
-                    var item = new HangfireSet { Key = id.Key, Value = id.Value, ExpireAt = expireAt, };
+                    var item = new HangfireSet
+                    {
+                        Key = id.Key,
+                        Value = id.Value,
+                        ExpireAt = expireAt,
+                    };
+
                     context.Sets.Attach(item);
+
                     context.Entry(item).Property(x => x.ExpireAt).IsModified = true;
                 }
             });
@@ -218,20 +251,31 @@ namespace Hangfire.EntityFramework
 
         public override void PersistSet([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             EnqueueCommand(context =>
             {
                 var ids = (
-                from item in context.Sets
-                where item.Key == key
-                select new { item.Key, item.Value }).
-                ToArray();
+                    from item in context.Sets
+                    where item.Key == key
+                    select new
+                    {
+                        item.Key,
+                        item.Value,
+                    }).
+                    ToArray();
 
                 foreach (var id in ids)
                 {
-                    var item = new HangfireSet { Key = id.Key, Value = id.Value, };
+                    var item = new HangfireSet
+                    {
+                        Key = id.Key,
+                        Value = id.Value,
+                    };
+
                     context.Sets.Attach(item);
+
                     context.Entry(item).Property(x => x.ExpireAt).IsModified = true;
                 }
             });
@@ -239,18 +283,23 @@ namespace Hangfire.EntityFramework
 
         public override void RemoveSet([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             EnqueueCommand(context =>
             {
                 string[] values = (
-                from set in context.Sets
-                where set.Key == key
-                select set.Value).
-                ToArray();
+                    from set in context.Sets
+                    where set.Key == key
+                    select set.Value).
+                    ToArray();
 
                 foreach (var value in values)
-                    context.Entry(new HangfireSet { Key = key, Value = value, }).State = EntityState.Deleted;
+                    context.Entry(new HangfireSet
+                    {
+                        Key = key,
+                        Value = value,
+                    }).State = EntityState.Deleted;
             });
         }
 
@@ -261,7 +310,10 @@ namespace Hangfire.EntityFramework
                 context.Lists.Add(new HangfireListItem
                 {
                     Key = key,
-                    Position = (context.Lists.Where(x => x.Key == key).Max(x => (int?)x.Position) ?? -1) + 1,
+                    Position = (
+                        context.Lists.
+                        Where(x => x.Key == key).
+                        Max(x => (int?)x.Position) ?? -1) + 1,
                     Value = value,
                 });
             });
@@ -278,7 +330,9 @@ namespace Hangfire.EntityFramework
                     select item).
                     ToArray();
 
-                var newList = list.Where(x => x.Value != value).ToArray();
+                var newList = list.
+                    Where(x => x.Value != value).
+                    ToArray();
 
                 for (int i = newList.Length; i < list.Length; i++)
                     context.Lists.Remove(list[i]);
@@ -321,6 +375,7 @@ namespace Hangfire.EntityFramework
 
                 if (oldItem.ExpireAt != newItem.ExpireAt)
                     oldItem.ExpireAt = newItem.ExpireAt;
+
                 if (oldItem.Value != newItem.Value)
                     oldItem.Value = newItem.Value;
             }
@@ -328,22 +383,34 @@ namespace Hangfire.EntityFramework
 
         public override void ExpireList([NotNull] string key, TimeSpan expireIn)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             EnqueueCommand(context =>
             {
                 var ids = (
-                from item in context.Lists
-                where item.Key == key
-                select new { item.Key, item.Position }).
-                ToArray();
+                    from item in context.Lists
+                    where item.Key == key
+                    select new
+                    {
+                        item.Key,
+                        item.Position,
+                    }).
+                    ToArray();
 
                 DateTime expireAt = DateTime.UtcNow.Add(expireIn);
 
                 foreach (var id in ids)
                 {
-                    var item = new HangfireListItem { Key = id.Key, Position = id.Position, ExpireAt = expireAt };
+                    var item = new HangfireListItem
+                    {
+                        Key = id.Key,
+                        Position = id.Position,
+                        ExpireAt = expireAt
+                    };
+
                     context.Lists.Attach(item);
+
                     context.Entry(item).Property(x => x.ExpireAt).IsModified = true;
                 }
             });
@@ -351,20 +418,31 @@ namespace Hangfire.EntityFramework
 
         public override void PersistList([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             EnqueueCommand(context =>
             {
                 var ids = (
                     from item in context.Lists
                     where item.Key == key
-                    select new { item.Key, item.Position }).
+                    select new
+                    {
+                        item.Key,
+                        item.Position,
+                    }).
                     ToArray();
 
                 foreach (var id in ids)
                 {
-                    var item = new HangfireListItem { Key = id.Key, Position = id.Position, };
+                    var item = new HangfireListItem
+                    {
+                        Key = id.Key,
+                        Position = id.Position,
+                    };
+
                     context.Lists.Attach(item);
+
                     context.Entry(item).Property(x => x.ExpireAt).IsModified = true;
                 }
             });
@@ -372,8 +450,11 @@ namespace Hangfire.EntityFramework
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
+            if (key == null) throw new
+                    ArgumentNullException(nameof(key));
+
+            if (keyValuePairs == null)
+                throw new ArgumentNullException(nameof(keyValuePairs));
 
             EnqueueCommand(context =>
             {
@@ -384,7 +465,12 @@ namespace Hangfire.EntityFramework
 
                 foreach (var item in keyValuePairs)
                 {
-                    var hash = new HangfireHash { Key = key, Field = item.Key, Value = item.Value };
+                    var hash = new HangfireHash
+                    {
+                        Key = key,
+                        Field = item.Key,
+                        Value = item.Value,
+                    };
 
                     if (exisitingFields.Contains(item.Key))
                     {
@@ -401,39 +487,52 @@ namespace Hangfire.EntityFramework
 
         public override void RemoveHash(string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             EnqueueCommand(context =>
             {
                 string[] fields = (
-                from hash in context.Hashes
-                where hash.Key == key
-                select hash.Field).
-                ToArray();
+                    from hash in context.Hashes
+                    where hash.Key == key
+                    select hash.Field).
+                    ToArray();
 
                 foreach (var field in fields)
-                    context.Entry(new HangfireHash { Key = key, Field = field, }).State = EntityState.Deleted;
+                    context.Entry(new HangfireHash
+                    {
+                        Key = key,
+                        Field = field,
+                    }).State = EntityState.Deleted;
             });
         }
 
         public override void ExpireHash([NotNull] string key, TimeSpan expireIn)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             EnqueueCommand(context =>
             {
                 string[] fields = (
-                from hash in context.Hashes
-                where hash.Key == key
-                select hash.Field).
-                ToArray();
+                    from hash in context.Hashes
+                    where hash.Key == key
+                    select hash.Field).
+                    ToArray();
 
                 DateTime expireAt = DateTime.UtcNow.Add(expireIn);
 
                 foreach (var field in fields)
                 {
-                    var hash = new HangfireHash { Key = key, Field = field, ExpireAt = expireAt };
+                    var hash = new HangfireHash
+                    {
+                        Key = key,
+                        Field = field,
+                        ExpireAt = expireAt,
+                    };
+
                     context.Hashes.Attach(hash);
+
                     context.Entry(hash).Property(x => x.ExpireAt).IsModified = true;
                 }
             });
@@ -441,20 +540,28 @@ namespace Hangfire.EntityFramework
 
         public override void PersistHash([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             EnqueueCommand(context =>
             {
                 string[] fields = (
-                from hash in context.Hashes
-                where hash.Key == key
-                select hash.Field).
-                ToArray();
+                    from hash in context.Hashes
+                    where hash.Key == key
+                    select hash.Field).
+                    ToArray();
 
                 foreach (var field in fields)
                 {
-                    var hash = new HangfireHash { Key = key, Field = field, ExpireAt = null };
+                    var hash = new HangfireHash
+                    {
+                        Key = key,
+                        Field = field,
+                        ExpireAt = null,
+                    };
+
                     context.Hashes.Attach(hash);
+
                     context.Entry(hash).Property(x => x.ExpireAt).IsModified = true;
                 }
             });

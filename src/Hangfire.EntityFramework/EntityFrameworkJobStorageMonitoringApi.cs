@@ -2,12 +2,11 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Data.Entity;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
-using Hangfire.States;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
 
@@ -23,7 +22,8 @@ namespace Hangfire.EntityFramework
 
         public EntityFrameworkJobStorageMonitoringApi([NotNull] EntityFrameworkJobStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
 
             Storage = storage;
         }
@@ -43,6 +43,7 @@ namespace Hangfire.EntityFramework
                 var enqueuedJobIds = tuple.Monitoring.GetEnqueuedJobIds(tuple.Queue, 0, 5);
                 var enqueuedJobCount = tuple.Monitoring.GetEnqueuedJobCount(tuple.Queue);
                 var firstJobs = EnqueuedJobs(enqueuedJobIds);
+
                 result.Add(new QueueWithTopEnqueuedJobsDto
                 {
                     Name = tuple.Queue,
@@ -75,7 +76,8 @@ namespace Hangfire.EntityFramework
 
         public JobDetailsDto JobDetails(string jobId)
         {
-            if (jobId == null) return null;
+            if (jobId == null)
+                return null;
 
             Guid id;
             if (!Guid.TryParse(jobId, out id))
@@ -128,7 +130,8 @@ namespace Hangfire.EntityFramework
                     {
                         State = @group.Key,
                         Count = @group.LongCount(),
-                    }).ToDictionary(x => x.State, x => x.Count);
+                    }).
+                    ToDictionary(x => x.State, x => x.Count);
 
                 var counters = (
                     from counter in context.Counters
@@ -141,7 +144,8 @@ namespace Hangfire.EntityFramework
                     {
                         CounterName = @group.Key,
                         Sum = @group.Sum(x => x.Value),
-                    }).ToDictionary(x => x.CounterName, x => x.Sum);
+                    }).
+                    ToDictionary(x => x.CounterName, x => x.Sum);
 
                 return new StatisticsDto
                 {
@@ -347,6 +351,7 @@ namespace Hangfire.EntityFramework
             var endDate = new DateTime(ticks - ticks % TimeSpan.TicksPerHour, DateTimeKind.Utc);
             var dates = Enumerable.Range(0, 24).Select(x => endDate.AddHours(-x));
             var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x:yyyy-MM-dd-HH}");
+
             return GetTimelineStats(keyMaps);
         }
 
@@ -355,6 +360,7 @@ namespace Hangfire.EntityFramework
             var endDate = DateTime.UtcNow.Date;
             var dates = Enumerable.Range(0, 7).Select(x => endDate.AddDays(-x));
             var keyMaps = dates.ToDictionary(x => $"stats:{type}:{x:yyyy-MM-dd}");
+
             return GetTimelineStats(keyMaps);
         }
 

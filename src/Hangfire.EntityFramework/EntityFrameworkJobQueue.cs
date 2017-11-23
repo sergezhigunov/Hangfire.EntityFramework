@@ -20,7 +20,8 @@ namespace Hangfire.EntityFramework
 
         public EntityFrameworkJobQueue([NotNull] EntityFrameworkJobStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
 
             Storage = storage;
         }
@@ -28,8 +29,11 @@ namespace Hangfire.EntityFramework
         [NotNull]
         public IFetchedJob Dequeue(string[] queues, CancellationToken cancellationToken)
         {
-            if (queues == null) throw new ArgumentNullException(nameof(queues));
-            if (queues.Length == 0) throw new ArgumentException(ErrorStrings.QueuesCannotBeEmpty, nameof(queues));
+            if (queues == null)
+                throw new ArgumentNullException(nameof(queues));
+
+            if (queues.Length == 0)
+                throw new ArgumentException(ErrorStrings.QueuesCannotBeEmpty, nameof(queues));
 
             queues = queues.Select(x => x.ToUpperInvariant()).ToArray();
 
@@ -72,8 +76,11 @@ namespace Hangfire.EntityFramework
 
         public void Enqueue(string queue, string jobId)
         {
-            if (queue == null) throw new ArgumentNullException(nameof(queue));
-            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+            if (queue == null)
+                throw new ArgumentNullException(nameof(queue));
+
+            if (jobId == null)
+                throw new ArgumentNullException(nameof(jobId));
 
             Guid id = Guid.Parse(jobId);
             queue = queue.ToUpperInvariant();

@@ -17,7 +17,9 @@ namespace Hangfire.EntityFramework
 
         public ExpirationManager(EntityFrameworkJobStorage storage, TimeSpan checkInterval)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
+
             if (checkInterval <= TimeSpan.Zero)
                 throw new ArgumentOutOfRangeException(nameof(checkInterval), ErrorStrings.NeedPositiveValue);
 
@@ -36,10 +38,18 @@ namespace Hangfire.EntityFramework
                     where @group.Max(x => x.ExpireAt) < now
                     from counter in @group
                     select counter);
-                context.Jobs.RemoveRange(context.Jobs.Where(x => x.ExpireAt < now));
-                context.Lists.RemoveRange(context.Lists.Where(x => x.ExpireAt < now));
-                context.Sets.RemoveRange(context.Sets.Where(x => x.ExpireAt < now));
-                context.Hashes.RemoveRange(context.Hashes.Where(x => x.ExpireAt < now));
+
+                context.Jobs.
+                    RemoveRange(context.Jobs.Where(x => x.ExpireAt < now));
+
+                context.Lists.
+                    RemoveRange(context.Lists.Where(x => x.ExpireAt < now));
+
+                context.Sets.
+                    RemoveRange(context.Sets.Where(x => x.ExpireAt < now));
+
+                context.Hashes.
+                    RemoveRange(context.Hashes.Where(x => x.ExpireAt < now));
 
                 context.SaveChanges();
             });

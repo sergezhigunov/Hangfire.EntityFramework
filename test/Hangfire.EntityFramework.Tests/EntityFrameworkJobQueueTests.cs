@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using Hangfire.EntityFramework.Utils;
@@ -68,12 +67,18 @@ namespace Hangfire.EntityFramework
             Guid jobId = Guid.NewGuid();
             Guid queueItemId = Guid.NewGuid();
             string queueName = DefaultQueues.First();
+
             var job = new HangfireJob
             {
                 Id = jobId,
                 CreatedAt = DateTime.UtcNow,
             };
-            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
+
+            var host = new HangfireServerHost
+            {
+                Id = EntityFrameworkJobStorage.ServerHostId,
+            };
+
             var jobQueueItem = new HangfireJobQueueItem
             {
                 Id = queueItemId,

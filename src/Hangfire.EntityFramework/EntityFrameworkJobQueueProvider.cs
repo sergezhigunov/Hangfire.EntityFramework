@@ -13,7 +13,8 @@ namespace Hangfire.EntityFramework
 
         public EntityFrameworkJobQueueProvider(EntityFrameworkJobStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
 
             JobQueue = new EntityFrameworkJobQueue(storage);
             MonitoringApi = new EntityFrameworkJobQueueMonitoringApi(storage);

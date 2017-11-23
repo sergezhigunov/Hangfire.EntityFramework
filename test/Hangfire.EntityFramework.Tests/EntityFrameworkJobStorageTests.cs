@@ -31,7 +31,9 @@ namespace Hangfire.EntityFramework
         public void GetMonitoringApi_ReturnsNonNullInstance()
         {
             var storage = CreateStorage();
+
             var api = storage.GetMonitoringApi();
+
             Assert.NotNull(api);
         }
 

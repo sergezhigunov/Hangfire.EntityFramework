@@ -18,7 +18,9 @@ namespace Hangfire.EntityFramework
 
         public CountersAggregator(EntityFrameworkJobStorage storage, TimeSpan aggregationInterval)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
+
             if (aggregationInterval <= TimeSpan.Zero)
                 throw new ArgumentOutOfRangeException(nameof(aggregationInterval), ErrorStrings.NeedPositiveValue);
 

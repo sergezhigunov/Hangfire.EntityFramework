@@ -20,7 +20,8 @@ namespace Hangfire.EntityFramework
 
         public EntityFrameworkJobStorageConnection([NotNull] EntityFrameworkJobStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
 
             Storage = storage;
         }
@@ -33,8 +34,10 @@ namespace Hangfire.EntityFramework
 
         public override string CreateExpiredJob(Job job, IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
         {
-            if (job == null) throw new ArgumentNullException(nameof(job));
-            if (parameters == null) throw new ArgumentNullException(nameof(parameters));
+            if (job == null)
+                throw new ArgumentNullException(nameof(job));
+            if (parameters == null)
+                throw new ArgumentNullException(nameof(parameters));
 
             InvocationData invocationData = InvocationData.Serialize(job);
 
@@ -69,8 +72,11 @@ namespace Hangfire.EntityFramework
 
         public override IFetchedJob FetchNextJob(string[] queues, CancellationToken cancellationToken)
         {
-            if (queues == null) throw new ArgumentNullException(nameof(queues));
-            if (queues.Length == 0) throw new ArgumentException(ErrorStrings.QueuesCannotBeEmpty, nameof(queues));
+            if (queues == null)
+                throw new ArgumentNullException(nameof(queues));
+
+            if (queues.Length == 0)
+                throw new ArgumentException(ErrorStrings.QueuesCannotBeEmpty, nameof(queues));
 
             var providers = queues
                 .Select(queue => Storage.QueueProviders.GetProvider(queue))
@@ -87,8 +93,11 @@ namespace Hangfire.EntityFramework
 
         public override void SetJobParameter(string id, string name, string value)
         {
-            if (id == null) throw new ArgumentNullException(nameof(id));
-            if (name == null) throw new ArgumentNullException(nameof(name));
+            if (id == null)
+                throw new ArgumentNullException(nameof(id));
+
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
 
             Guid jobId = Guid.Parse(id);
 
@@ -107,8 +116,10 @@ namespace Hangfire.EntityFramework
 
         public override string GetJobParameter(string id, string name)
         {
-            if (id == null) throw new ArgumentNullException(nameof(id));
-            if (name == null) throw new ArgumentNullException(nameof(name));
+            if (id == null)
+                throw new ArgumentNullException(nameof(id));
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
 
             Guid jobId;
             if (!Guid.TryParse(id, out jobId))
@@ -172,7 +183,8 @@ namespace Hangfire.EntityFramework
 
         public override StateData GetStateData(string jobId)
         {
-            if (jobId == null) throw new ArgumentNullException(nameof(jobId));
+            if (jobId == null)
+                throw new ArgumentNullException(nameof(jobId));
 
             Guid id;
             if (!Guid.TryParse(jobId, out id))
@@ -202,8 +214,11 @@ namespace Hangfire.EntityFramework
 
         public override void AnnounceServer(string serverId, ServerContext context)
         {
-            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
-            if (context == null) throw new ArgumentNullException(nameof(context));
+            if (serverId == null)
+                throw new ArgumentNullException(nameof(serverId));
+
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
 
             var data = JobHelper.ToJson(new ServerData
             {
@@ -214,7 +229,11 @@ namespace Hangfire.EntityFramework
 
             Storage.UseContext(dbContext =>
             {
-                dbContext.ServerHosts.AddOrUpdate(new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, });
+                dbContext.ServerHosts.AddOrUpdate(new HangfireServerHost
+                {
+                    Id = EntityFrameworkJobStorage.ServerHostId,
+                });
+
                 dbContext.Servers.AddOrUpdate(new HangfireServer
                 {
                     Id = serverId,
@@ -229,7 +248,8 @@ namespace Hangfire.EntityFramework
 
         public override void RemoveServer(string serverId)
         {
-            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+            if (serverId == null)
+                throw new ArgumentNullException(nameof(serverId));
 
             Storage.UseContext(context =>
             {
@@ -246,15 +266,23 @@ namespace Hangfire.EntityFramework
 
         public override void Heartbeat(string serverId)
         {
-            if (serverId == null) throw new ArgumentNullException(nameof(serverId));
+            if (serverId == null)
+                throw new ArgumentNullException(nameof(serverId));
 
             Storage.UseContext(context =>
             {
                 if (context.Servers.Any(x => x.Id == serverId))
                 {
-                    var server = new HangfireServer { Id = serverId, Heartbeat = DateTime.UtcNow };
+                    var server = new HangfireServer
+                    {
+                        Id = serverId,
+                        Heartbeat = DateTime.UtcNow,
+                    };
+
                     context.Servers.Attach(server);
+
                     context.Entry(server).Property(x => x.Heartbeat).IsModified = true;
+
                     context.SaveChanges();
                 }
             });
@@ -276,13 +304,19 @@ namespace Hangfire.EntityFramework
                     ToArray();
 
                 foreach (var serverId in serverIds)
-                    context.Entry(new HangfireServer { Id = serverId }).State = EntityState.Deleted;
+                    context.Entry(new HangfireServer
+                    {
+                        Id = serverId,
+                    }).
+                    State = EntityState.Deleted;
+
                 context.SaveChanges();
 
                 context.ServerHosts.RemoveRange(
                     from host in context.ServerHosts
                     where !host.Servers.Any()
                     select host);
+
                 context.SaveChanges();
 
                 return serverIds.Length;
@@ -291,7 +325,8 @@ namespace Hangfire.EntityFramework
 
         public override HashSet<string> GetAllItemsFromSet(string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             return Storage.UseContext(context => new HashSet<string>(
                 from set in context.Sets
@@ -301,9 +336,11 @@ namespace Hangfire.EntityFramework
 
         public override string GetFirstByLowestScoreFromSet(string key, double fromScore, double toScore)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
-            if (toScore < fromScore) Swap(ref fromScore, ref toScore);
+            if (toScore < fromScore)
+                Swap(ref fromScore, ref toScore);
 
             return Storage.UseContext(context => (
                 from set in context.Sets
@@ -315,9 +352,12 @@ namespace Hangfire.EntityFramework
 
         public override List<string> GetRangeFromSet([NotNull] string key, int startingFrom, int endingAt)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
-            if (endingAt < startingFrom) Swap(ref startingFrom, ref endingAt);
+            if (endingAt < startingFrom)
+                Swap(ref startingFrom, ref endingAt);
+
             int take = endingAt - startingFrom + 1;
 
             return Storage.UseContext(context => (
@@ -332,14 +372,16 @@ namespace Hangfire.EntityFramework
 
         public override long GetSetCount([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             return Storage.UseContext(context => context.Sets.LongCount(x => x.Key == key));
         }
 
         public override TimeSpan GetSetTtl([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             DateTime? minExpiredAt = Storage.UseContext(context => (
                 from set in context.Sets
@@ -347,17 +389,27 @@ namespace Hangfire.EntityFramework
                 select set.ExpireAt).
                 Min());
 
-            return minExpiredAt.HasValue ? minExpiredAt.Value - DateTime.UtcNow : TimeSpan.FromSeconds(-1);
+            return minExpiredAt.HasValue ?
+                minExpiredAt.Value - DateTime.UtcNow :
+                TimeSpan.FromSeconds(-1);
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (keyValuePairs == null) throw new ArgumentNullException(nameof(keyValuePairs));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+            if (keyValuePairs == null)
+                throw new ArgumentNullException(nameof(keyValuePairs));
 
             Storage.UseContext(context =>
             {
-                var hashes = keyValuePairs.Select(x => new HangfireHash { Key = key, Field = x.Key, Value = x.Value }).ToArray();
+                var hashes = keyValuePairs.Select(x => new HangfireHash
+                {
+                    Key = key,
+                    Field = x.Key,
+                    Value = x.Value,
+                }).
+                ToArray();
 
                 using (var transaction = context.Database.BeginTransaction())
                 {
@@ -370,12 +422,17 @@ namespace Hangfire.EntityFramework
 
         public override Dictionary<string, string> GetAllEntriesFromHash(string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             var result = Storage.UseContext(context => (
                 from hash in context.Hashes
                 where hash.Key == key
-                select new { hash.Field, hash.Value }).
+                select new
+                {
+                    hash.Field,
+                    hash.Value,
+                }).
                 ToArray());
 
             if (result.Length == 0)
@@ -386,14 +443,16 @@ namespace Hangfire.EntityFramework
 
         public override long GetHashCount([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             return Storage.UseContext(context => context.Hashes.LongCount(x => x.Key == key));
         }
 
         public override TimeSpan GetHashTtl([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             DateTime? minExpiredAt = Storage.UseContext(context => (
                 from hash in context.Hashes
@@ -406,8 +465,11 @@ namespace Hangfire.EntityFramework
 
         public override string GetValueFromHash([NotNull] string key, [NotNull] string name)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (name == null) throw new ArgumentNullException(nameof(name));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
 
             return Storage.UseContext(context => (
                 from hash in context.Hashes
@@ -418,7 +480,8 @@ namespace Hangfire.EntityFramework
 
         public override long GetCounter([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             return Storage.UseContext(context => (
                 from counter in context.Counters
@@ -429,7 +492,8 @@ namespace Hangfire.EntityFramework
 
         public override List<string> GetAllItemsFromList([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             return Storage.UseContext(context => (
                 from listItem in context.Lists
@@ -441,14 +505,16 @@ namespace Hangfire.EntityFramework
 
         public override long GetListCount([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             return Storage.UseContext(context => context.Lists.LongCount(x => x.Key == key));
         }
 
         public override TimeSpan GetListTtl([NotNull] string key)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
             DateTime? minExpiredAt = Storage.UseContext(context => (
                 from listItem in context.Lists
@@ -456,14 +522,19 @@ namespace Hangfire.EntityFramework
                 select listItem.ExpireAt).
                 Min());
 
-            return minExpiredAt.HasValue ? minExpiredAt.Value - DateTime.UtcNow : TimeSpan.FromSeconds(-1);
+            return minExpiredAt.HasValue ?
+                minExpiredAt.Value - DateTime.UtcNow :
+                TimeSpan.FromSeconds(-1);
         }
 
         public override List<string> GetRangeFromList([NotNull] string key, int startingFrom, int endingAt)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
 
-            if (endingAt < startingFrom) Swap(ref startingFrom, ref endingAt);
+            if (endingAt < startingFrom)
+                Swap(ref startingFrom, ref endingAt);
+
             int take = endingAt - startingFrom + 1;
 
             return Storage.UseContext(context => (

@@ -35,16 +35,38 @@ namespace Hangfire.EntityFramework
         public void Ctor_CorrectlySets_AllInstanceProperties()
         {
             var storage = CreateStorage();
-            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, };
-            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
-            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
+
+            var job = new HangfireJob
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            var host = new HangfireServerHost
+            {
+                Id = EntityFrameworkJobStorage.ServerHostId,
+            };
+
+            var queueItem = new HangfireJobQueueItem
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+                Job = job,
+                Queue = Queue,
+            };
+
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
-                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup { QueueItem = queueItem, ServerHost = host, });
+                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
+                {
+                    QueueItem = queueItem,
+                    ServerHost = host,
+                });
             });
+
             using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue))
             {
                 Assert.Equal(JobId.ToString(), fetchedJob.JobId);
@@ -56,9 +78,26 @@ namespace Hangfire.EntityFramework
         public void RemoveFromQueue_CorrectlyRemovesQueueItem()
         {
             var storage = CreateStorage();
-            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, };
-            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
-            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
+
+            var job = new HangfireJob
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            var host = new HangfireServerHost
+            {
+                Id = EntityFrameworkJobStorage.ServerHostId,
+            };
+
+            var queueItem = new HangfireJobQueueItem
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+                Job = job,
+                Queue = Queue,
+            };
+
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.Add(job);
@@ -66,6 +105,7 @@ namespace Hangfire.EntityFramework
                 context.ServerHosts.Add(host);
                 context.JobQueueLookups.Add(new HangfireJobQueueItemLookup { QueueItem = queueItem, ServerHost = host, });
             });
+
             using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue))
                 fetchedJob.RemoveFromQueue();
 
@@ -80,15 +120,37 @@ namespace Hangfire.EntityFramework
         public void Requeue_CorrectlyReturnsItemBackToQueue()
         {
             var storage = CreateStorage();
-            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, };
-            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
-            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
+
+            var job = new HangfireJob
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            var host = new HangfireServerHost
+            {
+                Id = EntityFrameworkJobStorage.ServerHostId,
+            };
+
+            var queueItem = new HangfireJobQueueItem
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+                Job = job,
+                Queue = Queue,
+            };
+
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
-                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup { QueueItem = queueItem, ServerHost = host, });
+
+                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
+                {
+                    QueueItem = queueItem,
+                    ServerHost = host,
+                });
             });
             using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue))
                 fetchedJob.Requeue();
@@ -104,16 +166,39 @@ namespace Hangfire.EntityFramework
         public void Dispose_CorrectlyDisposeOwnedResources()
         {
             var storage = CreateStorage();
-            var job = new HangfireJob { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, };
-            var host = new HangfireServerHost { Id = EntityFrameworkJobStorage.ServerHostId, };
-            var queueItem = new HangfireJobQueueItem { Id = Guid.NewGuid(), CreatedAt = DateTime.UtcNow, Job = job, Queue = Queue, };
+
+            var job = new HangfireJob
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+            };
+
+            var host = new HangfireServerHost
+            {
+                Id = EntityFrameworkJobStorage.ServerHostId,
+            };
+
+            var queueItem = new HangfireJobQueueItem
+            {
+                Id = Guid.NewGuid(),
+                CreatedAt = DateTime.UtcNow,
+                Job = job,
+                Queue = Queue,
+            };
+
             UseContextWithSavingChanges(context =>
             {
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
-                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup { QueueItem = queueItem, ServerHost = host, });
+
+                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
+                {
+                    QueueItem = queueItem,
+                    ServerHost = host,
+                });
             });
+
             var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue);
 
             fetchedJob.Dispose();

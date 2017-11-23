@@ -38,7 +38,8 @@ namespace Hangfire.EntityFramework
         {
             var options = new EntityFrameworkJobStorageOptions();
 
-            Assert.Throws<ArgumentOutOfRangeException>("value", () => options.DistributedLockTimeout = value);
+            Assert.Throws<ArgumentOutOfRangeException>("value",
+                () => options.DistributedLockTimeout = value);
         }
 
         [Fact]
@@ -58,7 +59,8 @@ namespace Hangfire.EntityFramework
         {
             var options = new EntityFrameworkJobStorageOptions();
 
-            Assert.Throws<ArgumentOutOfRangeException>("value", () => options.QueuePollInterval = value);
+            Assert.Throws<ArgumentOutOfRangeException>("value",
+                () => options.QueuePollInterval = value);
         }
 
         [Fact]
@@ -78,7 +80,8 @@ namespace Hangfire.EntityFramework
         {
             var options = new EntityFrameworkJobStorageOptions();
 
-            Assert.Throws<ArgumentOutOfRangeException>("value", () => options.CountersAggregationInterval = value);
+            Assert.Throws<ArgumentOutOfRangeException>("value",
+                () => options.CountersAggregationInterval = value);
         }
 
         [Fact]
@@ -98,7 +101,8 @@ namespace Hangfire.EntityFramework
         {
             var options = new EntityFrameworkJobStorageOptions();
 
-            Assert.Throws<ArgumentOutOfRangeException>("value", () => options.JobExpirationCheckInterval = value);
+            Assert.Throws<ArgumentOutOfRangeException>("value",
+                () => options.JobExpirationCheckInterval = value);
         }
 
         [Fact]
@@ -106,7 +110,8 @@ namespace Hangfire.EntityFramework
         {
             var options = new EntityFrameworkJobStorageOptions();
 
-            Assert.Throws<ArgumentNullException>("value", () => options.DefaultSchemaName = null);
+            Assert.Throws<ArgumentNullException>("value",
+                () => options.DefaultSchemaName = null);
         }
 
         [Fact]

@@ -10,5 +10,5 @@ namespace Hangfire.EntityFramework
         public DateTime EnqueueAt { get; set; }
 
         public DateTime? ScheduledAt { get; set; }
-}
+    }
 }

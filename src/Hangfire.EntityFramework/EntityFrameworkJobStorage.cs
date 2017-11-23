@@ -52,8 +52,11 @@ namespace Hangfire.EntityFramework
         /// </exception>
         public EntityFrameworkJobStorage(string nameOrConnectionString, EntityFrameworkJobStorageOptions options)
         {
-            if (nameOrConnectionString == null) throw new ArgumentNullException(nameof(nameOrConnectionString));
-            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (nameOrConnectionString == null)
+                throw new ArgumentNullException(nameof(nameOrConnectionString));
+
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
 
             Options = options;
             NameOrConnectionString = nameOrConnectionString;
@@ -115,6 +118,7 @@ namespace Hangfire.EntityFramework
             return result;
         }
 
-        internal HangfireDbContext CreateContext() => new HangfireDbContext(NameOrConnectionString, Options.DefaultSchemaName);
+        internal HangfireDbContext CreateContext() =>
+            new HangfireDbContext(NameOrConnectionString, Options.DefaultSchemaName);
     }
 }

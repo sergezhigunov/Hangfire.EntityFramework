@@ -24,14 +24,29 @@ namespace Hangfire.EntityFramework
             string resource,
             TimeSpan timeout)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
-            if (resource == null) throw new ArgumentNullException(nameof(resource));
+            if (storage == null)
+                throw new ArgumentNullException(nameof(storage));
+
+            if (resource == null)
+                throw new ArgumentNullException(nameof(resource));
+
             if (resource == string.Empty)
                 throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(resource));
+
             if (timeout < TimeSpan.Zero)
-                throw new ArgumentOutOfRangeException(nameof(timeout), timeout, ErrorStrings.NeedNonNegativeValue);
-            if (timeout > MaxSupportedTimeout) throw new ArgumentOutOfRangeException(nameof(timeout), timeout,
-                string.Format(ErrorStrings.Culture, ErrorStrings.TimeoutTooLarge, MaxSupportedTimeout));
+                throw new ArgumentOutOfRangeException(
+                    nameof(timeout),
+                    timeout,
+                    ErrorStrings.NeedNonNegativeValue);
+
+            if (timeout > MaxSupportedTimeout)
+                throw new ArgumentOutOfRangeException(
+                    nameof(timeout),
+                    timeout,
+                    string.Format(
+                        ErrorStrings.Culture,
+                        ErrorStrings.TimeoutTooLarge,
+                        MaxSupportedTimeout));
 
             Resource = resource;
             Timeout = timeout;
