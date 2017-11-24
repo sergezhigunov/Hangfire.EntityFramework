@@ -130,18 +130,22 @@ namespace Hangfire.EntityFramework
 
         public virtual void ReleaseDistributedLock(string resource)
         {
-            ValidateResource(resource);
+            if (resource == null)
+                throw new ArgumentNullException(nameof(resource));
+
+            if (resource == string.Empty)
+                throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(resource));
 
             Storage.UseContext(context =>
             {
-                using (var transaction = context.Database.BeginTransaction())
+                context.Entry(new HangfireDistributedLock { Id = resource }).State = EntityState.Deleted;
+                try
                 {
-                    if (context.DistributedLocks.Any(x => x.Id == resource))
-                    {
-                        context.Entry(new HangfireDistributedLock { Id = resource }).State = EntityState.Deleted;
-                        context.SaveChanges();
-                    }
-                    transaction.Commit();
+                    context.SaveChanges();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    // Database wins
                 }
             });
         }
