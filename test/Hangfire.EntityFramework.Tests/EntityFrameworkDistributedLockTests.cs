@@ -2,9 +2,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
-using System.Threading;
 using Hangfire.EntityFramework.Utils;
+using Moq;
 using Xunit;
 
 namespace Hangfire.EntityFramework
@@ -16,108 +15,43 @@ namespace Hangfire.EntityFramework
         private readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenStorageIsNull()
+        public void Ctor_ThrowsAnException_WhenManagerIsNull()
         {
-            Assert.Throws<ArgumentNullException>("storage",
-                () => new EntityFrameworkDistributedLock(null, "resource", Timeout));
+            Assert.Throws<ArgumentNullException>("manager",
+                () => new EntityFrameworkDistributedLock(null, "resource"));
         }
 
         [Fact]
-        public void Ctor_ThrowsAnException_WhenTimeoutIsNegative()
-        {
-            var storage = CreateStorage();
-            var tooLargeTimeout = TimeSpan.FromDays(-1);
-
-            Assert.Throws<ArgumentOutOfRangeException>("timeout",
-                () => new EntityFrameworkDistributedLock(storage, "resource", tooLargeTimeout));
-        }
-
-        [Fact]
-        public void Ctor_ThrowsAnException_WhenTimeoutTooLargeForLock()
-        {
-            var storage = CreateStorage();
-            var tooLargeTimeout = TimeSpan.FromDays(25);
-
-            Assert.Throws<ArgumentOutOfRangeException>("timeout",
-                () => new EntityFrameworkDistributedLock(storage, "resource", tooLargeTimeout));
-        }
-
-        [Fact, RollbackTransaction]
         public void Ctor_ThrowsAnException_WhenResourceIsNull()
         {
-            var storage = CreateStorage();
+            var manager = CreateManager();
 
             Assert.Throws<ArgumentNullException>("resource",
-                () => new EntityFrameworkDistributedLock(storage, null, Timeout));
+                () => new EntityFrameworkDistributedLock(manager.Object, null));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void Ctor_ThrowsAnException_WhenResourceIsEmpty()
         {
-            var storage = CreateStorage();
+            var manager = CreateManager();
 
             Assert.Throws<ArgumentException>("resource",
-                () => new EntityFrameworkDistributedLock(storage, string.Empty, Timeout));
+                () => new EntityFrameworkDistributedLock(manager.Object, string.Empty));
         }
 
-        [Fact, RollbackTransaction]
-        public void Ctor_AcquiresExclusiveApplicationLock()
+        [Fact]
+        public void Dispose_CallsReleaseDistributedLock()
         {
-            string resource = Guid.NewGuid().ToString();
-            var storage = CreateStorage();
+            var manager = CreateManager();
+            var resource = "resource";
 
-            var start = DateTime.UtcNow.AddSeconds(-1);
-            var distributedLock = new EntityFrameworkDistributedLock(storage, resource, Timeout);
-            var end = DateTime.UtcNow.AddSeconds(1);
+            using (var distributedLock = new EntityFrameworkDistributedLock(manager.Object, resource))
+                manager.Verify(x => x.ReleaseDistributedLock(resource), Times.Never);
 
-            var record = UseContext(context => context.DistributedLocks.Single());
-
-            Assert.Equal(resource, record.Id);
-            Assert.True(start <= record.CreatedAt && record.CreatedAt <= end);
+            manager.Verify(x => x.ReleaseDistributedLock(resource), Times.Once);
         }
 
-        [Fact, RollbackTransaction]
-        public void Ctor_ThrowsAnException_IfLockCanNotBeGranted()
-        {
-            string resource = Guid.NewGuid().ToString();
-            var releaseLock = new ManualResetEventSlim(false);
-            var lockAcquired = new ManualResetEventSlim(false);
-
-            var thread = new Thread(
-                () =>
-                {
-                    var storage = CreateStorage();
-                    using (new EntityFrameworkDistributedLock(storage, resource, Timeout))
-                    {
-                        lockAcquired.Set();
-                        releaseLock.Wait();
-                    }
-                });
-            thread.Start();
-
-            lockAcquired.Wait();
-
-            {
-                var storage = CreateStorage();
-                Assert.Throws<EntityFrameworkDistributedLockTimeoutException>(
-                    () => new EntityFrameworkDistributedLock(storage, resource, Timeout));
-            }
-
-            releaseLock.Set();
-            thread.Join();
-        }
-
-        [Fact, RollbackTransaction]
-        public void Dispose_ReleasesExclusiveApplicationLock()
-        {
-            string resource = Guid.NewGuid().ToString();
-            var storage = CreateStorage();
-
-            var distributedLock = new EntityFrameworkDistributedLock(storage, resource, Timeout);
-            distributedLock.Dispose();
-
-            var record = UseContext(context => context.DistributedLocks.Any());
-            Assert.False(record);
-        }
+        private static Mock<EntityFrameworkDistributedLockManager> CreateManager() =>
+            new Mock<EntityFrameworkDistributedLockManager>(CreateStorage());
     }
 }

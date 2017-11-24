@@ -17,6 +17,7 @@ namespace Hangfire.EntityFramework
     internal class EntityFrameworkJobStorageConnection : JobStorageConnection
     {
         private EntityFrameworkJobStorage Storage { get; }
+        private EntityFrameworkDistributedLockManager DistributedLockManager { get; }
 
         public EntityFrameworkJobStorageConnection([NotNull] EntityFrameworkJobStorage storage)
         {
@@ -24,13 +25,16 @@ namespace Hangfire.EntityFramework
                 throw new ArgumentNullException(nameof(storage));
 
             Storage = storage;
+            DistributedLockManager = new EntityFrameworkDistributedLockManager(Storage);
         }
 
         public override IWriteOnlyTransaction CreateWriteTransaction() =>
             new EntityFrameworkJobStorageTransaction(Storage);
 
-        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout) =>
-            new EntityFrameworkDistributedLock(Storage, resource, timeout);
+        public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout)
+        {
+            return DistributedLockManager.AcquireDistributedLock(resource, timeout);
+        }
 
         public override string CreateExpiredJob(Job job, IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
         {
