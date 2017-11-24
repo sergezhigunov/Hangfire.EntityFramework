@@ -30,7 +30,7 @@ namespace Hangfire.EntityFramework
             new EntityFrameworkJobStorageTransaction(Storage);
 
         public override IDisposable AcquireDistributedLock(string resource, TimeSpan timeout) =>
-            new EntityFrameworkJobStorageDistributedLock(Storage, resource, timeout);
+            new EntityFrameworkDistributedLock(Storage, resource, timeout);
 
         public override string CreateExpiredJob(Job job, IDictionary<string, string> parameters, DateTime createdAt, TimeSpan expireIn)
         {

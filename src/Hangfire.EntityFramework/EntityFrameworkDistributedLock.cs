@@ -10,7 +10,7 @@ using System.Threading;
 
 namespace Hangfire.EntityFramework
 {
-    internal class EntityFrameworkJobStorageDistributedLock : IDisposable
+    internal class EntityFrameworkDistributedLock : IDisposable
     {
         private static TimeSpan MaxSupportedTimeout = new TimeSpan(TimeSpan.TicksPerMillisecond * int.MaxValue);
 
@@ -19,7 +19,7 @@ namespace Hangfire.EntityFramework
         private TimeSpan Timeout { get; }
         private bool Disposed { get; set; }
 
-        public EntityFrameworkJobStorageDistributedLock(
+        public EntityFrameworkDistributedLock(
             EntityFrameworkJobStorage storage,
             string resource,
             TimeSpan timeout)

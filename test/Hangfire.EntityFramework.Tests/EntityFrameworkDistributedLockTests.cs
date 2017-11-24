@@ -11,7 +11,7 @@ namespace Hangfire.EntityFramework
 {
     using static ConnectionUtils;
 
-    public class EntityFrameworkJobStorageDistributedLockTests
+    public class EntityFrameworkDistributedLockTests
     {
         private readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
 
@@ -19,7 +19,7 @@ namespace Hangfire.EntityFramework
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             Assert.Throws<ArgumentNullException>("storage",
-                () => new EntityFrameworkJobStorageDistributedLock(null, "resource", Timeout));
+                () => new EntityFrameworkDistributedLock(null, "resource", Timeout));
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace Hangfire.EntityFramework
             var tooLargeTimeout = TimeSpan.FromDays(-1);
 
             Assert.Throws<ArgumentOutOfRangeException>("timeout",
-                () => new EntityFrameworkJobStorageDistributedLock(storage, "resource", tooLargeTimeout));
+                () => new EntityFrameworkDistributedLock(storage, "resource", tooLargeTimeout));
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Hangfire.EntityFramework
             var tooLargeTimeout = TimeSpan.FromDays(25);
 
             Assert.Throws<ArgumentOutOfRangeException>("timeout",
-                () => new EntityFrameworkJobStorageDistributedLock(storage, "resource", tooLargeTimeout));
+                () => new EntityFrameworkDistributedLock(storage, "resource", tooLargeTimeout));
         }
 
         [Fact, RollbackTransaction]
@@ -48,7 +48,7 @@ namespace Hangfire.EntityFramework
             var storage = CreateStorage();
 
             Assert.Throws<ArgumentNullException>("resource",
-                () => new EntityFrameworkJobStorageDistributedLock(storage, null, Timeout));
+                () => new EntityFrameworkDistributedLock(storage, null, Timeout));
         }
 
         [Fact, RollbackTransaction]
@@ -57,7 +57,7 @@ namespace Hangfire.EntityFramework
             var storage = CreateStorage();
 
             Assert.Throws<ArgumentException>("resource",
-                () => new EntityFrameworkJobStorageDistributedLock(storage, string.Empty, Timeout));
+                () => new EntityFrameworkDistributedLock(storage, string.Empty, Timeout));
         }
 
         [Fact, RollbackTransaction]
@@ -67,7 +67,7 @@ namespace Hangfire.EntityFramework
             var storage = CreateStorage();
 
             var start = DateTime.UtcNow.AddSeconds(-1);
-            var distributedLock = new EntityFrameworkJobStorageDistributedLock(storage, resource, Timeout);
+            var distributedLock = new EntityFrameworkDistributedLock(storage, resource, Timeout);
             var end = DateTime.UtcNow.AddSeconds(1);
 
             var record = UseContext(context => context.DistributedLocks.Single());
@@ -87,7 +87,7 @@ namespace Hangfire.EntityFramework
                 () =>
                 {
                     var storage = CreateStorage();
-                    using (new EntityFrameworkJobStorageDistributedLock(storage, resource, Timeout))
+                    using (new EntityFrameworkDistributedLock(storage, resource, Timeout))
                     {
                         lockAcquired.Set();
                         releaseLock.Wait();
@@ -100,7 +100,7 @@ namespace Hangfire.EntityFramework
             {
                 var storage = CreateStorage();
                 Assert.Throws<EntityFrameworkDistributedLockTimeoutException>(
-                    () => new EntityFrameworkJobStorageDistributedLock(storage, resource, Timeout));
+                    () => new EntityFrameworkDistributedLock(storage, resource, Timeout));
             }
 
             releaseLock.Set();
@@ -113,7 +113,7 @@ namespace Hangfire.EntityFramework
             string resource = Guid.NewGuid().ToString();
             var storage = CreateStorage();
 
-            var distributedLock = new EntityFrameworkJobStorageDistributedLock(storage, resource, Timeout);
+            var distributedLock = new EntityFrameworkDistributedLock(storage, resource, Timeout);
             distributedLock.Dispose();
 
             var record = UseContext(context => context.DistributedLocks.Any());

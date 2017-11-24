@@ -259,7 +259,7 @@ namespace Hangfire.EntityFramework
 
             Assert.NotNull(result);
             using (result)
-                Assert.IsType<EntityFrameworkJobStorageDistributedLock>(result);
+                Assert.IsType<EntityFrameworkDistributedLock>(result);
         }
 
         [Fact, RollbackTransaction]
