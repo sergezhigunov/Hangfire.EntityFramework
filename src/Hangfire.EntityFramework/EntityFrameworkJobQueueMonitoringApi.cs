@@ -29,7 +29,7 @@ namespace Hangfire.EntityFramework
                 ToArray());
         }
 
-        public Guid[] GetEnqueuedJobIds(string queue, int from, int perPage)
+        public long[] GetEnqueuedJobIds(string queue, int from, int perPage)
         {
             queue = queue.ToUpperInvariant();
 

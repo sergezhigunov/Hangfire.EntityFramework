@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Hangfire.EntityFramework.Utils;
@@ -64,13 +65,11 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void Dequeue_ShouldFetchAJob_FromTheSpecifiedQueue()
         {
-            Guid jobId = Guid.NewGuid();
             Guid queueItemId = Guid.NewGuid();
             string queueName = DefaultQueues.First();
 
             var job = new HangfireJob
             {
-                Id = jobId,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -83,7 +82,7 @@ namespace Hangfire.EntityFramework
             {
                 Id = queueItemId,
                 CreatedAt = DateTime.UtcNow,
-                JobId = jobId,
+                Job = job,
                 Queue = queueName,
             };
 
@@ -101,7 +100,7 @@ namespace Hangfire.EntityFramework
             Assert.NotNull(result);
             Assert.IsType<EntityFrameworkFetchedJob>(result);
             EntityFrameworkFetchedJob fetchedJob = (EntityFrameworkFetchedJob)result;
-            Assert.Equal(jobId.ToString(), fetchedJob.JobId);
+            Assert.Equal(job.Id.ToString(CultureInfo.InvariantCulture), fetchedJob.JobId);
             Assert.Equal("DEFAULT", fetchedJob.Queue);
             var jobInQueue = UseContext(context => context.JobQueues.SingleOrDefault(x => x.Lookup == null));
             Assert.Null(jobInQueue);
@@ -110,11 +109,9 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void Enqueue_AddsAJobToTheQueue()
         {
-            Guid jobId = Guid.NewGuid();
             string queueName = DefaultQueues.First();
             var job = new HangfireJob
             {
-                Id = jobId,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -122,10 +119,10 @@ namespace Hangfire.EntityFramework
 
             var queue = CreateJobQueue();
 
-            queue.Enqueue(queueName, jobId.ToString());
+            queue.Enqueue(queueName, job.Id.ToString(CultureInfo.InvariantCulture));
 
             var record = UseContext(context => context.JobQueues.Single());
-            Assert.Equal(jobId, record.JobId);
+            Assert.Equal(job.Id, record.JobId);
             Assert.Equal(queueName, record.Queue);
         }
 

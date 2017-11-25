@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Migrations;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
@@ -45,13 +46,10 @@ namespace Hangfire.EntityFramework
 
             InvocationData invocationData = InvocationData.Serialize(job);
 
-            Guid jobId = Guid.NewGuid();
-
             return Storage.UseContext(context =>
             {
                 HangfireJob hangfireJob = context.Jobs.Add(new HangfireJob
                 {
-                    Id = jobId,
                     CreatedAt = createdAt,
                     ExpireAt = createdAt + expireIn,
                     ClrType = invocationData.Type,
@@ -63,14 +61,14 @@ namespace Hangfire.EntityFramework
                 foreach (var parameter in parameters)
                     context.JobParameters.Add(new HangfireJobParameter
                     {
-                        JobId = jobId,
                         Name = parameter.Key,
                         Value = parameter.Value,
+                        Job = hangfireJob
                     });
 
                 context.SaveChanges();
 
-                return jobId.ToString();
+                return hangfireJob.Id.ToString(CultureInfo.InvariantCulture);
             });
         }
 
@@ -103,7 +101,7 @@ namespace Hangfire.EntityFramework
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            Guid jobId = Guid.Parse(id);
+            long jobId = long.Parse(id, CultureInfo.InvariantCulture);
 
             Storage.UseContext(context =>
             {
@@ -125,8 +123,8 @@ namespace Hangfire.EntityFramework
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            Guid jobId;
-            if (!Guid.TryParse(id, out jobId))
+            long jobId;
+            if (!long.TryParse(id, NumberStyles.Integer, CultureInfo.InvariantCulture, out jobId))
                 return null;
 
             return Storage.UseContext(context => (
@@ -141,8 +139,8 @@ namespace Hangfire.EntityFramework
             if (jobId == null)
                 throw new ArgumentNullException(nameof(jobId));
 
-            Guid id;
-            if (!Guid.TryParse(jobId, out id))
+            long id;
+            if (!long.TryParse(jobId, NumberStyles.Integer, CultureInfo.InvariantCulture, out id))
                 return null;
 
             var jobInfo = Storage.UseContext(context => (
@@ -190,8 +188,8 @@ namespace Hangfire.EntityFramework
             if (jobId == null)
                 throw new ArgumentNullException(nameof(jobId));
 
-            Guid id;
-            if (!Guid.TryParse(jobId, out id))
+            long id;
+            if (!long.TryParse(jobId, NumberStyles.Integer, CultureInfo.InvariantCulture, out id))
                 return null;
 
             var stateInfo = Storage.UseContext(context => (

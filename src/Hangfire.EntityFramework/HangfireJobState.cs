@@ -13,7 +13,7 @@ namespace Hangfire.EntityFramework
         public Guid Id { get; set; }
 
         [ForeignKey(nameof(Job))]
-        public Guid JobId { get; set; }
+        public long JobId { get; set; }
 
         [Index(IsUnique = false)]
         public JobState State { get; set; }

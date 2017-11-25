@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Hangfire.Common;
@@ -308,7 +309,7 @@ namespace Hangfire.EntityFramework
                 Include(p => p.Parameters).
                 Single());
 
-            Assert.Equal(jobId, hangfireJob.Id.ToString());
+            Assert.Equal(jobId, hangfireJob.Id.ToString(CultureInfo.InvariantCulture));
             Assert.Equal(createdAt, hangfireJob.CreatedAt);
             Assert.Null(hangfireJob.ActualState);
 
@@ -350,15 +351,13 @@ namespace Hangfire.EntityFramework
         public void GetJobData_ReturnsResult_WhenJobExists()
         {
             var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Arguments"));
-            var jobId = Guid.NewGuid();
 
-            UseContextWithSavingChanges(context =>
+            HangfireJob job = UseContextWithSavingChanges(context =>
             {
                 var stateId = Guid.NewGuid();
 
-                context.Jobs.Add(new HangfireJob
+                var jobItem = context.Jobs.Add(new HangfireJob
                 {
-                    Id = jobId,
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
@@ -369,7 +368,7 @@ namespace Hangfire.EntityFramework
                 context.JobStates.Add(new HangfireJobState
                 {
                     Id = stateId,
-                    JobId = jobId,
+                    Job = jobItem,
                     CreatedAt = DateTime.UtcNow,
                     State = JobState.Succeeded,
                 });
@@ -377,11 +376,13 @@ namespace Hangfire.EntityFramework
                 context.JobActualStates.Add(new HangfireJobActualState
                 {
                     StateId = stateId,
-                    JobId = jobId,
+                    Job = jobItem,
                 });
+
+                return jobItem;
             });
 
-            var result = UseConnection(connection => connection.GetJobData(jobId.ToString()));
+            var result = UseConnection(connection => connection.GetJobData(job.Id.ToString(CultureInfo.InvariantCulture)));
 
             Assert.NotNull(result);
             Assert.NotNull(result.Job);
@@ -397,15 +398,13 @@ namespace Hangfire.EntityFramework
         {
             var invocationData = new InvocationData(null, null, null, string.Empty);
             var arguments = invocationData.Arguments;
-            var jobId = Guid.NewGuid();
 
-            UseContextWithSavingChanges(context =>
+            HangfireJob storedJob = UseContextWithSavingChanges(context =>
             {
                 var stateId = Guid.NewGuid();
 
-                context.Jobs.Add(new HangfireJob
+                var job = context.Jobs.Add(new HangfireJob
                 {
-                    Id = jobId,
                     ClrType = invocationData.Type,
                     Method = invocationData.Type,
                     ArgumentTypes = invocationData.ParameterTypes,
@@ -416,7 +415,7 @@ namespace Hangfire.EntityFramework
                 context.JobStates.Add(new HangfireJobState
                 {
                     Id = stateId,
-                    JobId = jobId,
+                    Job = job,
                     CreatedAt = DateTime.UtcNow,
                     State = JobState.Succeeded,
                 });
@@ -424,11 +423,13 @@ namespace Hangfire.EntityFramework
                 context.JobActualStates.Add(new HangfireJobActualState
                 {
                     StateId = stateId,
-                    JobId = jobId,
+                    Job = job,
                 });
+
+                return job;
             });
 
-            var result = UseConnection(connection => connection.GetJobData(jobId.ToString()));
+            var result = UseConnection(connection => connection.GetJobData(storedJob.Id.ToString(CultureInfo.InvariantCulture)));
 
             Assert.NotNull(result.LoadException);
         }
@@ -453,20 +454,21 @@ namespace Hangfire.EntityFramework
             var parameterName = Guid.NewGuid().ToString();
             var parameterValue = Guid.NewGuid().ToString();
 
-            var jobId = Guid.NewGuid();
             var job = new HangfireJob
             {
-                Id = jobId,
                 CreatedAt = DateTime.UtcNow,
             };
 
             UseContextWithSavingChanges(context => context.Jobs.Add(job));
 
-            UseConnection(connection => connection.SetJobParameter(jobId.ToString(), parameterName, parameterValue));
+            UseConnection(connection => connection.SetJobParameter(
+                job.Id.ToString(CultureInfo.InvariantCulture),
+                parameterName,
+                parameterValue));
 
             var result = UseContext(context => (
                 from parameter in context.JobParameters
-                where parameter.JobId == jobId && parameter.Name == parameterName
+                where parameter.JobId == job.Id && parameter.Name == parameterName
                 select parameter.Value).
                 Single());
 
@@ -480,10 +482,8 @@ namespace Hangfire.EntityFramework
             var parameterValue = Guid.NewGuid().ToString();
             var parameterAnotherValue = Guid.NewGuid().ToString();
 
-            var jobId = Guid.NewGuid();
             var job = new HangfireJob
             {
-                Id = jobId,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -492,17 +492,17 @@ namespace Hangfire.EntityFramework
                 context.Jobs.Add(job);
                 context.JobParameters.Add(new HangfireJobParameter
                 {
-                    JobId = jobId,
+                    Job = job,
                     Name = parameterName,
                     Value = parameterValue,
                 });
             });
 
-            UseConnection(connection => connection.SetJobParameter(jobId.ToString(), parameterName, parameterAnotherValue));
+            UseConnection(connection => connection.SetJobParameter(job.Id.ToString(CultureInfo.InvariantCulture), parameterName, parameterAnotherValue));
 
             var result = UseContext(context => (
                 from parameter in context.JobParameters
-                where parameter.JobId == jobId && parameter.Name == parameterName
+                where parameter.JobId == job.Id && parameter.Name == parameterName
                 select parameter.Value).
                 Single());
 
@@ -514,20 +514,18 @@ namespace Hangfire.EntityFramework
         {
             var parameterName = Guid.NewGuid().ToString();
 
-            var jobId = Guid.NewGuid();
             var job = new HangfireJob
             {
-                Id = jobId,
                 CreatedAt = DateTime.UtcNow,
             };
 
             UseContextWithSavingChanges(context => context.Jobs.Add(job));
 
-            UseConnection(connection => connection.SetJobParameter(jobId.ToString(), parameterName, null));
+            UseConnection(connection => connection.SetJobParameter(job.Id.ToString(CultureInfo.InvariantCulture), parameterName, null));
 
             var result = UseContext(context => (
                 from parameter in context.JobParameters
-                where parameter.JobId == jobId && parameter.Name == parameterName
+                where parameter.JobId == job.Id && parameter.Name == parameterName
                 select parameter.Value).
                 Single());
 
@@ -564,10 +562,8 @@ namespace Hangfire.EntityFramework
             var parameterName = Guid.NewGuid().ToString();
             var parameterValue = Guid.NewGuid().ToString();
 
-            var jobId = Guid.NewGuid();
             var job = new HangfireJob
             {
-                Id = jobId,
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -576,13 +572,13 @@ namespace Hangfire.EntityFramework
                 context.Jobs.Add(job);
                 context.JobParameters.Add(new HangfireJobParameter
                 {
-                    JobId = jobId,
+                    Job = job,
                     Name = parameterName,
                     Value = parameterValue,
                 });
             });
 
-            var value = UseConnection(connection => connection.GetJobParameter(jobId.ToString(), parameterName));
+            var value = UseConnection(connection => connection.GetJobParameter(job.Id.ToString(CultureInfo.InvariantCulture), parameterName));
 
             Assert.Equal(parameterValue, value);
         }
@@ -608,19 +604,17 @@ namespace Hangfire.EntityFramework
         public void GetStateData_ReturnsCorrectData()
         {
             var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Arguments"));
-            var jobId = Guid.NewGuid();
             var data = JobHelper.ToJson(new Dictionary<string, string>
             {
                 ["Key"] = "Value",
             });
 
-            UseContextWithSavingChanges(context =>
+            var storedJob = UseContextWithSavingChanges(context =>
             {
                 var stateId = Guid.NewGuid();
 
-                context.Jobs.Add(new HangfireJob
+                var job = context.Jobs.Add(new HangfireJob
                 {
-                    Id = jobId,
                     ClrType = invocationData.Type,
                     Method = invocationData.Type,
                     ArgumentTypes = invocationData.ParameterTypes,
@@ -631,17 +625,25 @@ namespace Hangfire.EntityFramework
                 context.JobStates.Add(new HangfireJobState
                 {
                     Id = stateId,
-                    JobId = jobId,
+                    Job = job,
                     CreatedAt = DateTime.UtcNow,
                     State = JobState.Awaiting,
                     Reason = "Reason",
                     Data = data
                 });
 
-                context.JobActualStates.Add(new HangfireJobActualState { StateId = stateId, JobId = jobId, });
+                context.JobActualStates.Add(new HangfireJobActualState
+                {
+                    StateId = stateId,
+                    Job = job,
+                });
+
+                return job;
             });
 
-            var result = UseConnection(connection => connection.GetStateData(jobId.ToString()));
+            var result = UseConnection(connection =>
+                connection.GetStateData(
+                    storedJob.Id.ToString(CultureInfo.InvariantCulture)));
 
             Assert.NotNull(result);
 

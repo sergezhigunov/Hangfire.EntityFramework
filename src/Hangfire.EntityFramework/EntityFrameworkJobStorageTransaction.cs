@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Migrations;
+using System.Globalization;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -42,7 +43,7 @@ namespace Hangfire.EntityFramework
             {
                 var job = new HangfireJob
                 {
-                    Id = Guid.Parse(jobId),
+                    Id = long.Parse(jobId, CultureInfo.InvariantCulture),
                     ExpireAt = DateTime.UtcNow + expireIn,
                 };
 
@@ -61,7 +62,7 @@ namespace Hangfire.EntityFramework
             {
                 var job = new HangfireJob
                 {
-                    Id = Guid.Parse(jobId),
+                    Id = long.Parse(jobId, CultureInfo.InvariantCulture),
                 };
 
                 context.Jobs.Attach(job);
@@ -81,7 +82,7 @@ namespace Hangfire.EntityFramework
 
             EnqueueCommand(context =>
             {
-                Guid id = Guid.Parse(jobId);
+                long id = long.Parse(jobId, CultureInfo.InvariantCulture);
                 Guid stateId = AddJobStateToContext(context, id, state);
 
                 context.JobActualStates.AddOrUpdate(new HangfireJobActualState
@@ -101,10 +102,13 @@ namespace Hangfire.EntityFramework
 
             ThrowIfDisposed();
 
-            EnqueueCommand(context => AddJobStateToContext(context, Guid.Parse(jobId), state));
+            EnqueueCommand(context => AddJobStateToContext(
+                context,
+                long.Parse(jobId, CultureInfo.InvariantCulture),
+                state));
         }
 
-        private static Guid AddJobStateToContext(HangfireDbContext context, Guid jobId, IState state)
+        private Guid AddJobStateToContext(HangfireDbContext context, long jobId, IState state)
         {
             Guid stateId = Guid.NewGuid();
 

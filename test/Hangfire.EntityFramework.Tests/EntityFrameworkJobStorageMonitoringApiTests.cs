@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using Hangfire.Common;
 using Hangfire.EntityFramework.Utils;
@@ -42,7 +43,6 @@ namespace Hangfire.EntityFramework
 
             var job = new HangfireJob
             {
-                Id = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
                 ClrType = invocationData.Type,
                 Method = invocationData.Method,
@@ -88,7 +88,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, firstItem.Length);
             Assert.Single(firstItem.FirstJobs);
             var firstJobKeyValuePair = firstItem.FirstJobs.First();
-            Assert.Equal(job.Id.ToString(), firstJobKeyValuePair.Key);
+            Assert.Equal(job.Id.ToString(CultureInfo.InvariantCulture), firstJobKeyValuePair.Key);
             var firstJob = firstJobKeyValuePair.Value;
             Assert.Null(firstJob.EnqueuedAt);
             Assert.True(firstJob.InEnqueuedState);
@@ -550,7 +550,6 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
@@ -596,8 +595,8 @@ namespace Hangfire.EntityFramework
                 Assert.Equal(now, value.SucceededAt);
             });
 
-            Assert.Equal(jobs[1].Id.ToString(), result[0].Key);
-            Assert.Equal(jobs[2].Id.ToString(), result[1].Key);
+            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
+            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
         }
 
         [Fact, RollbackTransaction]
@@ -617,7 +616,6 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
@@ -662,8 +660,8 @@ namespace Hangfire.EntityFramework
                 Assert.Equal(now, value.StartedAt);
             });
 
-            Assert.Equal(jobs[1].Id.ToString(), result[0].Key);
-            Assert.Equal(jobs[2].Id.ToString(), result[1].Key);
+            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
+            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
         }
 
         [Fact, RollbackTransaction]
@@ -682,7 +680,6 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
@@ -727,8 +724,8 @@ namespace Hangfire.EntityFramework
                 Assert.Equal(now.AddSeconds(1), value.ScheduledAt);
             });
 
-            Assert.Equal(jobs[1].Id.ToString(), result[0].Key);
-            Assert.Equal(jobs[2].Id.ToString(), result[1].Key);
+            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
+            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
         }
 
         [Fact, RollbackTransaction]
@@ -749,7 +746,6 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
@@ -795,8 +791,8 @@ namespace Hangfire.EntityFramework
                 Assert.Equal("ExceptionType", value.ExceptionType);
                 Assert.Equal("Reason", value.Reason);
             });
-            Assert.Equal(jobs[1].Id.ToString(), result[0].Key);
-            Assert.Equal(jobs[2].Id.ToString(), result[1].Key);
+            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
+            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
         }
 
         [Fact, RollbackTransaction]
@@ -817,7 +813,6 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
@@ -861,8 +856,8 @@ namespace Hangfire.EntityFramework
                 Assert.Equal(now, value.DeletedAt);
             });
 
-            Assert.Equal(jobs[1].Id.ToString(), result[0].Key);
-            Assert.Equal(jobs[2].Id.ToString(), result[1].Key);
+            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
+            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
         }
 
         [Fact, RollbackTransaction]
@@ -880,7 +875,6 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    Id = Guid.NewGuid(),
                     CreatedAt = now - new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
@@ -929,7 +923,7 @@ namespace Hangfire.EntityFramework
             Assert.All(result, item =>
             {
                 Assert.NotNull(item.Key);
-                var id = Guid.Parse(item.Key);
+                var id = long.Parse(item.Key, CultureInfo.InvariantCulture);
                 Assert.Contains(jobs, x => x.Id == id);
                 var value = item.Value;
                 Assert.NotNull(value);
@@ -946,11 +940,10 @@ namespace Hangfire.EntityFramework
             Assert.Empty(result);
         }
 
-        private Guid AddJobWithStateToContext(HangfireDbContext context, JobState jobState, string data = null)
+        private void AddJobWithStateToContext(HangfireDbContext context, JobState jobState, string data = null)
         {
             var job = new HangfireJob
             {
-                Id = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -972,14 +965,12 @@ namespace Hangfire.EntityFramework
                 State = state
             });
 
-            return job.Id;
         }
 
-        private Guid AddJobWithQueueItemToContext(HangfireDbContext context, string queue)
+        private void AddJobWithQueueItemToContext(HangfireDbContext context, string queue)
         {
             var job = new HangfireJob
             {
-                Id = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
             };
             var queueItem = new HangfireJobQueueItem
@@ -991,7 +982,6 @@ namespace Hangfire.EntityFramework
             };
             context.Jobs.Add(job);
             context.JobQueues.Add(queueItem);
-            return job.Id;
         }
 
         private T UseMonitoringApi<T>(Func<EntityFrameworkJobStorageMonitoringApi, T> func)

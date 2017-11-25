@@ -12,8 +12,6 @@ namespace Hangfire.EntityFramework
 
     public class EntityFrameworkDistributedLockTests
     {
-        private readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);
-
         [Fact]
         public void Ctor_ThrowsAnException_WhenManagerIsNull()
         {

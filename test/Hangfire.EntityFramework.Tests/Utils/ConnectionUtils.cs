@@ -44,6 +44,13 @@ namespace Hangfire.EntityFramework.Utils
             });
         }
 
+        internal static T UseContextWithSavingChanges<T>(Func<HangfireDbContext, T> func)
+        {
+            T result = default(T);
+            UseContextWithSavingChanges(context => { result = func(context); });
+            return result;
+        }
+
         internal static void UseConnection(Action<EntityFrameworkJobStorageConnection> action)
         {
             var storage = CreateStorage();

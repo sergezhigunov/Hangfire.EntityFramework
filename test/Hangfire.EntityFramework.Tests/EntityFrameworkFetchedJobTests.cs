@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
 using Hangfire.EntityFramework.Utils;
 using Xunit;
@@ -13,13 +14,12 @@ namespace Hangfire.EntityFramework
     public class EntityFrameworkFetchedJobTests
     {
         private const string Queue = "QUEUE";
-        private static readonly Guid JobId = Guid.NewGuid();
 
         [Fact]
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             Assert.Throws<ArgumentNullException>("storage",
-                () => new EntityFrameworkFetchedJob(Guid.Empty, Guid.Empty, null, Queue));
+                () => new EntityFrameworkFetchedJob(Guid.Empty, 0, null, Queue));
         }
 
         [Fact]
@@ -28,7 +28,7 @@ namespace Hangfire.EntityFramework
             var storage = CreateStorage();
 
             Assert.Throws<ArgumentNullException>("queue",
-                () => new EntityFrameworkFetchedJob(Guid.Empty, Guid.Empty, storage, null));
+                () => new EntityFrameworkFetchedJob(Guid.Empty, 0, storage, null));
         }
 
         [Fact, RollbackTransaction]
@@ -38,7 +38,6 @@ namespace Hangfire.EntityFramework
 
             var job = new HangfireJob
             {
-                Id = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -67,9 +66,9 @@ namespace Hangfire.EntityFramework
                 });
             });
 
-            using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue))
+            using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, job.Id, storage, Queue))
             {
-                Assert.Equal(JobId.ToString(), fetchedJob.JobId);
+                Assert.Equal(job.Id.ToString(CultureInfo.InvariantCulture), fetchedJob.JobId);
                 Assert.Equal(Queue, fetchedJob.Queue);
             };
         }
@@ -81,7 +80,6 @@ namespace Hangfire.EntityFramework
 
             var job = new HangfireJob
             {
-                Id = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -106,7 +104,7 @@ namespace Hangfire.EntityFramework
                 context.JobQueueLookups.Add(new HangfireJobQueueItemLookup { QueueItem = queueItem, ServerHost = host, });
             });
 
-            using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue))
+            using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, job.Id, storage, Queue))
                 fetchedJob.RemoveFromQueue();
 
             UseContext(context =>
@@ -123,7 +121,6 @@ namespace Hangfire.EntityFramework
 
             var job = new HangfireJob
             {
-                Id = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -152,7 +149,7 @@ namespace Hangfire.EntityFramework
                     ServerHost = host,
                 });
             });
-            using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue))
+            using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, job.Id, storage, Queue))
                 fetchedJob.Requeue();
 
             UseContext(context =>
@@ -169,7 +166,6 @@ namespace Hangfire.EntityFramework
 
             var job = new HangfireJob
             {
-                Id = Guid.NewGuid(),
                 CreatedAt = DateTime.UtcNow,
             };
 
@@ -199,7 +195,7 @@ namespace Hangfire.EntityFramework
                 });
             });
 
-            var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, JobId, storage, Queue);
+            var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, job.Id, storage, Queue);
 
             fetchedJob.Dispose();
 

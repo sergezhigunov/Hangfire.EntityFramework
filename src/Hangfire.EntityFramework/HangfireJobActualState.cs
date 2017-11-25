@@ -10,7 +10,7 @@ namespace Hangfire.EntityFramework
     internal class HangfireJobActualState
     {
         [Key, ForeignKey(nameof(Job))]
-        public Guid JobId { get; set; }
+        public long JobId { get; set; }
 
         [ForeignKey(nameof(State))]
         public Guid StateId { get; set; }

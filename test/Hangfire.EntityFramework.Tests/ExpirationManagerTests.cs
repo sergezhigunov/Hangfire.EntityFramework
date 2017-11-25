@@ -104,7 +104,6 @@ namespace Hangfire.EntityFramework
 
                 context.Jobs.Add(new HangfireJob
                 {
-                    Id = Guid.NewGuid(),
                     CreatedAt = DateTime.UtcNow,
                     ExpireAt = expireAt,
                 });

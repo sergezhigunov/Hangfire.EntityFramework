@@ -3,6 +3,7 @@
 
 using System;
 using System.Data.Entity.Infrastructure;
+using System.Globalization;
 using Hangfire.Annotations;
 using Hangfire.Storage;
 
@@ -26,7 +27,7 @@ namespace Hangfire.EntityFramework
 
         public EntityFrameworkFetchedJob(
             Guid queueItemId,
-            Guid jobId,
+            long jobId,
             [NotNull] EntityFrameworkJobStorage storage,
             [NotNull] string queue)
         {
@@ -37,7 +38,7 @@ namespace Hangfire.EntityFramework
                 throw new ArgumentNullException(nameof(storage));
 
             QueueItemId = queueItemId;
-            JobId = jobId.ToString();
+            JobId = jobId.ToString(CultureInfo.InvariantCulture);
             Storage = storage;
             Queue = queue;
         }

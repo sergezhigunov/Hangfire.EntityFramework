@@ -12,7 +12,8 @@ namespace Hangfire.EntityFramework
     internal class HangfireJob
     {
         [Key]
-        public Guid Id { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
 
         [StringLength(512)]
         public string ClrType { get; set; }

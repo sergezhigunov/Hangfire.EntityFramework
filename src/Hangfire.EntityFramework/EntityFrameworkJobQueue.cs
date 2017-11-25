@@ -3,6 +3,7 @@
 
 using System;
 using System.Data.Entity.Infrastructure;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
@@ -50,6 +51,7 @@ namespace Hangfire.EntityFramework
                             orderby item.CreatedAt ascending
                             select item).
                             FirstOrDefault();
+
                         if (queueItem != null)
                         {
                             context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
@@ -82,7 +84,7 @@ namespace Hangfire.EntityFramework
             if (jobId == null)
                 throw new ArgumentNullException(nameof(jobId));
 
-            Guid id = Guid.Parse(jobId);
+            var id = long.Parse(jobId, CultureInfo.InvariantCulture);
             queue = queue.ToUpperInvariant();
 
             Storage.UseContext(context =>

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Globalization;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -79,8 +80,8 @@ namespace Hangfire.EntityFramework
             if (jobId == null)
                 return null;
 
-            Guid id;
-            if (!Guid.TryParse(jobId, out id))
+            long id;
+            if (!long.TryParse(jobId, NumberStyles.Integer, CultureInfo.InvariantCulture, out id))
                 return null;
 
             return UseContext(context =>
@@ -265,7 +266,7 @@ namespace Hangfire.EntityFramework
 
         public IDictionary<DateTime, long> HourlyFailedJobs() => GetHourlyTimelineStats("failed");
 
-        private JobList<EnqueuedJobDto> EnqueuedJobs(Guid[] enqueuedJobIds)
+        private JobList<EnqueuedJobDto> EnqueuedJobs(long[] enqueuedJobIds)
         {
             return UseContext(context =>
             {
@@ -324,7 +325,7 @@ namespace Hangfire.EntityFramework
                     dto = selector(job, DeserializeJob(job), stateData);
                 }
 
-                result.Add(new KeyValuePair<string, TResult>(job.Id.ToString(), dto));
+                result.Add(new KeyValuePair<string, TResult>(job.Id.ToString(CultureInfo.InvariantCulture), dto));
             }
 
             return new JobList<TResult>(result);

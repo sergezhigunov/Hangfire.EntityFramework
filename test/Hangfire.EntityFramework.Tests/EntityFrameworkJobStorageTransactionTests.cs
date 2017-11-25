@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Globalization;
 using System.Linq;
 using Hangfire.Common;
 using Hangfire.EntityFramework.Utils;
@@ -55,16 +56,16 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void ExpireJob_SetsJobExpirationData()
         {
-            Guid jobId = InsertTestJob();
-            Guid anotherJobId = InsertTestJob();
+            var job = InsertTestJob();
+            var anotherJob = InsertTestJob();
 
-            UseTransaction(transaction => transaction.ExpireJob(jobId.ToString(), TimeSpan.FromDays(1)));
+            UseTransaction(transaction => transaction.ExpireJob(job.Id.ToString(CultureInfo.InvariantCulture), TimeSpan.FromDays(1)));
 
-            var job = GetTestJob(jobId);
+            var actualJob = GetTestJob(job.Id);
             var approxExpireAt = DateTime.UtcNow.AddDays(1);
-            Assert.True(approxExpireAt.AddMinutes(-1) < job.ExpireAt && job.ExpireAt < approxExpireAt.AddMinutes(1));
+            Assert.True(approxExpireAt.AddMinutes(-1) < actualJob.ExpireAt && actualJob.ExpireAt < approxExpireAt.AddMinutes(1));
 
-            var anotherJob = GetTestJob(anotherJobId);
+            anotherJob = GetTestJob(anotherJob.Id);
             Assert.Null(anotherJob.ExpireAt);
         }
 
@@ -96,15 +97,15 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void PersistJob_ClearsTheJobExpirationData()
         {
-            Guid jobId = InsertTestJob(DateTime.UtcNow);
-            Guid anotherJobId = InsertTestJob(DateTime.UtcNow);
+            var job = InsertTestJob(DateTime.UtcNow);
+            var anotherJob = InsertTestJob(DateTime.UtcNow);
 
-            UseTransaction(transaction => transaction.PersistJob(jobId.ToString()));
+            UseTransaction(transaction => transaction.PersistJob(job.Id.ToString(CultureInfo.InvariantCulture)));
 
-            var job = GetTestJob(jobId);
-            Assert.Null(job.ExpireAt);
+            var actualJob = GetTestJob(job.Id);
+            Assert.Null(actualJob.ExpireAt);
 
-            var anotherJob = GetTestJob(anotherJobId);
+            anotherJob = GetTestJob(anotherJob.Id);
             Assert.NotNull(anotherJob.ExpireAt);
         }
 
@@ -151,8 +152,8 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void SetJobState_AppendsAStateAndSetItToTheJob()
         {
-            Guid jobId = InsertTestJob();
-            Guid anotherJobId = InsertTestJob();
+            var job = InsertTestJob();
+            var anotherJob = InsertTestJob();
 
             var state = new Mock<IState>();
             state.Setup(x => x.Name).Returns(AwaitingState.StateName);
@@ -164,16 +165,16 @@ namespace Hangfire.EntityFramework
                 });
 
             DateTime beginTimestamp = DateTime.UtcNow.AddSeconds(-1);
-            UseTransaction(transaction => transaction.SetJobState(jobId.ToString(), state.Object));
+            UseTransaction(transaction => transaction.SetJobState(job.Id.ToString(CultureInfo.InvariantCulture), state.Object));
             DateTime endTimestamp = DateTime.UtcNow.AddSeconds(1);
 
-            var job = GetTestJob(jobId);
-            Assert.Equal(JobState.Awaiting, job.ActualState.State.State);
+            var actualJob = GetTestJob(job.Id);
+            Assert.Equal(JobState.Awaiting, actualJob.ActualState.State.State);
 
-            var anotherJob = GetTestJob(anotherJobId);
+            anotherJob = GetTestJob(anotherJob.Id);
             Assert.Null(anotherJob.ActualState);
 
-            var jobState = job.ActualState.State;
+            var jobState = actualJob.ActualState.State;
             Assert.Equal(JobState.Awaiting, jobState.State);
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
@@ -227,7 +228,7 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void AddJobState_JustAddsANewRecordInATable()
         {
-            Guid jobId = InsertTestJob();
+            var job = InsertTestJob();
 
             var state = new Mock<IState>();
             state.Setup(x => x.Name).Returns(AwaitingState.StateName);
@@ -239,13 +240,13 @@ namespace Hangfire.EntityFramework
                 });
 
             DateTime beginTimestamp = DateTime.UtcNow.AddSeconds(-1);
-            UseTransaction(transaction => transaction.AddJobState(jobId.ToString(), state.Object));
+            UseTransaction(transaction => transaction.AddJobState(job.Id.ToString(CultureInfo.InvariantCulture), state.Object));
             DateTime endTimestamp = DateTime.UtcNow.AddSeconds(1);
 
-            var job = GetTestJob(jobId);
-            Assert.Null(job.ActualState);
+            var actualJob = GetTestJob(job.Id);
+            Assert.Null(actualJob.ActualState);
 
-            var jobState = Assert.Single(job.States);
+            var jobState = Assert.Single(actualJob.States);
             Assert.Equal(JobState.Awaiting, jobState.State);
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
@@ -298,13 +299,13 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void AddToQueue_CallsEnqueue_OnTargetPersistentQueue()
         {
-            var id = InsertTestJob();
+            var job = InsertTestJob();
 
-            UseTransaction(transaction => transaction.AddToQueue("DEFAULT", id.ToString()));
+            UseTransaction(transaction => transaction.AddToQueue("DEFAULT", job.Id.ToString(CultureInfo.InvariantCulture)));
 
             var result = UseContext(context => context.JobQueues.Single());
 
-            Assert.Equal(id, result.JobId);
+            Assert.Equal(job.Id, result.JobId);
             Assert.Equal("DEFAULT", result.Queue);
         }
 
@@ -1500,21 +1501,19 @@ namespace Hangfire.EntityFramework
             Assert.NotNull(records["list-2"]);
         }
 
-        private Guid InsertTestJob(DateTime? expireAt = null)
+        private HangfireJob InsertTestJob(DateTime? expireAt = null)
         {
-            var jobId = Guid.NewGuid();
-            UseContextWithSavingChanges(context => context.Jobs.
+            var job = UseContextWithSavingChanges(context => context.Jobs.
                 Add(new HangfireJob
                 {
-                    Id = jobId,
                     CreatedAt = DateTime.UtcNow,
                     ExpireAt = expireAt,
                 }));
 
-            return jobId;
+            return job;
         }
 
-        private HangfireJob GetTestJob(Guid jobId) => UseContext(context => context.Jobs.
+        private HangfireJob GetTestJob(long jobId) => UseContext(context => context.Jobs.
             Include(p => p.ActualState.State).
             Include(p => p.Parameters).
             Include(p => p.States).

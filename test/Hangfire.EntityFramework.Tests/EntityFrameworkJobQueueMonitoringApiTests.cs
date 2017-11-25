@@ -33,21 +33,21 @@ namespace Hangfire.EntityFramework
         public void GetQueues_ReturnsAllGivenQueues_IfQueuesIsEmpty()
         {
             var date = DateTime.UtcNow;
-            Guid[] jobIds = Enumerable.Repeat(0, 5).Select(x => Guid.NewGuid()).ToArray();
 
-            var jobs = jobIds.Select(x => new HangfireJob
+            var jobs = Enumerable.Repeat(0, 5).Select(x => new HangfireJob
             {
-                Id = x,
                 CreatedAt = DateTime.UtcNow,
-            });
+            }).
+            ToArray();
 
-            var jobQueueItems = jobIds.Select(x => new HangfireJobQueueItem
+            var jobQueueItems = jobs.Select(x => new HangfireJobQueueItem
             {
                 Id = Guid.NewGuid(),
                 CreatedAt = date += new TimeSpan(0, 0, 1),
-                Queue = x.ToString(),
-                JobId = x
-            });
+                Queue = Guid.NewGuid().ToString(),
+                Job = x,
+            }).
+            ToArray();
 
             UseContextWithSavingChanges(context =>
             {
@@ -60,7 +60,9 @@ namespace Hangfire.EntityFramework
             var queues = api.GetQueues();
 
             Assert.Equal(5, queues.Count());
-            Assert.All(queues, queue => Assert.Contains(Guid.Parse(queue), jobIds));
+            var expectedQueues = jobQueueItems.Select(x => x.Queue).ToArray();
+            Assert.All(queues, queue =>
+                Assert.Contains(queue, expectedQueues));
         }
 
         [Fact, RollbackTransaction]
@@ -79,25 +81,25 @@ namespace Hangfire.EntityFramework
         {
             var date = DateTime.UtcNow;
             string queue = Guid.NewGuid().ToString();
-            Guid[] jobIds = Enumerable.Repeat(0, 10).Select(x => Guid.NewGuid()).ToArray();
 
-            var jobs = jobIds.Select(x => new HangfireJob
+            var jobs = Enumerable.Repeat(0, 10).Select(x => new HangfireJob
             {
-                Id = x,
                 CreatedAt = DateTime.UtcNow,
-            });
+            }).
+            ToArray();
 
-            var jobQueueItems = jobIds.Select(x => new HangfireJobQueueItem
+            var jobQueueItems = jobs.Select(x => new HangfireJobQueueItem
             {
                 Id = Guid.NewGuid(),
                 CreatedAt = date += new TimeSpan(0, 0, 1),
                 Queue = queue,
-                JobId = x
-            });
+                Job = x,
+            }).
+            ToArray();
 
             UseContextWithSavingChanges(context =>
             {
-                context.Jobs.AddRange(jobs);
+                var addedJobs = context.Jobs.AddRange(jobs);
                 context.JobQueues.AddRange(jobQueueItems);
             });
 
@@ -106,6 +108,7 @@ namespace Hangfire.EntityFramework
             var result = api.GetEnqueuedJobIds(queue, 3, 2).ToArray();
 
             Assert.Equal(2, result.Length);
+            var jobIds = jobs.Select(x => x.Id).ToArray();
             Assert.Equal(jobIds[3], result[0]);
             Assert.Equal(jobIds[4], result[1]);
         }
@@ -126,20 +129,18 @@ namespace Hangfire.EntityFramework
         {
             var date = DateTime.UtcNow;
             string queue = Guid.NewGuid().ToString();
-            Guid[] jobIds = Enumerable.Repeat(0, 3).Select(x => Guid.NewGuid()).ToArray();
 
-            var jobs = jobIds.Select(x => new HangfireJob
+            var jobs = Enumerable.Repeat(0, 3).Select(x => new HangfireJob
             {
-                Id = x,
                 CreatedAt = DateTime.UtcNow,
             });
 
-            var jobQueueItems = jobIds.Select(x => new HangfireJobQueueItem
+            var jobQueueItems = jobs.Select(x => new HangfireJobQueueItem
             {
                 Id = Guid.NewGuid(),
                 CreatedAt = date += new TimeSpan(0, 0, 1),
                 Queue = queue,
-                JobId = x
+                Job = x,
             }).
             ToArray();
 
