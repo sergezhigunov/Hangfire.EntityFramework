@@ -7,6 +7,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
+using Hangfire.Storage;
 
 namespace Hangfire.EntityFramework
 {
@@ -108,8 +109,7 @@ namespace Hangfire.EntityFramework
                 }
             }
 
-            throw new EntityFrameworkDistributedLockTimeoutException(
-                string.Format(ErrorStrings.Culture, ErrorStrings.LockTimedOutOnResource, resource));
+            throw new DistributedLockTimeoutException(resource);
         }
 
         private void TryRemoveDeadlock(string resource)

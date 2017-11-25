@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading;
 using Hangfire.EntityFramework.Utils;
+using Hangfire.Storage;
 using Xunit;
 
 namespace Hangfire.EntityFramework
@@ -96,7 +97,7 @@ namespace Hangfire.EntityFramework
 
             lockAcquired.Wait();
 
-            Assert.Throws<EntityFrameworkDistributedLockTimeoutException>(
+            Assert.Throws<DistributedLockTimeoutException>(
                 () => manager.AcquireDistributedLock(resource, Timeout));
 
             releaseLock.Set();
