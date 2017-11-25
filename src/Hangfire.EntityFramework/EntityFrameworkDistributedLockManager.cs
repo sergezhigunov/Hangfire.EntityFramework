@@ -4,7 +4,6 @@
 using System;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using Hangfire.Annotations;
@@ -13,7 +12,11 @@ namespace Hangfire.EntityFramework
 {
     internal class EntityFrameworkDistributedLockManager
     {
-        private static TimeSpan MaxSupportedTimeout = new TimeSpan(TimeSpan.TicksPerMillisecond * int.MaxValue);
+        private static TimeSpan MaxSupportedTimeout { get; } =
+            new TimeSpan(TimeSpan.TicksPerMillisecond * int.MaxValue);
+
+        private static TimeSpan MaxThreadSleepTimeout { get; } =
+            new TimeSpan(TimeSpan.TicksPerSecond);
 
         private EntityFrameworkJobStorage Storage { get; }
 
@@ -52,7 +55,7 @@ namespace Hangfire.EntityFramework
 
         private void Initialize(string resource, TimeSpan timeout)
         {
-            var lockAcquiringTime = Stopwatch.StartNew();
+            var timeoutHelper = new TimeoutHelper(timeout);
 
             bool tryAcquireLock = true;
 
@@ -90,16 +93,18 @@ namespace Hangfire.EntityFramework
                     }
                 }
 
-                if (lockAcquiringTime.ElapsedMilliseconds > timeout.TotalMilliseconds)
+                var remainingTime = timeoutHelper.GetRemainingTime();
+
+                if (remainingTime == TimeSpan.Zero)
                     tryAcquireLock = false;
                 else
                 {
-                    int sleepDuration = Math.Min(1000, (int)(timeout.TotalMilliseconds - lockAcquiringTime.ElapsedMilliseconds));
-                    if (sleepDuration > 1000) sleepDuration = 1000;
-                    if (sleepDuration > 0)
-                        Thread.Sleep(sleepDuration);
-                    else
-                        tryAcquireLock = false;
+                    var sleepDuration =
+                        remainingTime > MaxThreadSleepTimeout ?
+                        MaxThreadSleepTimeout :
+                        remainingTime;
+
+                    Thread.Sleep(sleepDuration);
                 }
             }
 
