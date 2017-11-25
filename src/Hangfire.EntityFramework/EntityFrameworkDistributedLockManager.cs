@@ -62,35 +62,50 @@ namespace Hangfire.EntityFramework
 
             while (tryAcquireLock)
             {
-                TryRemoveDeadlock(resource);
+                using (var context = Storage.CreateContext())
+                {
+                    context.DistributedLocks.Add(new HangfireDistributedLock
+                    {
+                        Id = resource,
+                        CreatedAt = DateTime.UtcNow,
+                    });
+
+                    try
+                    {
+                        context.SaveChanges();
+                        return; // Lock taken
+                    }
+                    catch (DbUpdateException)
+                    {
+                        // Lock already exists
+                    }
+                }
 
                 using (var context = Storage.CreateContext())
-                using (var transaction = context.Database.BeginTransaction())
                 {
-                    if (!context.DistributedLocks.Any(x => x.Id == resource))
-                    {
-                        context.DistributedLocks.Add(new HangfireDistributedLock
-                        {
-                            Id = resource,
-                            CreatedAt = DateTime.UtcNow,
-                        });
+                    var distributedLock = context.DistributedLocks.SingleOrDefault(x => x.Id == resource);
 
-                        bool alreadyLocked = false;
+                    // If the lock has been removed
+                    if (distributedLock == null) 
+                        continue; // We should try to insert again
+
+                    DateTime expireAt = distributedLock.CreatedAt + Storage.Options.DistributedLockTimeout;
+
+                    // If the lock has been expired, we should delete it
+                    if (expireAt < DateTime.UtcNow)
+                    {
+                        context.DistributedLocks.Remove(distributedLock);
+
                         try
                         {
                             context.SaveChanges();
                         }
-                        catch (DbUpdateException)
+                        catch (DbUpdateConcurrencyException)
                         {
-                            alreadyLocked = true;
-                        }
-                        finally
-                        {
-                            transaction.Commit();
+                            // Already deleted, database wins
                         }
 
-                        if (!alreadyLocked)
-                            return;
+                        continue; // We should try to insert again
                     }
                 }
 
@@ -110,27 +125,6 @@ namespace Hangfire.EntityFramework
             }
 
             throw new DistributedLockTimeoutException(resource);
-        }
-
-        private void TryRemoveDeadlock(string resource)
-        {
-            ValidateResource(resource);
-
-            Storage.UseContext(context =>
-            {
-                using (var transaction = context.Database.BeginTransaction())
-                {
-                    DateTime distributedLockExpiration = DateTime.UtcNow - Storage.Options.DistributedLockTimeout;
-
-                    if (context.DistributedLocks.Any(x => x.Id == resource && x.CreatedAt < distributedLockExpiration))
-                    {
-                        context.Entry(new HangfireDistributedLock { Id = resource }).State = EntityState.Deleted;
-                        context.SaveChanges();
-                    }
-
-                    transaction.Commit();
-                }
-            });
         }
 
         public virtual void ReleaseDistributedLock(string resource)

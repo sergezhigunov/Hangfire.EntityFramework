@@ -81,27 +81,19 @@ namespace Hangfire.EntityFramework
         public void AcquireDistributedLock_ThrowsAnException_IfLockCanNotBeGranted()
         {
             string resource = Guid.NewGuid().ToString();
-            var releaseLock = new ManualResetEventSlim(false);
-            var lockAcquired = new ManualResetEventSlim(false);
+            var timeout = new TimeSpan(0, 0, 2);
             var manager = CreateManager();
 
-            var thread = new Thread(() =>
-            {
-                using (manager.AcquireDistributedLock(resource, Timeout))
+            UseContextWithSavingChanges(context =>
+                context.DistributedLocks.Add(new HangfireDistributedLock
                 {
-                    lockAcquired.Set();
-                    releaseLock.Wait();
-                }
-            });
-            thread.Start();
-
-            lockAcquired.Wait();
+                    Id = resource,
+                    CreatedAt = DateTime.UtcNow,
+                }));
 
             Assert.Throws<DistributedLockTimeoutException>(
-                () => manager.AcquireDistributedLock(resource, Timeout));
+                () => manager.AcquireDistributedLock(resource, timeout));
 
-            releaseLock.Set();
-            thread.Join();
         }
 
         [Fact]
