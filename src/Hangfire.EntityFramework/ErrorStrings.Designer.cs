@@ -61,15 +61,6 @@ namespace Hangfire.EntityFramework {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot retrieve provider instances registered for the folowing queues: {0}..
-        /// </summary>
-        internal static string CannotRetrieveQueueProviderForQueue {
-            get {
-                return ResourceManager.GetString("CannotRetrieveQueueProviderForQueue", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The job state &apos;{0}&apos; is invalid..
         /// </summary>
         internal static string InvalidJobState {
@@ -84,15 +75,6 @@ namespace Hangfire.EntityFramework {
         internal static string JobStateNotSupported {
             get {
                 return ResourceManager.GetString("JobStateNotSupported", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Could not place a lock on the resource {0}. Lock timed out..
-        /// </summary>
-        internal static string LockTimedOutOnResource {
-            get {
-                return ResourceManager.GetString("LockTimedOutOnResource", resourceCulture);
             }
         }
         

@@ -117,17 +117,11 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CannotRetrieveQueueProviderForQueue" xml:space="preserve">
-    <value>Cannot retrieve provider instances registered for the folowing queues: {0}.</value>
-  </data>
   <data name="InvalidJobState" xml:space="preserve">
     <value>The job state '{0}' is invalid.</value>
   </data>
   <data name="JobStateNotSupported" xml:space="preserve">
     <value>The job state '{0}' is not supported.</value>
-  </data>
-  <data name="LockTimedOutOnResource" xml:space="preserve">
-    <value>Could not place a lock on the resource {0}. Lock timed out.</value>
   </data>
   <data name="MultipleQueueProvidersNotSupported" xml:space="preserve">
     <value>Multiple provider instances registered for the folowing queues: {0}. You should choose only one type of persistent queues per server instance.</value>
