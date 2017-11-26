@@ -2,9 +2,11 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Hangfire.EntityFramework.Utils;
+using Hangfire.Server;
 using Xunit;
 
 namespace Hangfire.EntityFramework
@@ -41,8 +43,9 @@ namespace Hangfire.EntityFramework
             var storage = CreateStorage();
             CreateExpirationEntries(DateTime.UtcNow.AddMonths(-1));
             var manager = new ExpirationManager(storage, CheckInterval);
+            var processContext = CreateProcessContext();
 
-            manager.Execute(CancellationTokenSource.Token);
+            manager.Execute(processContext);
 
             UseContext(context =>
             {
@@ -60,8 +63,9 @@ namespace Hangfire.EntityFramework
             var storage = CreateStorage();
             CreateExpirationEntries(null);
             var manager = new ExpirationManager(storage, CheckInterval);
+            var processContext = CreateProcessContext();
 
-            manager.Execute(CancellationTokenSource.Token);
+            manager.Execute(processContext);
 
             UseContext(context =>
             {
@@ -79,8 +83,9 @@ namespace Hangfire.EntityFramework
             var storage = CreateStorage();
             CreateExpirationEntries(DateTime.UtcNow.AddMonths(1));
             var manager = new ExpirationManager(storage, CheckInterval);
+            var processContext = CreateProcessContext();
 
-            manager.Execute(CancellationTokenSource.Token);
+            manager.Execute(processContext);
 
             UseContext(context =>
             {
@@ -129,6 +134,14 @@ namespace Hangfire.EntityFramework
                     ExpireAt = expireAt,
                 });
             });
+        }
+
+        private BackgroundProcessContext CreateProcessContext()
+        {
+            return new BackgroundProcessContext(
+                "server", CreateStorage(),
+                new Dictionary<string,object>(),
+                CancellationTokenSource.Token);
         }
     }
 }

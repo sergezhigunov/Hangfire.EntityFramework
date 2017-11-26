@@ -4,14 +4,12 @@
 using System;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
-using System.Threading;
+using Hangfire.Annotations;
 using Hangfire.Server;
 
 namespace Hangfire.EntityFramework
 {
-#pragma warning disable CS0618
-    internal class CountersAggregator : IServerComponent
-#pragma warning restore CS0618
+    internal class CountersAggregator : IBackgroundProcess
     {
         private EntityFrameworkJobStorage Storage { get; }
         private TimeSpan AggregationInterval { get; }
@@ -28,18 +26,19 @@ namespace Hangfire.EntityFramework
             AggregationInterval = aggregationInterval;
         }
 
-        public void Execute(CancellationToken cancellationToken)
+        public void Execute([NotNull] BackgroundProcessContext context)
         {
             int removedCount;
             bool concurrencyExceptionThrown;
+            var cancellationToken = context.CancellationToken;
             do
             {
                 removedCount = 0;
                 concurrencyExceptionThrown = false;
-                Storage.UseContext(context =>
+                Storage.UseContext(dbContext =>
                 {
                     var key = (
-                        from counter in context.Counters
+                        from counter in dbContext.Counters
                         group counter by counter.Key into @group
                         let count = @group.Count()
                         where count > 1
@@ -50,7 +49,7 @@ namespace Hangfire.EntityFramework
                     if (key != null)
                     {
                         var itemsToRemove = (
-                            from counter in context.Counters
+                            from counter in dbContext.Counters
                             where counter.Key == key
                             select counter).
                             Take(1000).
@@ -58,8 +57,8 @@ namespace Hangfire.EntityFramework
 
                         if (itemsToRemove.Length > 1)
                         {
-                            context.Counters.RemoveRange(itemsToRemove);
-                            context.Counters.Add(new HangfireCounter
+                            dbContext.Counters.RemoveRange(itemsToRemove);
+                            dbContext.Counters.Add(new HangfireCounter
                             {
                                 Key = key,
                                 Value = itemsToRemove.Sum(x => x.Value),
@@ -69,7 +68,7 @@ namespace Hangfire.EntityFramework
 
                             try
                             {
-                                context.SaveChanges();
+                                dbContext.SaveChanges();
                             }
                             catch (DbUpdateConcurrencyException)
                             {

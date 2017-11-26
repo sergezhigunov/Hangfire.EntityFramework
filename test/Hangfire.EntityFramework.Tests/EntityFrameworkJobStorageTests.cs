@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Linq;
 using System.Transactions;
 using Hangfire.EntityFramework.Utils;
 using Xunit;
@@ -46,18 +45,6 @@ namespace Hangfire.EntityFramework
             {
                 Assert.NotNull(connection);
             }
-        }
-
-        [Fact, RollbackTransaction]
-        public void GetComponents_ReturnsCorrectSequence()
-        {
-            var storage = CreateStorage();
-
-            var components = storage.GetComponents().ToArray();
-
-            Assert.Equal(2, components.Count());
-            Assert.Contains(components, x => x is CountersAggregator);
-            Assert.Contains(components, x => x is ExpirationManager);
         }
     }
 }

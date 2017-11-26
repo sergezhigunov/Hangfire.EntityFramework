@@ -2,9 +2,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using Hangfire.Annotations;
-using Hangfire.Server;
 using Hangfire.Storage;
 
 namespace Hangfire.EntityFramework
@@ -82,23 +80,6 @@ namespace Hangfire.EntityFramework
         /// An <see cref="IMonitoringApi"/> instance.
         /// </returns>
         public override IMonitoringApi GetMonitoringApi() => MonitoringApi;
-
-        /// <summary>
-        /// Returns of server component collection.
-        /// </summary>
-        /// <returns>
-        /// Collection of server components <see cref="IServerComponent"/>.
-        /// </returns>
-#pragma warning disable CS0618
-        public override IEnumerable<IServerComponent> GetComponents()
-#pragma warning restore CS0618
-        {
-            foreach (var item in base.GetComponents())
-                yield return item;
-
-            yield return CountersAggregator;
-            yield return ExpirationManager;
-        }
 
         internal void UseContext([InstantHandle] Action<HangfireDbContext> action)
         {

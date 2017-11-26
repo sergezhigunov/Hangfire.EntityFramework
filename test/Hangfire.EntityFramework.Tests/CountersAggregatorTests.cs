@@ -2,9 +2,11 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Hangfire.EntityFramework.Utils;
+using Hangfire.Server;
 using Xunit;
 
 namespace Hangfire.EntityFramework
@@ -14,7 +16,11 @@ namespace Hangfire.EntityFramework
     [CleanDatabase]
     public class CountersAggregatorTests
     {
-        private TimeSpan AggregationInterval { get; } = new TimeSpan(1);
+        private CancellationTokenSource CancellationTokenSource { get; } =
+            new CancellationTokenSource();
+
+        private TimeSpan AggregationInterval { get; } =
+            new TimeSpan(1);
 
         [Fact]
         public void Ctor_ThrowsException_WhenStorageIsNull()
@@ -69,9 +75,9 @@ namespace Hangfire.EntityFramework
 
             var storage = CreateStorage();
             var aggregator = new CountersAggregator(storage, AggregationInterval);
-            var cts = new CancellationTokenSource();
+            var processContext = CreateProcessContext();
 
-            aggregator.Execute(cts.Token);
+            aggregator.Execute(processContext);
 
             var result = UseContext(context => context.Counters.ToArray());
 
@@ -79,6 +85,14 @@ namespace Hangfire.EntityFramework
             Assert.Equal(10, result.Single(x => x.Key == "counter1").Value);
             Assert.Equal(-20, result.Single(x => x.Key == "counter2").Value);
             Assert.Equal(99, result.Single(x => x.Key == "counter3").Value);
+        }
+
+        private BackgroundProcessContext CreateProcessContext()
+        {
+            return new BackgroundProcessContext(
+                "server", CreateStorage(),
+                new Dictionary<string, object>(),
+                CancellationTokenSource.Token);
         }
     }
 }
