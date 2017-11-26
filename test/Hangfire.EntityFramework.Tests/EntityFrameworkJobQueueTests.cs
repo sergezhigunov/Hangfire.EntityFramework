@@ -78,7 +78,7 @@ namespace Hangfire.EntityFramework
                 Id = EntityFrameworkJobStorage.ServerHostId,
             };
 
-            var jobQueueItem = new HangfireJobQueueItem
+            var jobQueueItem = new HangfireJobQueue
             {
                 Job = job,
                 Queue = queueName,

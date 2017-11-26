@@ -16,7 +16,7 @@ namespace Hangfire.EntityFramework
         [ForeignKey(nameof(ServerHost))]
         public Guid ServerHostId { get; set; }
 
-        public virtual HangfireJobQueueItem QueueItem { get; set; }
+        public virtual HangfireJobQueue QueueItem { get; set; }
 
         public virtual HangfireServerHost ServerHost { get; set; }
     }

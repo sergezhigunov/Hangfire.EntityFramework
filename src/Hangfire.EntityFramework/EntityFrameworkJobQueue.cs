@@ -89,7 +89,7 @@ namespace Hangfire.EntityFramework
 
             Storage.UseContext(context =>
             {
-                context.JobQueues.Add(new HangfireJobQueueItem
+                context.JobQueues.Add(new HangfireJobQueue
                 {
                     JobId = id,
                     Queue = queue,

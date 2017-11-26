@@ -82,7 +82,7 @@ namespace Hangfire.EntityFramework
                             using (var transaction = context.Database.BeginTransaction())
                             {
                                 // Add item to the end of the queue
-                                context.JobQueues.Add(new HangfireJobQueueItem
+                                context.JobQueues.Add(new HangfireJobQueue
                                 {
                                     JobId = JobId,
                                     Queue = Queue,
@@ -131,7 +131,7 @@ namespace Hangfire.EntityFramework
         private static void RemoveQueueItem(HangfireDbContext context, long itemId)
         {
             context.
-                Entry(new HangfireJobQueueItem{ Id = itemId, }).
+                Entry(new HangfireJobQueue{ Id = itemId, }).
                 State = EntityState.Deleted;
         }
     }

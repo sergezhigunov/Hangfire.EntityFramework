@@ -32,7 +32,7 @@ namespace Hangfire.EntityFramework
 
         public DbSet<HangfireJobParameter> JobParameters { get; set; }
 
-        public DbSet<HangfireJobQueueItem> JobQueues { get; set; }
+        public DbSet<HangfireJobQueue> JobQueues { get; set; }
 
         public DbSet<HangfireJobQueueItemLookup> JobQueueLookups { get; set; }
 

@@ -56,7 +56,7 @@ namespace Hangfire.EntityFramework
                 State = JobState.Awaiting,
             };
 
-            var jobQueueItem = new HangfireJobQueueItem
+            var jobQueueItem = new HangfireJobQueue
             {
                 Job = job,
                 Queue = "DEFAULT",
@@ -885,7 +885,7 @@ namespace Hangfire.EntityFramework
             }).
             ToArray();
 
-            var queueItems = Enumerable.Range(0, 5).Select(x => new HangfireJobQueueItem
+            var queueItems = Enumerable.Range(0, 5).Select(x => new HangfireJobQueue
             {
                 Job = jobs[x],
                 Queue = "QUEUE",
@@ -962,7 +962,7 @@ namespace Hangfire.EntityFramework
             {
                 CreatedAt = DateTime.UtcNow,
             };
-            var queueItem = new HangfireJobQueueItem
+            var queueItem = new HangfireJobQueue
             {
                 Job = job,
                 Queue = queue,

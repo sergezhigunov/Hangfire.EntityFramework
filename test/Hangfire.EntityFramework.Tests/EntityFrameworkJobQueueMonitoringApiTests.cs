@@ -40,7 +40,7 @@ namespace Hangfire.EntityFramework
             }).
             ToArray();
 
-            var jobQueueItems = jobs.Select(x => new HangfireJobQueueItem
+            var jobQueueItems = jobs.Select(x => new HangfireJobQueue
             {
                 Queue = Guid.NewGuid().ToString(),
                 Job = x,
@@ -86,7 +86,7 @@ namespace Hangfire.EntityFramework
             }).
             ToArray();
 
-            var jobQueueItems = jobs.Select(x => new HangfireJobQueueItem
+            var jobQueueItems = jobs.Select(x => new HangfireJobQueue
             {
                 Queue = queue,
                 Job = x,
@@ -131,7 +131,7 @@ namespace Hangfire.EntityFramework
                 CreatedAt = DateTime.UtcNow,
             });
 
-            var jobQueueItems = jobs.Select(x => new HangfireJobQueueItem
+            var jobQueueItems = jobs.Select(x => new HangfireJobQueue
             {
                 Queue = queue,
                 Job = x,

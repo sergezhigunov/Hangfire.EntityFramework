@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hangfire.EntityFramework
 {
-    internal class HangfireJobQueueItem
+    internal class HangfireJobQueue
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

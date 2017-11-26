@@ -45,7 +45,7 @@ namespace Hangfire.EntityFramework
                 Id = EntityFrameworkJobStorage.ServerHostId,
             };
 
-            var queueItem = new HangfireJobQueueItem
+            var queueItem = new HangfireJobQueue
             {
                 Job = job,
                 Queue = Queue,
@@ -85,7 +85,7 @@ namespace Hangfire.EntityFramework
                 Id = EntityFrameworkJobStorage.ServerHostId,
             };
 
-            var queueItem = new HangfireJobQueueItem
+            var queueItem = new HangfireJobQueue
             {
                 Job = job,
                 Queue = Queue,
@@ -124,7 +124,7 @@ namespace Hangfire.EntityFramework
                 Id = EntityFrameworkJobStorage.ServerHostId,
             };
 
-            var queueItem = new HangfireJobQueueItem
+            var queueItem = new HangfireJobQueue
             {
                 Job = job,
                 Queue = Queue,
@@ -167,7 +167,7 @@ namespace Hangfire.EntityFramework
                 Id = EntityFrameworkJobStorage.ServerHostId,
             };
 
-            var queueItem = new HangfireJobQueueItem
+            var queueItem = new HangfireJobQueue
             {
                 Job = job,
                 Queue = Queue,
