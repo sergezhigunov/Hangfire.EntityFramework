@@ -16,12 +16,18 @@ namespace Hangfire.EntityFramework
         [ForeignKey(nameof(ServerHost))]
         public Guid ServerHostId { get; set; }
 
-        public string Data { get; set; }
+        public int WorkerCount { get; set; }
+
+        [DateTimePrecision(7)]
+        public DateTime StartedAt { get; set; }
 
         [Index]
         [DateTimePrecision(7)]
         public DateTime Heartbeat { get; set; }
 
+        public string Queues { get; set; }
+
         public virtual HangfireServerHost ServerHost { get; set; }
+
     }
 }

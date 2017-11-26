@@ -222,12 +222,8 @@ namespace Hangfire.EntityFramework
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
-            var data = JobHelper.ToJson(new ServerData
-            {
-                WorkerCount = context.WorkerCount,
-                Queues = context.Queues,
-                StartedAt = DateTime.UtcNow,
-            });
+            var queues = JobHelper.ToJson(context.Queues);
+            var timestamp = DateTime.UtcNow;
 
             Storage.UseContext(dbContext =>
             {
@@ -239,9 +235,11 @@ namespace Hangfire.EntityFramework
                 dbContext.Servers.AddOrUpdate(new HangfireServer
                 {
                     Id = serverId,
-                    Data = data,
-                    Heartbeat = DateTime.UtcNow,
+                    StartedAt = timestamp,
+                    Heartbeat = timestamp,
+                    WorkerCount = context.WorkerCount,
                     ServerHostId = EntityFrameworkJobStorage.ServerHostId,
+                    Queues = queues,
                 });
 
                 dbContext.SaveChanges();

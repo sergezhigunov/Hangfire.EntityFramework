@@ -73,13 +73,13 @@ namespace Hangfire.EntityFramework
 
             UseConnection(connection =>
             {
-                DateTime timestampBeforeBegin = DateTime.UtcNow;
+                DateTime timestampBeforeBegin = DateTime.UtcNow.AddSeconds(-1);
                 connection.AnnounceServer(serverId, serverContext1);
                 DateTime timestampAfterEnd = DateTime.UtcNow;
 
                 CheckServer(serverId, serverContext1, timestampBeforeBegin, timestampAfterEnd);
 
-                timestampBeforeBegin = DateTime.UtcNow;
+                timestampBeforeBegin = DateTime.UtcNow.AddSeconds(-1);
                 connection.AnnounceServer(serverId, serverContext2);
                 timestampAfterEnd = DateTime.UtcNow;
 
@@ -87,14 +87,14 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        private void CheckServer(string serverId, ServerContext actualContext, DateTime timestampBeforeBegin, DateTime timestampAfterEnd)
+        private void CheckServer(string serverId, ServerContext expectedContext, DateTime timestampBeforeBegin, DateTime timestampAfterEnd)
         {
-            HangfireServer server = UseContext(context => context.Servers.Single(x => x.Id == serverId));
-            var serverData = JobHelper.FromJson<ServerData>(server.Data);
-            Assert.Equal(serverId, server.Id);
-            Assert.Equal(actualContext.WorkerCount, serverData.WorkerCount);
-            Assert.Equal(actualContext.Queues, serverData.Queues);
-            Assert.True(timestampBeforeBegin <= serverData.StartedAt && serverData.StartedAt <= timestampAfterEnd);
+            HangfireServer actualServer = UseContext(context => context.Servers.Single(x => x.Id == serverId));
+            var actualQueues = JobHelper.FromJson<string[]>(actualServer.Queues);
+            Assert.Equal(serverId, actualServer.Id);
+            Assert.Equal(expectedContext.WorkerCount, actualServer.WorkerCount);
+            Assert.Equal(expectedContext.Queues, actualQueues);
+            Assert.True(timestampBeforeBegin <= actualServer.StartedAt && actualServer.StartedAt <= timestampAfterEnd);
         }
 
         [Fact, RollbackTransaction]
@@ -122,12 +122,14 @@ namespace Hangfire.EntityFramework
                 new HangfireServer
                 {
                     Id = server1,
+                    StartedAt = datetime,
                     Heartbeat = datetime,
                     ServerHost = host,
                 },
                 new HangfireServer
                 {
                     Id = server2,
+                    StartedAt = datetime,
                     Heartbeat = datetime,
                     ServerHost = host,
                 },
@@ -169,6 +171,7 @@ namespace Hangfire.EntityFramework
         public void RemoveServer_RemovesAServerRecord()
         {
             var serverId = "Server1";
+            var startedAt = new DateTime(2017, 1, 1, 11, 33, 33);
 
             var host = new HangfireServerHost
             {
@@ -178,6 +181,7 @@ namespace Hangfire.EntityFramework
             var server = new HangfireServer
             {
                 Id = serverId,
+                StartedAt = startedAt,
                 Heartbeat = DateTime.UtcNow,
                 ServerHost = host,
             };
@@ -209,6 +213,7 @@ namespace Hangfire.EntityFramework
         {
             string server1 = "server1";
             string server2 = "server2";
+            var startedAt = new DateTime(2017, 1, 1, 11, 33, 33);
 
             var host = new HangfireServerHost
             {
@@ -220,12 +225,14 @@ namespace Hangfire.EntityFramework
                 new HangfireServer
                 {
                     Id = server1,
+                    StartedAt = startedAt,
                     Heartbeat = DateTime.UtcNow.AddHours(-1),
                     ServerHost = host,
                 },
                 new HangfireServer
                 {
                     Id = server2,
+                    StartedAt = startedAt,
                     Heartbeat = DateTime.UtcNow.AddHours(-3),
                     ServerHost = host,
                 },

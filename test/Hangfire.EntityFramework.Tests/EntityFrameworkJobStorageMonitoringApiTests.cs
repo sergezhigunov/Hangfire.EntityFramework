@@ -115,20 +115,16 @@ namespace Hangfire.EntityFramework
             string serverId1 = "server1";
             string serverId2 = "server2";
             var workerCount = 4;
-            var startedAt = new DateTime(2017, 1, 1, 11, 22, 33, DateTimeKind.Utc);
-            var heartbeat = new DateTime(2017, 2, 2, 22, 33, 44, DateTimeKind.Utc);
+            var startedAt1 = new DateTime(2017, 1, 1, 11, 22, 33, DateTimeKind.Utc);
+            var startedAt2 = new DateTime(2017, 1, 1, 22, 33, 44, DateTimeKind.Utc);
+            var heartbeat = new DateTime(2017, 3, 3, 23, 34, 45, DateTimeKind.Utc);
             var queues = new[]
             {
                 "CRITICAL",
                 "DEFAULT",
             };
 
-            var data = JobHelper.ToJson(new ServerData
-            {
-                WorkerCount = workerCount,
-                Queues = queues,
-                StartedAt = startedAt,
-            });
+            var queuesJson = JobHelper.ToJson(queues);
 
             var host = new HangfireServerHost
             {
@@ -139,13 +135,16 @@ namespace Hangfire.EntityFramework
                 new HangfireServer
                 {
                     Id = serverId1,
+                    StartedAt = startedAt1,
                     Heartbeat = heartbeat,
-                    Data = data,
+                    WorkerCount = workerCount,
+                    Queues = queuesJson,
                     ServerHost = host,
                 },
                 new HangfireServer
                 {
                     Id = serverId2,
+                    StartedAt = startedAt2,
                     Heartbeat = heartbeat,
                     ServerHost = host,
                 },
@@ -165,11 +164,11 @@ namespace Hangfire.EntityFramework
             Assert.Equal(heartbeat, server1.Heartbeat);
             Assert.Equal(workerCount, server1.WorkersCount);
             Assert.Equal(queues, server1.Queues);
-            Assert.Equal(startedAt, server1.StartedAt);
+            Assert.Equal(startedAt1, server1.StartedAt);
             Assert.Equal(heartbeat, server2.Heartbeat);
             Assert.Equal(0, server2.WorkersCount);
-            Assert.Null(server2.Queues);
-            Assert.Equal(default(DateTime), server2.StartedAt);
+            Assert.False(server2.Queues?.Any() == true);
+            Assert.Equal(startedAt2, server2.StartedAt);
         }
 
         [Fact, RollbackTransaction]
@@ -192,6 +191,8 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void GetStatistics_ReturnsCorrectCounts()
         {
+            var startedAt = new DateTime(2017, 1, 1, 11, 33, 33);
+
             UseContextWithSavingChanges(context =>
             {
                 for (int i = 0; i < 1; i++)
@@ -237,6 +238,7 @@ namespace Hangfire.EntityFramework
                     context.Servers.Add(new HangfireServer
                     {
                         Id = Guid.NewGuid().ToString(),
+                        StartedAt = startedAt,
                         Heartbeat = DateTime.UtcNow,
                         ServerHostId = host.Id,
                     });

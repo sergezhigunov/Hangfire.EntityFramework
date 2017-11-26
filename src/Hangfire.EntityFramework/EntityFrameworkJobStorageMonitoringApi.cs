@@ -62,15 +62,15 @@ namespace Hangfire.EntityFramework
 
             return servers.Select(server =>
             {
-                ServerData data = JobHelper.FromJson<ServerData>(server.Data);
+                string[] queues = JobHelper.FromJson<string[]>(server.Queues);
 
                 return new ServerDto
                 {
                     Name = server.Id,
                     Heartbeat = server.Heartbeat,
-                    Queues = data?.Queues,
-                    StartedAt = data?.StartedAt ?? DateTime.MinValue,
-                    WorkersCount = data?.WorkerCount ?? 0,
+                    Queues = JobHelper.FromJson<string[]>(server.Queues),
+                    StartedAt = server.StartedAt,
+                    WorkersCount = server.WorkerCount,
                 };
             }).ToList();
         }
