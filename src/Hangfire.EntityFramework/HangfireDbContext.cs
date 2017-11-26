@@ -34,7 +34,7 @@ namespace Hangfire.EntityFramework
 
         public DbSet<HangfireJobQueue> JobQueues { get; set; }
 
-        public DbSet<HangfireJobQueueItemLookup> JobQueueLookups { get; set; }
+        public DbSet<HangfireJobQueueLookup> JobQueueLookups { get; set; }
 
         public DbSet<HangfireListItem> Lists { get; set; }
 
@@ -58,7 +58,7 @@ namespace Hangfire.EntityFramework
                 WithMany(x => x.Servers).
                 WillCascadeOnDelete(false);
 
-            modelBuilder.Entity<HangfireJobQueueItemLookup>().
+            modelBuilder.Entity<HangfireJobQueueLookup>().
                 HasRequired(x => x.QueueItem).
                 WithOptional(x => x.Lookup).
                 WillCascadeOnDelete();

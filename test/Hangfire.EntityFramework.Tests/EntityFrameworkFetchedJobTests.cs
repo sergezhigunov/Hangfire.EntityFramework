@@ -56,7 +56,7 @@ namespace Hangfire.EntityFramework
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
-                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
+                context.JobQueueLookups.Add(new HangfireJobQueueLookup
                 {
                     QueueItem = queueItem,
                     ServerHost = host,
@@ -96,7 +96,7 @@ namespace Hangfire.EntityFramework
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
-                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup { QueueItem = queueItem, ServerHost = host, });
+                context.JobQueueLookups.Add(new HangfireJobQueueLookup { QueueItem = queueItem, ServerHost = host, });
             });
 
             using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, job.Id, storage, Queue))
@@ -136,7 +136,7 @@ namespace Hangfire.EntityFramework
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
 
-                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
+                context.JobQueueLookups.Add(new HangfireJobQueueLookup
                 {
                     QueueItem = queueItem,
                     ServerHost = host,
@@ -179,7 +179,7 @@ namespace Hangfire.EntityFramework
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
 
-                context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
+                context.JobQueueLookups.Add(new HangfireJobQueueLookup
                 {
                     QueueItem = queueItem,
                     ServerHost = host,

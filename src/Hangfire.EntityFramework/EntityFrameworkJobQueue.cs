@@ -54,7 +54,7 @@ namespace Hangfire.EntityFramework
 
                         if (queueItem != null)
                         {
-                            context.JobQueueLookups.Add(new HangfireJobQueueItemLookup
+                            context.JobQueueLookups.Add(new HangfireJobQueueLookup
                             {
                                 QueueItemId = queueItem.Id,
                                 ServerHostId = EntityFrameworkJobStorage.ServerHostId,

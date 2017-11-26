@@ -22,6 +22,6 @@ namespace Hangfire.EntityFramework
 
         public virtual HangfireJob Job { get; set; }
 
-        public virtual HangfireJobQueueItemLookup Lookup { get; set; }
+        public virtual HangfireJobQueueLookup Lookup { get; set; }
     }
 }

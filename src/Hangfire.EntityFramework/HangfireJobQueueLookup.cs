@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hangfire.EntityFramework
 {
-    internal class HangfireJobQueueItemLookup
+    internal class HangfireJobQueueLookup
     {
         [Key]
         [ForeignKey(nameof(QueueItem))]
