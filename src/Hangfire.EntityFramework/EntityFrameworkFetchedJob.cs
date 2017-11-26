@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Globalization;
 using Hangfire.Annotations;
@@ -15,18 +16,20 @@ namespace Hangfire.EntityFramework
 
         private EntityFrameworkJobStorage Storage { get; }
 
-        private Guid QueueItemId { get; }
+        private long QueueItemId { get; }
 
         public string Queue { get; }
 
-        public string JobId { get; }
+        public long JobId { get; }
 
         private bool Completed { get; set; }
 
         private bool Disposed { get; set; }
 
+        string IFetchedJob.JobId => JobId.ToString(CultureInfo.InvariantCulture);
+
         public EntityFrameworkFetchedJob(
-            Guid queueItemId,
+            long queueItemId,
             long jobId,
             [NotNull] EntityFrameworkJobStorage storage,
             [NotNull] string queue)
@@ -38,56 +41,73 @@ namespace Hangfire.EntityFramework
                 throw new ArgumentNullException(nameof(storage));
 
             QueueItemId = queueItemId;
-            JobId = jobId.ToString(CultureInfo.InvariantCulture);
+            JobId = jobId;
             Storage = storage;
             Queue = queue;
         }
 
         public virtual void RemoveFromQueue()
         {
-            lock (ThisLock)
-                Storage.UseContext(context =>
-                {
+            if (!Completed)
+                lock (ThisLock)
                     if (!Completed)
                     {
-                        var item = context.JobQueues.Attach(new HangfireJobQueueItem { Id = QueueItemId, });
-                        context.JobQueues.Remove(item);
-                        try
+                        Storage.UseContext(context =>
                         {
-                            context.SaveChanges();
-                        }
-                        catch (DbUpdateException)
-                        {
-                            // Queue item already removed, database wins
-                        }
-                        Completed = true; 
+                            // Remove item from queue
+                            RemoveQueueItem(context, QueueItemId);
+
+                            try
+                            {
+                                context.SaveChanges();
+                            }
+                            catch (DbUpdateConcurrencyException)
+                            {
+                                // Queue item already removed, database wins
+                            }
+                        });
+
+                        Completed = true;
                     }
-                });
         }
 
         public virtual void Requeue()
         {
-            lock (ThisLock)
-                Storage.UseContext(context =>
-                {
+            if (!Completed)
+                lock (ThisLock)
                     if (!Completed)
                     {
-                        var item = new HangfireJobQueueItem { Id = QueueItemId, CreatedAt = DateTime.UtcNow, Queue = string.Empty, };
-                        context.JobQueues.Attach(item);
-                        context.Entry(item).Property(x => x.CreatedAt).IsModified = true;
-                        var lookup = context.JobQueueLookups.Attach(new HangfireJobQueueItemLookup { QueueItemId = QueueItemId, });
-                        context.JobQueueLookups.Remove(lookup);
-                        try
+                        Storage.UseContext(context =>
                         {
-                            context.SaveChanges();
-                        }
-                        catch (DbUpdateException)
-                        {
-                            // Lookup already removed, database wins
-                        }
-                        Completed = true; 
+                            using (var transaction = context.Database.BeginTransaction())
+                            {
+                                // Add item to the end of the queue
+                                context.JobQueues.Add(new HangfireJobQueueItem
+                                {
+                                    JobId = JobId,
+                                    Queue = Queue,
+                                });
+
+                                context.SaveChanges();
+
+                                // Remove item from the start of the queue
+                                RemoveQueueItem(context, QueueItemId);
+
+                                try
+                                {
+                                    context.SaveChanges();
+                                }
+                                catch (DbUpdateConcurrencyException)
+                                {
+                                    // Queue item already removed, database wins
+                                }
+
+                                transaction.Commit();
+                            }
+                        });
+
+                        Completed = true;
                     }
-                });
         }
 
         public void Dispose()
@@ -108,5 +128,11 @@ namespace Hangfire.EntityFramework
             }
         }
 
+        private static void RemoveQueueItem(HangfireDbContext context, long itemId)
+        {
+            context.
+                Entry(new HangfireJobQueueItem{ Id = itemId, }).
+                State = EntityState.Deleted;
+        }
     }
 }

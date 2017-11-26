@@ -60,8 +60,6 @@ namespace Hangfire.EntityFramework
 
             var jobQueueItem = new HangfireJobQueueItem
             {
-                Id = Guid.NewGuid(),
-                CreatedAt = DateTime.UtcNow,
                 Job = job,
                 Queue = "DEFAULT",
             };
@@ -897,9 +895,7 @@ namespace Hangfire.EntityFramework
 
             var queueItems = Enumerable.Range(0, 5).Select(x => new HangfireJobQueueItem
             {
-                Id = Guid.NewGuid(),
                 Job = jobs[x],
-                CreatedAt = DateTime.UtcNow,
                 Queue = "QUEUE",
             }).
             ToArray();
@@ -977,8 +973,6 @@ namespace Hangfire.EntityFramework
             };
             var queueItem = new HangfireJobQueueItem
             {
-                Id = Guid.NewGuid(),
-                CreatedAt = DateTime.UtcNow,
                 Job = job,
                 Queue = queue,
             };

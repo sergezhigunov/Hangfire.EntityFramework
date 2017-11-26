@@ -11,7 +11,7 @@ namespace Hangfire.EntityFramework
     {
         [Key]
         [ForeignKey(nameof(QueueItem))]
-        public Guid QueueItemId { get; set; }
+        public long QueueItemId { get; set; }
 
         [ForeignKey(nameof(ServerHost))]
         public Guid ServerHostId { get; set; }

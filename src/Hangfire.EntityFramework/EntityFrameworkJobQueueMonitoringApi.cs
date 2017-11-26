@@ -36,7 +36,7 @@ namespace Hangfire.EntityFramework
             return Storage.UseContext(context => (
                 from item in context.JobQueues
                 where item.Queue == queue && item.Lookup == null
-                orderby item.CreatedAt ascending
+                orderby item.Id ascending
                 select item.JobId).
                 Skip(() => from).
                 Take(() => perPage).

@@ -80,8 +80,6 @@ namespace Hangfire.EntityFramework
 
             var jobQueueItem = new HangfireJobQueueItem
             {
-                Id = queueItemId,
-                CreatedAt = DateTime.UtcNow,
                 Job = job,
                 Queue = queueName,
             };
@@ -100,7 +98,7 @@ namespace Hangfire.EntityFramework
             Assert.NotNull(result);
             Assert.IsType<EntityFrameworkFetchedJob>(result);
             EntityFrameworkFetchedJob fetchedJob = (EntityFrameworkFetchedJob)result;
-            Assert.Equal(job.Id.ToString(CultureInfo.InvariantCulture), fetchedJob.JobId);
+            Assert.Equal(job.Id, fetchedJob.JobId);
             Assert.Equal("DEFAULT", fetchedJob.Queue);
             var jobInQueue = UseContext(context => context.JobQueues.SingleOrDefault(x => x.Lookup == null));
             Assert.Null(jobInQueue);

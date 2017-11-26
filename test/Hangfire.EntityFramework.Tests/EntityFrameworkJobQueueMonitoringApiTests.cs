@@ -42,8 +42,6 @@ namespace Hangfire.EntityFramework
 
             var jobQueueItems = jobs.Select(x => new HangfireJobQueueItem
             {
-                Id = Guid.NewGuid(),
-                CreatedAt = date += new TimeSpan(0, 0, 1),
                 Queue = Guid.NewGuid().ToString(),
                 Job = x,
             }).
@@ -90,8 +88,6 @@ namespace Hangfire.EntityFramework
 
             var jobQueueItems = jobs.Select(x => new HangfireJobQueueItem
             {
-                Id = Guid.NewGuid(),
-                CreatedAt = date += new TimeSpan(0, 0, 1),
                 Queue = queue,
                 Job = x,
             }).
@@ -137,8 +133,6 @@ namespace Hangfire.EntityFramework
 
             var jobQueueItems = jobs.Select(x => new HangfireJobQueueItem
             {
-                Id = Guid.NewGuid(),
-                CreatedAt = date += new TimeSpan(0, 0, 1),
                 Queue = queue,
                 Job = x,
             }).

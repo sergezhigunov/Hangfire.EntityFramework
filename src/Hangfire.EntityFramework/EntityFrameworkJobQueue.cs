@@ -48,7 +48,7 @@ namespace Hangfire.EntityFramework
                         var queueItem = (
                             from item in context.JobQueues
                             where item.Lookup == null && queues.Contains(item.Queue)
-                            orderby item.CreatedAt ascending
+                            orderby item.Id ascending
                             select item).
                             FirstOrDefault();
 
@@ -91,10 +91,8 @@ namespace Hangfire.EntityFramework
             {
                 context.JobQueues.Add(new HangfireJobQueueItem
                 {
-                    Id = Guid.NewGuid(),
                     JobId = id,
                     Queue = queue,
-                    CreatedAt = DateTime.UtcNow
                 });
                 context.SaveChanges();
             });

@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Globalization;
 using System.Linq;
 using Hangfire.EntityFramework.Utils;
 using Xunit;
@@ -19,7 +18,7 @@ namespace Hangfire.EntityFramework
         public void Ctor_ThrowsAnException_WhenStorageIsNull()
         {
             Assert.Throws<ArgumentNullException>("storage",
-                () => new EntityFrameworkFetchedJob(Guid.Empty, 0, null, Queue));
+                () => new EntityFrameworkFetchedJob(0, 0, null, Queue));
         }
 
         [Fact]
@@ -28,7 +27,7 @@ namespace Hangfire.EntityFramework
             var storage = CreateStorage();
 
             Assert.Throws<ArgumentNullException>("queue",
-                () => new EntityFrameworkFetchedJob(Guid.Empty, 0, storage, null));
+                () => new EntityFrameworkFetchedJob(0, 0, storage, null));
         }
 
         [Fact, RollbackTransaction]
@@ -48,8 +47,6 @@ namespace Hangfire.EntityFramework
 
             var queueItem = new HangfireJobQueueItem
             {
-                Id = Guid.NewGuid(),
-                CreatedAt = DateTime.UtcNow,
                 Job = job,
                 Queue = Queue,
             };
@@ -68,7 +65,7 @@ namespace Hangfire.EntityFramework
 
             using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, job.Id, storage, Queue))
             {
-                Assert.Equal(job.Id.ToString(CultureInfo.InvariantCulture), fetchedJob.JobId);
+                Assert.Equal(job.Id, fetchedJob.JobId);
                 Assert.Equal(Queue, fetchedJob.Queue);
             };
         }
@@ -90,8 +87,6 @@ namespace Hangfire.EntityFramework
 
             var queueItem = new HangfireJobQueueItem
             {
-                Id = Guid.NewGuid(),
-                CreatedAt = DateTime.UtcNow,
                 Job = job,
                 Queue = Queue,
             };
@@ -131,8 +126,6 @@ namespace Hangfire.EntityFramework
 
             var queueItem = new HangfireJobQueueItem
             {
-                Id = Guid.NewGuid(),
-                CreatedAt = DateTime.UtcNow,
                 Job = job,
                 Queue = Queue,
             };
@@ -176,8 +169,6 @@ namespace Hangfire.EntityFramework
 
             var queueItem = new HangfireJobQueueItem
             {
-                Id = Guid.NewGuid(),
-                CreatedAt = DateTime.UtcNow,
                 Job = job,
                 Queue = Queue,
             };
