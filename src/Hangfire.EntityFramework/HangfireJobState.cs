@@ -10,7 +10,8 @@ namespace Hangfire.EntityFramework
     internal class HangfireJobState
     {
         [Key]
-        public Guid Id { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
 
         [ForeignKey(nameof(Job))]
         public long JobId { get; set; }

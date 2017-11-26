@@ -38,7 +38,6 @@ namespace Hangfire.EntityFramework
         [Fact, RollbackTransaction]
         public void Queues_ReturnsCorrectList()
         {
-            Guid stateId = Guid.NewGuid();
             var invocationData = JobUtils.CreateInvocationData(() => SampleMethod("Test"));
 
             var job = new HangfireJob
@@ -52,7 +51,6 @@ namespace Hangfire.EntityFramework
 
             var state = new HangfireJobState
             {
-                Id = Guid.NewGuid(),
                 Job = job,
                 CreatedAt = DateTime.UtcNow,
                 State = JobState.Awaiting,
@@ -560,7 +558,6 @@ namespace Hangfire.EntityFramework
 
             var states = jobs.Select(x => new HangfireJobState
             {
-                Id = Guid.NewGuid(),
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
                 State = JobState.Succeeded,
@@ -626,7 +623,6 @@ namespace Hangfire.EntityFramework
 
             var states = jobs.Select(x => new HangfireJobState
             {
-                Id = Guid.NewGuid(),
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
                 State = JobState.Processing,
@@ -690,7 +686,6 @@ namespace Hangfire.EntityFramework
 
             var states = jobs.Select(x => new HangfireJobState
             {
-                Id = Guid.NewGuid(),
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
                 State = JobState.Scheduled,
@@ -756,7 +751,6 @@ namespace Hangfire.EntityFramework
 
             var states = jobs.Select(x => new HangfireJobState
             {
-                Id = Guid.NewGuid(),
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
                 State = JobState.Failed,
@@ -823,7 +817,6 @@ namespace Hangfire.EntityFramework
 
             var states = jobs.Select(x => new HangfireJobState
             {
-                Id = Guid.NewGuid(),
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
                 State = JobState.Deleted,
@@ -885,7 +878,6 @@ namespace Hangfire.EntityFramework
 
             var states = jobs.Select(x => new HangfireJobState
             {
-                Id = Guid.NewGuid(),
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
                 State = JobState.Enqueued,
@@ -947,7 +939,6 @@ namespace Hangfire.EntityFramework
 
             var state = new HangfireJobState
             {
-                Id = Guid.NewGuid(),
                 Job = job,
                 CreatedAt = DateTime.UtcNow,
                 State = jobState,

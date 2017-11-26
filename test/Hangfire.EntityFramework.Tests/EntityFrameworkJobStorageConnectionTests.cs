@@ -361,8 +361,6 @@ namespace Hangfire.EntityFramework
 
             HangfireJob job = UseContextWithSavingChanges(context =>
             {
-                var stateId = Guid.NewGuid();
-
                 var jobItem = context.Jobs.Add(new HangfireJob
                 {
                     ClrType = invocationData.Type,
@@ -372,9 +370,8 @@ namespace Hangfire.EntityFramework
                     CreatedAt = DateTime.UtcNow,
                 });
 
-                context.JobStates.Add(new HangfireJobState
+                var state = context.JobStates.Add(new HangfireJobState
                 {
-                    Id = stateId,
                     Job = jobItem,
                     CreatedAt = DateTime.UtcNow,
                     State = JobState.Succeeded,
@@ -382,7 +379,7 @@ namespace Hangfire.EntityFramework
 
                 context.JobActualStates.Add(new HangfireJobActualState
                 {
-                    StateId = stateId,
+                    State = state,
                     Job = jobItem,
                 });
 
@@ -408,8 +405,6 @@ namespace Hangfire.EntityFramework
 
             HangfireJob storedJob = UseContextWithSavingChanges(context =>
             {
-                var stateId = Guid.NewGuid();
-
                 var job = context.Jobs.Add(new HangfireJob
                 {
                     ClrType = invocationData.Type,
@@ -419,9 +414,8 @@ namespace Hangfire.EntityFramework
                     CreatedAt = DateTime.UtcNow,
                 });
 
-                context.JobStates.Add(new HangfireJobState
+                var state = context.JobStates.Add(new HangfireJobState
                 {
-                    Id = stateId,
                     Job = job,
                     CreatedAt = DateTime.UtcNow,
                     State = JobState.Succeeded,
@@ -429,7 +423,7 @@ namespace Hangfire.EntityFramework
 
                 context.JobActualStates.Add(new HangfireJobActualState
                 {
-                    StateId = stateId,
+                    State = state,
                     Job = job,
                 });
 
@@ -618,8 +612,6 @@ namespace Hangfire.EntityFramework
 
             var storedJob = UseContextWithSavingChanges(context =>
             {
-                var stateId = Guid.NewGuid();
-
                 var job = context.Jobs.Add(new HangfireJob
                 {
                     ClrType = invocationData.Type,
@@ -629,9 +621,8 @@ namespace Hangfire.EntityFramework
                     CreatedAt = DateTime.UtcNow,
                 });
 
-                context.JobStates.Add(new HangfireJobState
+                var state = context.JobStates.Add(new HangfireJobState
                 {
-                    Id = stateId,
                     Job = job,
                     CreatedAt = DateTime.UtcNow,
                     State = JobState.Awaiting,
@@ -641,7 +632,7 @@ namespace Hangfire.EntityFramework
 
                 context.JobActualStates.Add(new HangfireJobActualState
                 {
-                    StateId = stateId,
+                    State = state,
                     Job = job,
                 });
 

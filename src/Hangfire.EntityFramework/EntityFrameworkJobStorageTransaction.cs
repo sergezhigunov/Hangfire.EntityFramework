@@ -83,12 +83,12 @@ namespace Hangfire.EntityFramework
             EnqueueCommand(context =>
             {
                 long id = long.Parse(jobId, CultureInfo.InvariantCulture);
-                Guid stateId = AddJobStateToContext(context, id, state);
+                var addedState = AddJobStateToContext(context, id, state);
 
                 context.JobActualStates.AddOrUpdate(new HangfireJobActualState
                 {
                     JobId = id,
-                    StateId = stateId,
+                    State = addedState,
                 });
             });
         }
@@ -108,13 +108,10 @@ namespace Hangfire.EntityFramework
                 state));
         }
 
-        private Guid AddJobStateToContext(HangfireDbContext context, long jobId, IState state)
+        private HangfireJobState AddJobStateToContext(HangfireDbContext context, long jobId, IState state)
         {
-            Guid stateId = Guid.NewGuid();
-
             var jobState = new HangfireJobState
             {
-                Id = stateId,
                 JobId = jobId,
                 State = JobStateExtensions.ToJobState(state.Name),
                 Reason = state.Reason,
@@ -122,9 +119,7 @@ namespace Hangfire.EntityFramework
                 CreatedAt = DateTime.UtcNow,
             };
 
-            context.JobStates.Add(jobState);
-
-            return stateId;
+            return context.JobStates.Add(jobState);
         }
 
         public override void AddToQueue(string queue, string jobId)
