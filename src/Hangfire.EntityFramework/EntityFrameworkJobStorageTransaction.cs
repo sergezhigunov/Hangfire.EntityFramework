@@ -35,6 +35,7 @@ namespace Hangfire.EntityFramework
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
+            ValidateJobId(jobId);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -53,6 +54,7 @@ namespace Hangfire.EntityFramework
 
         public override void PersistJob(string jobId)
         {
+            ValidateJobId(jobId);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -70,6 +72,11 @@ namespace Hangfire.EntityFramework
 
         public override void SetJobState(string jobId, IState state)
         {
+            ValidateJobId(jobId);
+
+            if (state == null)
+                throw new ArgumentNullException(nameof(state));
+
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -87,12 +94,17 @@ namespace Hangfire.EntityFramework
 
         public override void AddJobState(string jobId, IState state)
         {
+            ValidateJobId(jobId);
+
+            if (state == null)
+                throw new ArgumentNullException(nameof(state));
+
             ThrowIfDisposed();
 
             EnqueueCommand(context => AddJobStateToContext(context, Guid.Parse(jobId), state));
         }
 
-        private Guid AddJobStateToContext(HangfireDbContext context, Guid jobId, IState state)
+        private static Guid AddJobStateToContext(HangfireDbContext context, Guid jobId, IState state)
         {
             Guid stateId = Guid.NewGuid();
 
@@ -113,6 +125,8 @@ namespace Hangfire.EntityFramework
 
         public override void AddToQueue(string queue, string jobId)
         {
+            ValidateQueue(queue);
+            ValidateJobId(jobId);
             ThrowIfDisposed();
 
             var provider = Storage.QueueProviders.GetProvider(queue);
@@ -125,6 +139,7 @@ namespace Hangfire.EntityFramework
 
         public override void IncrementCounter(string key)
         {
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context => AddCounterToContext(context, key, 1, null));
@@ -132,6 +147,7 @@ namespace Hangfire.EntityFramework
 
         public override void IncrementCounter(string key, TimeSpan expireIn)
         {
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context => AddCounterToContext(context, key, 1, expireIn));
@@ -139,6 +155,7 @@ namespace Hangfire.EntityFramework
 
         public override void DecrementCounter(string key)
         {
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context => AddCounterToContext(context, key, -1, null));
@@ -146,15 +163,14 @@ namespace Hangfire.EntityFramework
 
         public override void DecrementCounter(string key, TimeSpan expireIn)
         {
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context => AddCounterToContext(context, key, -1, expireIn));
         }
 
-        private void AddCounterToContext(HangfireDbContext context, string key, long value, TimeSpan? expireIn)
+        private static void AddCounterToContext(HangfireDbContext context, string key, long value, TimeSpan? expireIn)
         {
-            ThrowIfDisposed();
-
             var counter = new HangfireCounter
             {
                 Id = Guid.NewGuid(),
@@ -172,6 +188,8 @@ namespace Hangfire.EntityFramework
 
         public override void AddToSet(string key, string value, double score)
         {
+            ValidateKey(key);
+
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -190,6 +208,8 @@ namespace Hangfire.EntityFramework
 
         public override void RemoveFromSet(string key, string value)
         {
+            ValidateKey(key);
+
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -211,8 +231,10 @@ namespace Hangfire.EntityFramework
 
         public override void AddRangeToSet([NotNull] string key, [NotNull] IList<string> items)
         {
-            if (key == null) throw new ArgumentNullException(nameof(key));
-            if (items == null) throw new ArgumentNullException(nameof(items));
+            ValidateKey(key);
+
+            if (items == null)
+                throw new ArgumentNullException(nameof(items));
 
             ThrowIfDisposed();
 
@@ -247,9 +269,7 @@ namespace Hangfire.EntityFramework
 
         public override void ExpireSet([NotNull] string key, TimeSpan expireIn)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -284,9 +304,7 @@ namespace Hangfire.EntityFramework
 
         public override void PersistSet([NotNull] string key)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -318,9 +336,7 @@ namespace Hangfire.EntityFramework
 
         public override void RemoveSet([NotNull] string key)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -342,6 +358,7 @@ namespace Hangfire.EntityFramework
 
         public override void InsertToList(string key, string value)
         {
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -360,6 +377,7 @@ namespace Hangfire.EntityFramework
 
         public override void RemoveFromList(string key, string value)
         {
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -384,6 +402,7 @@ namespace Hangfire.EntityFramework
 
         public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
         {
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -426,9 +445,7 @@ namespace Hangfire.EntityFramework
 
         public override void ExpireList([NotNull] string key, TimeSpan expireIn)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -463,9 +480,7 @@ namespace Hangfire.EntityFramework
 
         public override void PersistList([NotNull] string key)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -497,8 +512,7 @@ namespace Hangfire.EntityFramework
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
         {
-            if (key == null) throw new
-                    ArgumentNullException(nameof(key));
+            ValidateKey(key);
 
             if (keyValuePairs == null)
                 throw new ArgumentNullException(nameof(keyValuePairs));
@@ -536,9 +550,7 @@ namespace Hangfire.EntityFramework
 
         public override void RemoveHash(string key)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -560,9 +572,7 @@ namespace Hangfire.EntityFramework
 
         public override void ExpireHash([NotNull] string key, TimeSpan expireIn)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -593,9 +603,7 @@ namespace Hangfire.EntityFramework
 
         public override void PersistHash([NotNull] string key)
         {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
+            ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
@@ -667,6 +675,33 @@ namespace Hangfire.EntityFramework
         {
             if (Disposed)
                 throw new ObjectDisposedException(GetType().FullName);
+        }
+
+        private static void ValidateQueue(string queue)
+        {
+            if (queue == null)
+                throw new ArgumentNullException(nameof(queue));
+
+            if (queue == string.Empty)
+                throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(queue));
+        }
+
+        private static void ValidateKey(string key)
+        {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
+            if (key == string.Empty)
+                throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(key));
+        }
+
+        private static void ValidateJobId(string jobId)
+        {
+            if (jobId == null)
+                throw new ArgumentNullException(nameof(jobId));
+
+            if (jobId == string.Empty)
+                throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(jobId));
         }
     }
 }

@@ -28,6 +28,22 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact]
+        public void ExpireJob_ThrowsAnException_WhenJobIdIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("jobId",
+                    () => transaction.ExpireJob(null, TimeSpan.FromDays(1))));
+        }
+
+        [Fact]
+        public void ExpireJob_ThrowsAnException_WhenJobIdIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("jobId",
+                    () => transaction.ExpireJob(string.Empty, TimeSpan.FromDays(1))));
+        }
+
+        [Fact]
         public void ExpireJob_ThrowsAnException_WhenTransactionDisposed()
         {
             var transaction = CreateDisposedTransaction();
@@ -53,6 +69,22 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact]
+        public void PersistJob_ThrowsAnException_WhenJobIdIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("jobId",
+                    () => transaction.PersistJob(null)));
+        }
+
+        [Fact]
+        public void PersistJob_ThrowsAnException_WhenJobIdIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("jobId",
+                    () => transaction.PersistJob(string.Empty)));
+        }
+
+        [Fact]
         public void PersistJob_ThrowsAnException_WhenTransactionDisposed()
         {
             var transaction = CreateDisposedTransaction();
@@ -74,6 +106,36 @@ namespace Hangfire.EntityFramework
 
             var anotherJob = GetTestJob(anotherJobId);
             Assert.NotNull(anotherJob.ExpireAt);
+        }
+
+        [Fact]
+        public void SetJobState_ThrowsAnException_WhenJobIdIsNull()
+        {
+            var transaction = CreateDisposedTransaction();
+            var state = new Mock<IState>();
+
+            Assert.Throws<ArgumentNullException>("jobId",
+                () => transaction.SetJobState(null, state.Object));
+        }
+
+        [Fact]
+        public void SetJobState_ThrowsAnException_WhenJobIdIsEmpty()
+        {
+            UseTransaction(transaction =>
+            {
+                var state = new Mock<IState>();
+
+                Assert.Throws<ArgumentException>("jobId",
+                    () => transaction.SetJobState(string.Empty, state.Object));
+            });
+        }
+
+        [Fact]
+        public void SetJobState_ThrowsAnException_WhenStateIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("state",
+                    () => transaction.SetJobState(JobId, null)));
         }
 
         [Fact]
@@ -121,6 +183,38 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact]
+        public void AddJobState_ThrowsAnException_WhenJobIdIsNull()
+        {
+            UseTransaction(transaction =>
+            {
+                var state = new Mock<IState>();
+
+                Assert.Throws<ArgumentNullException>("jobId",
+                    () => transaction.AddJobState(null, state.Object));
+            });
+        }
+
+        [Fact]
+        public void AddJobState_ThrowsAnException_WhenJobIdIsEmpty()
+        {
+            UseTransaction(transaction =>
+            {
+                var state = new Mock<IState>();
+
+                Assert.Throws<ArgumentException>("jobId",
+                    () => transaction.AddJobState(string.Empty, state.Object));
+            });
+        }
+
+        [Fact]
+        public void AddJobState_ThrowsAnException_WhenStateIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("state",
+                    () => transaction.AddJobState(JobId, null)));
+        }
+
+        [Fact]
         public void AddJobState_ThrowsAnException_WhenTransactionDisposed()
         {
             var transaction = CreateDisposedTransaction();
@@ -161,6 +255,38 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact]
+        public void AddToQueue_ThrowsAnException_WhenJobIdIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("jobId",
+                    () => transaction.AddToQueue("QUEUE", null)));
+        }
+
+        [Fact]
+        public void AddToQueue_ThrowsAnException_WhenJobIdIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("jobId",
+                    () => transaction.AddToQueue("QUEUE", string.Empty)));
+        }
+
+        [Fact]
+        public void AddToQueue_ThrowsAnException_WhenQueueIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("queue",
+                    () => transaction.AddToQueue(null, JobId)));
+        }
+
+        [Fact]
+        public void AddToQueue_ThrowsAnException_WhenQueueIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("queue",
+                    () => transaction.AddToQueue(string.Empty, JobId)));
+        }
+
+        [Fact]
         public void AddToQueue_ThrowsAnException_WhenTransactionDisposed()
         {
             var transaction = CreateDisposedTransaction();
@@ -180,6 +306,22 @@ namespace Hangfire.EntityFramework
 
             Assert.Equal(id, result.JobId);
             Assert.Equal("DEFAULT", result.Queue);
+        }
+
+        [Fact]
+        public void IncrementCounter_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.IncrementCounter(null)));
+        }
+
+        [Fact]
+        public void IncrementCounter_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.IncrementCounter(string.Empty)));
         }
 
         [Fact]
@@ -204,6 +346,22 @@ namespace Hangfire.EntityFramework
             Assert.Equal(key, record.Key);
             Assert.Equal(1, record.Value);
             Assert.Null(record.ExpireAt);
+        }
+
+        [Fact]
+        public void IncrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.IncrementCounter(null, TimeSpan.FromDays(1))));
+        }
+
+        [Fact]
+        public void IncrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.IncrementCounter(string.Empty, TimeSpan.FromDays(1))));
         }
 
         [Fact]
@@ -254,6 +412,22 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact]
+        public void DecrementCounter_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.DecrementCounter(null)));
+        }
+
+        [Fact]
+        public void DecrementCounter_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.DecrementCounter(string.Empty)));
+        }
+
+        [Fact]
         public void DecrementCounter_ThrowsAnException_WhenTransactionDisposed()
         {
             var transaction = CreateDisposedTransaction();
@@ -275,6 +449,22 @@ namespace Hangfire.EntityFramework
             Assert.Equal(key, record.Key);
             Assert.Equal(-1, record.Value);
             Assert.Null(record.ExpireAt);
+        }
+
+        [Fact]
+        public void DecrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.DecrementCounter(null, TimeSpan.FromDays(1))));
+        }
+
+        [Fact]
+        public void DecrementCounter_WithExpiry_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.DecrementCounter(string.Empty, TimeSpan.FromDays(1))));
         }
 
         [Fact]
@@ -322,6 +512,22 @@ namespace Hangfire.EntityFramework
 
             Assert.Equal(2, count);
             Assert.Equal(-2, sum);
+        }
+
+        [Fact]
+        public void AddToSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.AddToSet(null, "my-value")));
+        }
+
+        [Fact]
+        public void AddToSet_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.AddToSet(string.Empty, "my-value")));
         }
 
         [Fact]
@@ -411,6 +617,22 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact]
+        public void RemoveFromSet_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.RemoveFromSet(null, "my-value")));
+        }
+
+        [Fact]
+        public void RemoveFromSet_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.RemoveFromSet(string.Empty, "my-value")));
+        }
+
+        [Fact]
         public void RemoveFromSet_ThrowsAnException_WhenTransactionDisposed()
         {
             var transaction = CreateDisposedTransaction();
@@ -469,6 +691,22 @@ namespace Hangfire.EntityFramework
         }
 
         [Fact]
+        public void InsertToList_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.InsertToList(null, "my-value")));
+        }
+
+        [Fact]
+        public void InsertToList_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.InsertToList(string.Empty, "my-value")));
+        }
+
+        [Fact]
         public void InsertToList_ThrowsAnException_WhenTransactionDisposed()
         {
             var transaction = CreateDisposedTransaction();
@@ -505,6 +743,22 @@ namespace Hangfire.EntityFramework
             var recordCount = UseContext(context => context.Lists.Count());
 
             Assert.Equal(2, recordCount);
+        }
+
+        [Fact]
+        public void RemoveFromList_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.RemoveFromList(null, "my-value")));
+        }
+
+        [Fact]
+        public void RemoveFromList_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.RemoveFromList(string.Empty, "my-value")));
         }
 
         [Fact]
@@ -564,6 +818,22 @@ namespace Hangfire.EntityFramework
             var recordCount = UseContext(context => context.Lists.Count());
 
             Assert.Equal(1, recordCount);
+        }
+
+        [Fact]
+        public void TrimList_ThrowsAnException_WhenKeyIsNull()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.TrimList(null, 0, 1)));
+        }
+
+        [Fact]
+        public void TrimList_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.TrimList(string.Empty, 0, 1)));
         }
 
         [Fact]
@@ -698,18 +968,32 @@ namespace Hangfire.EntityFramework
                 () => transaction.SetRangeInHash(key, new Dictionary<string, string>()));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.SetRangeInHash(null, new Dictionary<string, string>())));
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.SetRangeInHash(null, new Dictionary<string, string>())));
         }
 
-        [Fact, RollbackTransaction]
-        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsArgumentIsNull()
+        [Fact]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyValuePairsIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("keyValuePairs",
-                () => transaction.SetRangeInHash("some-hash", null)));
+            UseTransaction(transaction =>
+            {
+                var key = Guid.NewGuid().ToString();
+
+                Assert.Throws<ArgumentNullException>("keyValuePairs",
+                    () => transaction.SetRangeInHash(key, null));
+            });
+        }
+
+        [Fact]
+        public void SetRangeInHash_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.SetRangeInHash(string.Empty, new Dictionary<string, string>())));
         }
 
         [Fact, RollbackTransaction]
@@ -742,11 +1026,20 @@ namespace Hangfire.EntityFramework
                 () => transaction.RemoveHash(key));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void RemoveHash_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.RemoveHash(null)));
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.RemoveHash(null)));
+        }
+
+        [Fact]
+        public void RemoveHash_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.RemoveHash(string.Empty)));
         }
 
         [Fact, RollbackTransaction]
@@ -777,18 +1070,32 @@ namespace Hangfire.EntityFramework
                 () => transaction.AddRangeToSet(key, new List<string>()));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void AddRangeToSet_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.AddRangeToSet(null, new List<string>())));
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.AddRangeToSet(null, new List<string>())));
         }
 
-        [Fact, RollbackTransaction]
-        public void AddRangeToSet_ThrowsAnException_WhenItemsValueIsNull()
+        [Fact]
+        public void AddRangeToSet_ThrowsAnException_WhenItemsIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("items",
-                () => transaction.AddRangeToSet("my-set", null)));
+            UseTransaction(transaction =>
+            {
+                string key = Guid.NewGuid().ToString();
+
+                Assert.Throws<ArgumentNullException>("items",
+                    () => transaction.AddRangeToSet(key, null));
+            });
+        }
+
+        [Fact]
+        public void AddRangeToSet_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.AddRangeToSet(string.Empty, new List<string>())));
         }
 
         [Fact, RollbackTransaction]
@@ -823,11 +1130,20 @@ namespace Hangfire.EntityFramework
                 () => transaction.RemoveSet(key));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void RemoveSet_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.RemoveSet(null)));
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.RemoveSet(null)));
+        }
+
+        [Fact]
+        public void RemoveSet_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.RemoveSet(string.Empty)));
         }
 
         [Fact, RollbackTransaction]
@@ -866,11 +1182,20 @@ namespace Hangfire.EntityFramework
                 () => transaction.ExpireHash(key, TimeSpan.FromMinutes(5)));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void ExpireHash_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.ExpireHash(null, TimeSpan.FromMinutes(5))));
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.ExpireHash(null, TimeSpan.FromMinutes(5))));
+        }
+
+        [Fact]
+        public void ExpireHash_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.ExpireHash(string.Empty, TimeSpan.FromMinutes(5))));
         }
 
         [Fact, RollbackTransaction]
@@ -911,11 +1236,20 @@ namespace Hangfire.EntityFramework
                 () => transaction.ExpireSet(key, new TimeSpan(0, 0, 45)));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void ExpireSet_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.ExpireSet(null, new TimeSpan(0, 0, 45))));
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.ExpireSet(null, new TimeSpan(0, 0, 45))));
+        }
+
+        [Fact]
+        public void ExpireSet_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.ExpireSet(string.Empty, new TimeSpan(0, 0, 45))));
         }
 
         [Fact, RollbackTransaction]
@@ -957,11 +1291,20 @@ namespace Hangfire.EntityFramework
                 () => transaction.ExpireList(key, new TimeSpan(0, 0, 45)));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void ExpireList_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.ExpireList(null, new TimeSpan(0, 0, 45))));
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.ExpireList(null, new TimeSpan(0, 0, 45))));
+        }
+
+        [Fact]
+        public void ExpireList_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.ExpireList(string.Empty, new TimeSpan(0, 0, 45))));
         }
 
         [Fact, RollbackTransaction]
@@ -1003,11 +1346,20 @@ namespace Hangfire.EntityFramework
                 () => transaction.PersistHash(key));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void PersistHash_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.PersistHash(null)));
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.PersistHash(null)));
+        }
+
+        [Fact]
+        public void PersistHash_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.PersistHash(string.Empty)));
         }
 
         [Fact, RollbackTransaction]
@@ -1047,11 +1399,20 @@ namespace Hangfire.EntityFramework
                 () => transaction.PersistSet(key));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void PersistSet_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.PersistSet(null)));
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.PersistSet(null)));
+        }
+
+        [Fact]
+        public void PersistSet_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.PersistSet(string.Empty)));
         }
 
         [Fact, RollbackTransaction]
@@ -1094,11 +1455,20 @@ namespace Hangfire.EntityFramework
                 () => transaction.PersistList(key));
         }
 
-        [Fact, RollbackTransaction]
+        [Fact]
         public void PersistList_ThrowsAnException_WhenKeyIsNull()
         {
-            UseTransaction(transaction => Assert.Throws<ArgumentNullException>("key",
-                () => transaction.PersistList(null)));
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentNullException>("key",
+                    () => transaction.PersistList(null)));
+        }
+
+        [Fact]
+        public void PersistList_ThrowsAnException_WhenKeyIsEmpty()
+        {
+            UseTransaction(transaction =>
+                Assert.Throws<ArgumentException>("key",
+                    () => transaction.PersistList(string.Empty)));
         }
 
         [Fact, RollbackTransaction]
