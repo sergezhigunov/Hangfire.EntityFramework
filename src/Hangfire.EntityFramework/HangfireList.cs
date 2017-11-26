@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hangfire.EntityFramework
 {
-    internal class HangfireListItem
+    internal class HangfireList
     {
         [Key, Column(Order = 0)]
         [Required]

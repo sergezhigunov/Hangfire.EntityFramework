@@ -1237,17 +1237,17 @@ namespace Hangfire.EntityFramework
 
             var lists = new[]
             {
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list1,
                     Position = 0,
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list1,
                     Position = 1,
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list2,
                     Position = 0,
@@ -1286,13 +1286,13 @@ namespace Hangfire.EntityFramework
 
             var lists = new[]
             {
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list1,
                     Position = 0,
                     ExpireAt = DateTime.UtcNow.AddHours(1)
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list2,
                     Position = 0,
@@ -1332,31 +1332,31 @@ namespace Hangfire.EntityFramework
 
             var lists = new[]
             {
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list1,
                     Position = 0,
                     Value = "1",
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list2,
                     Position = 0,
                     Value = "2",
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list1,
                     Position = 1,
                     Value = "3",
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list1,
                     Position = 2,
                     Value = "4",
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list1,
                     Position = 3,
@@ -1395,19 +1395,19 @@ namespace Hangfire.EntityFramework
 
             var lists = new[]
             {
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list1,
                     Position = 0,
                     Value = "1",
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list2,
                     Position = 0,
                     Value = "2",
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = list1,
                     Position = 1,

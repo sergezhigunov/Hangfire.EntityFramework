@@ -36,7 +36,7 @@ namespace Hangfire.EntityFramework
 
         public DbSet<HangfireJobQueueLookup> JobQueueLookups { get; set; }
 
-        public DbSet<HangfireListItem> Lists { get; set; }
+        public DbSet<HangfireList> Lists { get; set; }
 
         public DbSet<HangfireServer> Servers { get; set; }
 

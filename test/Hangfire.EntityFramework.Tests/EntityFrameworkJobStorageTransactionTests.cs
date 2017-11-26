@@ -874,19 +874,19 @@ namespace Hangfire.EntityFramework
             string key = Guid.NewGuid().ToString();
             UseContextWithSavingChanges(context => context.Lists.AddRange(new[]
             {
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = key,
                     Position = 0,
                     Value = "0",
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = key,
                     Position = 1,
                     Value = "1",
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = key,
                     Position = 2,
@@ -906,7 +906,7 @@ namespace Hangfire.EntityFramework
         {
             string key = Guid.NewGuid().ToString();
             UseContextWithSavingChanges(context => context.Lists.
-                Add(new HangfireListItem
+                Add(new HangfireList
                 {
                     Key = key,
                     Position = 0,
@@ -925,7 +925,7 @@ namespace Hangfire.EntityFramework
         {
             string key = Guid.NewGuid().ToString();
             UseContextWithSavingChanges(context => context.Lists.
-                Add(new HangfireListItem
+                Add(new HangfireList
                 {
                     Key = key,
                     Position = 0,
@@ -945,7 +945,7 @@ namespace Hangfire.EntityFramework
             string key = Guid.NewGuid().ToString();
             string anotherKey = Guid.NewGuid().ToString();
             UseContextWithSavingChanges(context => context.Lists.
-                Add(new HangfireListItem
+                Add(new HangfireList
                 {
                     Key = key,
                     Position = 0,
@@ -1313,13 +1313,13 @@ namespace Hangfire.EntityFramework
         {
             var lists = new[]
             {
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = "list-1",
                     Value = "1",
                     Position = 0,
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = "list-2",
                     Value = "1",
@@ -1477,14 +1477,14 @@ namespace Hangfire.EntityFramework
         {
             var lists = new[]
             {
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = "list-1",
                     Value = "1",
                     Position = 0,
                     ExpireAt = DateTime.UtcNow.AddDays(1),
                 },
-                new HangfireListItem
+                new HangfireList
                 {
                     Key = "list-2",
                     Value = "1",

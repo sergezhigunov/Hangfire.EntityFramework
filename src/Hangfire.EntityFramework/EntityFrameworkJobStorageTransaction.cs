@@ -362,7 +362,7 @@ namespace Hangfire.EntityFramework
 
             EnqueueCommand(context =>
             {
-                context.Lists.Add(new HangfireListItem
+                context.Lists.Add(new HangfireList
                 {
                     Key = key,
                     Position = (
@@ -424,7 +424,7 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        private static void CopyNonKeyValues(HangfireListItem[] source, HangfireListItem[] destination)
+        private static void CopyNonKeyValues(HangfireList[] source, HangfireList[] destination)
         {
             for (int i = 0; i < source.Length; i++)
             {
@@ -463,7 +463,7 @@ namespace Hangfire.EntityFramework
 
                 foreach (var id in ids)
                 {
-                    var item = new HangfireListItem
+                    var item = new HangfireList
                     {
                         Key = id.Key,
                         Position = id.Position,
@@ -496,7 +496,7 @@ namespace Hangfire.EntityFramework
 
                 foreach (var id in ids)
                 {
-                    var item = new HangfireListItem
+                    var item = new HangfireList
                     {
                         Key = id.Key,
                         Position = id.Position,

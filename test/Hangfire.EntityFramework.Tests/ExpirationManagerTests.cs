@@ -108,7 +108,7 @@ namespace Hangfire.EntityFramework
                     ExpireAt = expireAt,
                 });
 
-                context.Lists.Add(new HangfireListItem
+                context.Lists.Add(new HangfireList
                 {
                     Key = "test",
                     ExpireAt = expireAt,
