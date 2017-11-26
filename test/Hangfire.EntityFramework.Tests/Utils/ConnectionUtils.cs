@@ -59,11 +59,18 @@ namespace Hangfire.EntityFramework.Utils
             return result;
         }
 
+        internal static EntityFrameworkJobStorageTransaction CreateTransaction()
+        {
+            var storage = CreateStorage();
+
+            return new EntityFrameworkJobStorageTransaction(storage);
+        }
+
         internal static void UseTransaction(Action<EntityFrameworkJobStorageTransaction> action)
         {
             var storage = CreateStorage();
 
-            using (var transaction = new EntityFrameworkJobStorageTransaction(storage))
+            using (var transaction = CreateTransaction())
             {
                 action(transaction);
                 transaction.Commit();

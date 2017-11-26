@@ -15,10 +15,15 @@ namespace Hangfire.EntityFramework
 {
     internal class EntityFrameworkJobStorageTransaction : JobStorageTransaction
     {
-        private Queue<Action<HangfireDbContext>> CommandQueue { get; } = new Queue<Action<HangfireDbContext>>();
-        private Queue<Action> AfterCommitCommandQueue { get; } = new Queue<Action>();
+        private Queue<Action<HangfireDbContext>> CommandQueue { get; } =
+            new Queue<Action<HangfireDbContext>>();
+
+        private Queue<Action> AfterCommitCommandQueue { get; } =
+            new Queue<Action>();
 
         private EntityFrameworkJobStorage Storage { get; }
+
+        private bool Disposed { get; set; }
 
         public EntityFrameworkJobStorageTransaction([NotNull] EntityFrameworkJobStorage storage)
         {
@@ -30,6 +35,8 @@ namespace Hangfire.EntityFramework
 
         public override void ExpireJob(string jobId, TimeSpan expireIn)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 var job = new HangfireJob
@@ -46,6 +53,8 @@ namespace Hangfire.EntityFramework
 
         public override void PersistJob(string jobId)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 var job = new HangfireJob
@@ -61,6 +70,8 @@ namespace Hangfire.EntityFramework
 
         public override void SetJobState(string jobId, IState state)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 Guid id = Guid.Parse(jobId);
@@ -76,6 +87,8 @@ namespace Hangfire.EntityFramework
 
         public override void AddJobState(string jobId, IState state)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context => AddJobStateToContext(context, Guid.Parse(jobId), state));
         }
 
@@ -100,6 +113,8 @@ namespace Hangfire.EntityFramework
 
         public override void AddToQueue(string queue, string jobId)
         {
+            ThrowIfDisposed();
+
             var provider = Storage.QueueProviders.GetProvider(queue);
             var persistentQueue = provider.GetJobQueue();
             EnqueueCommand(context => persistentQueue.Enqueue(queue, jobId));
@@ -110,26 +125,36 @@ namespace Hangfire.EntityFramework
 
         public override void IncrementCounter(string key)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context => AddCounterToContext(context, key, 1, null));
         }
 
         public override void IncrementCounter(string key, TimeSpan expireIn)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context => AddCounterToContext(context, key, 1, expireIn));
         }
 
         public override void DecrementCounter(string key)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context => AddCounterToContext(context, key, -1, null));
         }
 
         public override void DecrementCounter(string key, TimeSpan expireIn)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context => AddCounterToContext(context, key, -1, expireIn));
         }
 
         private void AddCounterToContext(HangfireDbContext context, string key, long value, TimeSpan? expireIn)
         {
+            ThrowIfDisposed();
+
             var counter = new HangfireCounter
             {
                 Id = Guid.NewGuid(),
@@ -147,6 +172,8 @@ namespace Hangfire.EntityFramework
 
         public override void AddToSet(string key, string value, double score)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 var set = new HangfireSet
@@ -163,6 +190,8 @@ namespace Hangfire.EntityFramework
 
         public override void RemoveFromSet(string key, string value)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 var entries = context.ChangeTracker.Entries<HangfireSet>().
@@ -184,6 +213,8 @@ namespace Hangfire.EntityFramework
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
             if (items == null) throw new ArgumentNullException(nameof(items));
+
+            ThrowIfDisposed();
 
             EnqueueCommand(context =>
             {
@@ -218,6 +249,8 @@ namespace Hangfire.EntityFramework
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
+
+            ThrowIfDisposed();
 
             EnqueueCommand(context =>
             {
@@ -254,6 +287,8 @@ namespace Hangfire.EntityFramework
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 var ids = (
@@ -286,6 +321,8 @@ namespace Hangfire.EntityFramework
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 string[] values = (
@@ -305,6 +342,8 @@ namespace Hangfire.EntityFramework
 
         public override void InsertToList(string key, string value)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 context.Lists.Add(new HangfireListItem
@@ -321,6 +360,8 @@ namespace Hangfire.EntityFramework
 
         public override void RemoveFromList(string key, string value)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 var list = (
@@ -343,6 +384,8 @@ namespace Hangfire.EntityFramework
 
         public override void TrimList(string key, int keepStartingFrom, int keepEndingAt)
         {
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 var list = (
@@ -386,6 +429,8 @@ namespace Hangfire.EntityFramework
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 var ids = (
@@ -420,6 +465,8 @@ namespace Hangfire.EntityFramework
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
+
+            ThrowIfDisposed();
 
             EnqueueCommand(context =>
             {
@@ -456,6 +503,8 @@ namespace Hangfire.EntityFramework
             if (keyValuePairs == null)
                 throw new ArgumentNullException(nameof(keyValuePairs));
 
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 var exisitingFields = new HashSet<string>(
@@ -490,6 +539,8 @@ namespace Hangfire.EntityFramework
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 string[] fields = (
@@ -511,6 +562,8 @@ namespace Hangfire.EntityFramework
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
+
+            ThrowIfDisposed();
 
             EnqueueCommand(context =>
             {
@@ -543,6 +596,8 @@ namespace Hangfire.EntityFramework
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
+            ThrowIfDisposed();
+
             EnqueueCommand(context =>
             {
                 string[] fields = (
@@ -569,6 +624,8 @@ namespace Hangfire.EntityFramework
 
         public override void Commit()
         {
+            ThrowIfDisposed();
+
             using (var context = Storage.CreateContext())
             using (var transaction = context.Database.BeginTransaction())
             {
@@ -589,5 +646,27 @@ namespace Hangfire.EntityFramework
         }
 
         private void EnqueueCommand(Action<HangfireDbContext> command) => CommandQueue.Enqueue(command);
+
+        public sealed override void Dispose()
+        {
+            base.Dispose();
+
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+            }
+
+            Disposed = true;
+        }
+
+        protected void ThrowIfDisposed()
+        {
+            if (Disposed)
+                throw new ObjectDisposedException(GetType().FullName);
+        }
     }
 }

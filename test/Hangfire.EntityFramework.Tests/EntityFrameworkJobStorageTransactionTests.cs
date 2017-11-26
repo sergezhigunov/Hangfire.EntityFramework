@@ -17,11 +17,23 @@ namespace Hangfire.EntityFramework
 
     public class EntityFrameworkJobStorageTransactionTests
     {
+        private static string JobId { get; } =
+            Guid.NewGuid().ToString();
+
         [Fact]
         public void Ctor_ThrowsAnException_IfStorageIsNull()
         {
             Assert.Throws<ArgumentNullException>("storage",
                 () => new EntityFrameworkJobStorageTransaction(null));
+        }
+
+        [Fact]
+        public void ExpireJob_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.ExpireJob(JobId, TimeSpan.FromDays(1)));
         }
 
         [Fact, RollbackTransaction]
@@ -40,6 +52,15 @@ namespace Hangfire.EntityFramework
             Assert.Null(anotherJob.ExpireAt);
         }
 
+        [Fact]
+        public void PersistJob_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.PersistJob(JobId));
+        }
+
         [Fact, RollbackTransaction]
         public void PersistJob_ClearsTheJobExpirationData()
         {
@@ -53,6 +74,16 @@ namespace Hangfire.EntityFramework
 
             var anotherJob = GetTestJob(anotherJobId);
             Assert.NotNull(anotherJob.ExpireAt);
+        }
+
+        [Fact]
+        public void SetJobState_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            var state = new Mock<IState>();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.SetJobState(JobId, state.Object));
         }
 
         [Fact, RollbackTransaction]
@@ -89,6 +120,16 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Value", data["Name"]);
         }
 
+        [Fact]
+        public void AddJobState_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            var state = new Mock<IState>();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.SetJobState(JobId, state.Object));
+        }
+
         [Fact, RollbackTransaction]
         public void AddJobState_JustAddsANewRecordInATable()
         {
@@ -119,6 +160,15 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Value", data["Name"]);
         }
 
+        [Fact]
+        public void AddToQueue_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.AddToQueue("QUEUE", JobId));
+        }
+
         [Fact, RollbackTransaction]
         public void AddToQueue_CallsEnqueue_OnTargetPersistentQueue()
         {
@@ -130,6 +180,16 @@ namespace Hangfire.EntityFramework
 
             Assert.Equal(id, result.JobId);
             Assert.Equal("DEFAULT", result.Queue);
+        }
+
+        [Fact]
+        public void IncrementCounter_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.IncrementCounter(key));
         }
 
         [Fact, RollbackTransaction]
@@ -144,6 +204,16 @@ namespace Hangfire.EntityFramework
             Assert.Equal(key, record.Key);
             Assert.Equal(1, record.Value);
             Assert.Null(record.ExpireAt);
+        }
+
+        [Fact]
+        public void IncrementCounter_WithExpiry_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.IncrementCounter(key, TimeSpan.FromDays(1)));
         }
 
         [Fact, RollbackTransaction]
@@ -183,6 +253,16 @@ namespace Hangfire.EntityFramework
             Assert.Equal(2, sum);
         }
 
+        [Fact]
+        public void DecrementCounter_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.DecrementCounter(key));
+        }
+
         [Fact, RollbackTransaction]
         public void DecrementCounter_AddsRecordToCounterTable_WithNegativeValue()
         {
@@ -195,6 +275,16 @@ namespace Hangfire.EntityFramework
             Assert.Equal(key, record.Key);
             Assert.Equal(-1, record.Value);
             Assert.Null(record.ExpireAt);
+        }
+
+        [Fact]
+        public void DecrementCounter_WithExpiry_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.DecrementCounter(key, TimeSpan.FromDays(1)));
         }
 
         [Fact, RollbackTransaction]
@@ -232,6 +322,16 @@ namespace Hangfire.EntityFramework
 
             Assert.Equal(2, count);
             Assert.Equal(-2, sum);
+        }
+
+        [Fact]
+        public void AddToSet_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.AddToSet(key, "my-value"));
         }
 
         [Fact, RollbackTransaction]
@@ -310,6 +410,16 @@ namespace Hangfire.EntityFramework
             Assert.Equal(3.2, record.Score, 3);
         }
 
+        [Fact]
+        public void RemoveFromSet_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.RemoveFromSet(key, "my-value"));
+        }
+
         [Fact, RollbackTransaction]
         public void RemoveFromSet_RemovesARecord_WithGivenKeyAndValue()
         {
@@ -358,6 +468,16 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, recordCount);
         }
 
+        [Fact]
+        public void InsertToList_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.InsertToList(key, "my-value"));
+        }
+
         [Fact, RollbackTransaction]
         public void InsertToList_AddsARecord_WithGivenValues()
         {
@@ -385,6 +505,16 @@ namespace Hangfire.EntityFramework
             var recordCount = UseContext(context => context.Lists.Count());
 
             Assert.Equal(2, recordCount);
+        }
+
+        [Fact]
+        public void RemoveFromList_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.RemoveFromList(key, "my-value"));
         }
 
         [Fact, RollbackTransaction]
@@ -434,6 +564,16 @@ namespace Hangfire.EntityFramework
             var recordCount = UseContext(context => context.Lists.Count());
 
             Assert.Equal(1, recordCount);
+        }
+
+        [Fact]
+        public void TrimList_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.TrimList(key, 0, 1));
         }
 
         [Fact, RollbackTransaction]
@@ -548,6 +688,16 @@ namespace Hangfire.EntityFramework
             Assert.Equal(1, recordCount);
         }
 
+        [Fact]
+        public void SetRangeInHash_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.SetRangeInHash(key, new Dictionary<string, string>()));
+        }
+
         [Fact, RollbackTransaction]
         public void SetRangeInHash_ThrowsAnException_WhenKeyIsNull()
         {
@@ -582,6 +732,16 @@ namespace Hangfire.EntityFramework
             Assert.Equal("Value2", result["Key2"]);
         }
 
+        [Fact]
+        public void RemoveHash_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.RemoveHash(key));
+        }
+
         [Fact, RollbackTransaction]
         public void RemoveHash_ThrowsAnException_WhenKeyIsNull()
         {
@@ -605,6 +765,16 @@ namespace Hangfire.EntityFramework
 
             var count = UseContext(context => context.Hashes.Count());
             Assert.Equal(0, count);
+        }
+
+        [Fact]
+        public void AddRangeToSet_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.AddRangeToSet(key, new List<string>()));
         }
 
         [Fact, RollbackTransaction]
@@ -643,6 +813,16 @@ namespace Hangfire.EntityFramework
             Assert.Equal(items, records);
         }
 
+        [Fact]
+        public void RemoveSet_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.RemoveSet(key));
+        }
+
         [Fact, RollbackTransaction]
         public void RemoveSet_ThrowsAnException_WhenKeyIsNull()
         {
@@ -674,6 +854,16 @@ namespace Hangfire.EntityFramework
 
             var record = UseContext(context => context.Sets.Single());
             Assert.Equal("set-2", record.Key);
+        }
+
+        [Fact]
+        public void ExpireHash_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.ExpireHash(key, TimeSpan.FromMinutes(5)));
         }
 
         [Fact, RollbackTransaction]
@@ -709,6 +899,16 @@ namespace Hangfire.EntityFramework
             Assert.True(DateTime.UtcNow.AddMinutes(59) < records["hash-1"]);
             Assert.True(records["hash-1"] < DateTime.UtcNow.AddMinutes(61));
             Assert.Null(records["hash-2"]);
+        }
+
+        [Fact]
+        public void ExpireSet_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.ExpireSet(key, new TimeSpan(0, 0, 45)));
         }
 
         [Fact, RollbackTransaction]
@@ -747,6 +947,16 @@ namespace Hangfire.EntityFramework
             Assert.Null(records["set-2"]);
         }
 
+        [Fact]
+        public void ExpireList_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.ExpireList(key, new TimeSpan(0, 0, 45)));
+        }
+
         [Fact, RollbackTransaction]
         public void ExpireList_ThrowsAnException_WhenKeyIsNull()
         {
@@ -783,6 +993,16 @@ namespace Hangfire.EntityFramework
             Assert.Null(records["list-2"]);
         }
 
+        [Fact]
+        public void PersistHash_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.PersistHash(key));
+        }
+
         [Fact, RollbackTransaction]
         public void PersistHash_ThrowsAnException_WhenKeyIsNull()
         {
@@ -815,6 +1035,16 @@ namespace Hangfire.EntityFramework
             var records = UseContext(context => context.Hashes.ToDictionary(x => x.Key, x => x.ExpireAt));
             Assert.Null(records["hash-1"]);
             Assert.NotNull(records["hash-2"]);
+        }
+
+        [Fact]
+        public void PersistSet_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.PersistSet(key));
         }
 
         [Fact, RollbackTransaction]
@@ -852,6 +1082,16 @@ namespace Hangfire.EntityFramework
             var records = UseContext(context => context.Sets.ToDictionary(x => x.Key, x => x.ExpireAt));
             Assert.Null(records["set-1"]);
             Assert.NotNull(records["set-2"]);
+        }
+
+        [Fact]
+        public void PersistList_ThrowsAnException_WhenTransactionDisposed()
+        {
+            var transaction = CreateDisposedTransaction();
+            string key = Guid.NewGuid().ToString();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => transaction.PersistList(key));
         }
 
         [Fact, RollbackTransaction]
@@ -909,5 +1149,12 @@ namespace Hangfire.EntityFramework
             Include(p => p.Parameters).
             Include(p => p.States).
             Single(x => x.Id == jobId));
+
+        private static EntityFrameworkJobStorageTransaction CreateDisposedTransaction()
+        {
+            var transaction = CreateTransaction();
+            transaction.Dispose();
+            return transaction;
+        }
     }
 }
