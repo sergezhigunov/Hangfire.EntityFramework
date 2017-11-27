@@ -1,10 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\..\common.props" />
+
   <PropertyGroup>
-    <Copyright>Copyright (c) 2017 Sergey Zhigunov</Copyright>
-    <NeutralLanguage>en-US</NeutralLanguage>
-    <VersionPrefix>0.0.1</VersionPrefix>
-    <Authors>Sergey Zhigunov</Authors>
     <TargetFramework>net452</TargetFramework>
     <AssemblyName>Hangfire.EntityFramework.Tests</AssemblyName>
     <PackageId>Hangfire.EntityFramework.Tests</PackageId>
