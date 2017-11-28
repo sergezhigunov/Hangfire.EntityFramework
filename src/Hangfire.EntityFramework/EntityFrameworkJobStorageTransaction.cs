@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Migrations;
 using System.Globalization;
 using System.Linq;
 using Hangfire.Annotations;
@@ -85,11 +84,29 @@ namespace Hangfire.EntityFramework
                 long id = long.Parse(jobId, CultureInfo.InvariantCulture);
                 var addedState = AddJobStateToContext(context, id, state);
 
-                context.JobActualStates.AddOrUpdate(new HangfireJobActualState
+                var entry = context.ChangeTracker.
+                    Entries<HangfireJobActualState>().
+                    FirstOrDefault(x => x.Entity.JobId == id);
+
+                if (entry != null)
                 {
-                    JobId = id,
-                    State = addedState,
-                });
+                    var entity = entry.Entity;
+                    entity.State = addedState;
+                    entry.State = EntityState.Modified;
+                }
+                else
+                {
+                    var actualState = new HangfireJobActualState
+                    {
+                        JobId = id,
+                        State = addedState,
+                    };
+
+                    if (!context.JobActualStates.Any(x => x.JobId == id))
+                        context.JobActualStates.Add(actualState);
+                    else
+                        context.Entry(actualState).Property(x => x.StateId).IsModified = true;
+                }
             });
         }
 
@@ -193,15 +210,32 @@ namespace Hangfire.EntityFramework
 
             EnqueueCommand(context =>
             {
-                var set = new HangfireSet
-                {
-                    CreatedAt = DateTime.UtcNow,
-                    Key = key,
-                    Score = score,
-                    Value = value,
-                };
+                var entry = context.ChangeTracker.
+                    Entries<HangfireSet>().
+                    FirstOrDefault(x => x.Entity.Key == key && x.Entity.Value == value);
 
-                context.Sets.AddOrUpdate(set);
+                if (entry != null)
+                {
+                    var entity = entry.Entity;
+                    entity.Score = score;
+                    entity.CreatedAt = DateTime.UtcNow;
+                    entry.State = EntityState.Modified;
+                }
+                else
+                {
+                    var set = new HangfireSet
+                    {
+                        CreatedAt = DateTime.UtcNow,
+                        Key = key,
+                        Score = score,
+                        Value = value,
+                    };
+
+                    if (!context.Sets.Any(x => x.Key == key && x.Value == value))
+                        context.Sets.Add(set);
+                    else
+                        context.Entry(set).State = EntityState.Modified;
+                }
             });
         }
 

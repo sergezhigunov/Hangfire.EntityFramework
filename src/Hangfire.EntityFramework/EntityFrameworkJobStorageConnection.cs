@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Migrations;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -105,12 +104,17 @@ namespace Hangfire.EntityFramework
 
             Storage.UseContext(context =>
             {
-                context.JobParameters.AddOrUpdate(new HangfireJobParameter
+                var parameter = new HangfireJobParameter
                 {
                     JobId = jobId,
                     Name = name,
                     Value = value,
-                });
+                };
+
+                if (!context.JobParameters.Any(x => x.JobId == jobId && x.Name == name))
+                    context.JobParameters.Add(parameter);
+                else
+                    context.Entry(parameter).State = EntityState.Modified;
 
                 context.SaveChanges();
             });
@@ -227,12 +231,17 @@ namespace Hangfire.EntityFramework
 
             Storage.UseContext(dbContext =>
             {
-                dbContext.ServerHosts.AddOrUpdate(new HangfireServerHost
+                var serverHost = new HangfireServerHost
                 {
                     Id = EntityFrameworkJobStorage.ServerHostId,
-                });
+                };
 
-                dbContext.Servers.AddOrUpdate(new HangfireServer
+                var serverHosts = dbContext.ServerHosts;
+
+                if (!serverHosts.Any(x => x.Id == EntityFrameworkJobStorage.ServerHostId))
+                    serverHosts.Add(serverHost);
+
+                var server = new HangfireServer
                 {
                     Id = serverId,
                     StartedAt = timestamp,
@@ -240,7 +249,14 @@ namespace Hangfire.EntityFramework
                     WorkerCount = context.WorkerCount,
                     ServerHostId = EntityFrameworkJobStorage.ServerHostId,
                     Queues = queues,
-                });
+                };
+
+                var servers = dbContext.Servers;
+
+                if (!servers.Any(x => x.Id == serverId))
+                    servers.Add(server);
+                else
+                    dbContext.Entry(server).State = EntityState.Modified;
 
                 dbContext.SaveChanges();
             });
@@ -398,25 +414,31 @@ namespace Hangfire.EntityFramework
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
+
             if (keyValuePairs == null)
                 throw new ArgumentNullException(nameof(keyValuePairs));
 
+            var hashes = keyValuePairs.Select(x => new HangfireHash
+            {
+                Key = key,
+                Field = x.Key,
+                Value = x.Value,
+            });
+
             Storage.UseContext(context =>
             {
-                var hashes = keyValuePairs.Select(x => new HangfireHash
-                {
-                    Key = key,
-                    Field = x.Key,
-                    Value = x.Value,
-                }).
-                ToArray();
+                var fields = new HashSet<string>(
+                    from hash in context.Hashes
+                    where hash.Key == key
+                    select hash.Field);
 
-                using (var transaction = context.Database.BeginTransaction())
-                {
-                    context.Hashes.AddOrUpdate(hashes);
-                    context.SaveChanges();
-                    transaction.Commit();
-                }
+                foreach (var hash in hashes)
+                    if (!fields.Contains(hash.Field))
+                        context.Hashes.Add(hash);
+                    else
+                        context.Entry(hash).State = EntityState.Modified;
+
+                context.SaveChanges();
             });
         }
 
