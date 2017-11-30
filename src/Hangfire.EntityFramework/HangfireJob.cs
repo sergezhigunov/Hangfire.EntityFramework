@@ -15,6 +15,9 @@ namespace Hangfire.EntityFramework
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long Id { get; set; }
 
+        [Index(IsUnique = false)]
+        public JobState? ActualState { get; set; }
+
         [StringLength(512)]
         public string ClrType { get; set; }
 
@@ -32,8 +35,6 @@ namespace Hangfire.EntityFramework
         [DateTimePrecision(7)]
         [Index(IsUnique = false)]
         public DateTime? ExpireAt { get; set; }
-
-        public virtual HangfireJobActualState ActualState { get; set; }
 
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<HangfireJobParameter> Parameters { get; set; } = new HashSet<HangfireJobParameter>();

@@ -91,7 +91,8 @@ namespace Hangfire.EntityFramework
                     Include(x => x.Parameters).
                     SingleOrDefault(x => x.Id == id);
 
-                if (job == null) return null;
+                if (job == null)
+                    return null;
 
                 return new JobDetailsDto
                 {
@@ -119,14 +120,14 @@ namespace Hangfire.EntityFramework
             var result = UseContext(context =>
             {
                 var stateCounts = (
-                    from actualState in context.JobActualStates
-                    let state = actualState.State.State
+                    from job in context.Jobs
+                    let state = job.ActualState
                     where
                         state == JobState.Enqueued ||
                         state == JobState.Failed ||
                         state == JobState.Processing ||
                         state == JobState.Scheduled
-                    group actualState by state into @group
+                    group job by state into @group
                     select new
                     {
                         State = @group.Key,
@@ -220,7 +221,7 @@ namespace Hangfire.EntityFramework
                 (sqlJob, job, stateData) => new FailedJobDto
                 {
                     Job = job,
-                    Reason = sqlJob.ActualState.State.Reason,
+                    Reason = sqlJob.StateReason,
                     ExceptionDetails = stateData?.ExceptionDetails,
                     ExceptionMessage = stateData?.ExceptionMessage,
                     ExceptionType = stateData?.ExceptionType,
@@ -275,10 +276,21 @@ namespace Hangfire.EntityFramework
             {
                 var jobs = (
                     from job in context.Jobs.
-                    Include(x => x.ActualState.State).
                     WhereContains(x => x.Id, enqueuedJobIds)
+                    join actualState in GetActualStates(context)
+                        on job.Id equals actualState.JobId
                     orderby job.CreatedAt ascending
-                    select job).
+                    select new JobInfo
+                    {
+                        Id = job.Id,
+                        State = job.ActualState.Value,
+                        ClrType = job.ClrType,
+                        Method = job.Method,
+                        ArgumentTypes = job.ArgumentTypes,
+                        Arguments = job.Arguments,
+                        StateData = actualState.Data,
+                        StateReason = actualState.Reason,
+                    }).
                     ToArray();
 
                 return DeserializeJobs<EnqueuedJobDto, EnqueuedStateData>(
@@ -286,7 +298,7 @@ namespace Hangfire.EntityFramework
                     (sqlJob, job, stateData) => new EnqueuedJobDto
                     {
                         Job = job,
-                        State = sqlJob.ActualState.State.State.ToStateName(),
+                        State = sqlJob.State.ToStateName(),
                         EnqueuedAt = stateData?.EnqueuedAt
                     });
             });
@@ -296,16 +308,27 @@ namespace Hangfire.EntityFramework
             int from,
             int count,
             JobState state,
-            Func<HangfireJob, Job, TStateData, TResult> selector)
+            Func<JobInfo, Job, TStateData, TResult> selector)
         {
             return UseContext(context =>
             {
                 var jobs = (
-                    from job in context.Jobs.
-                    Include(x => x.ActualState.State)
-                    where job.ActualState.State.State == state
+                    from job in context.Jobs
+                    where job.ActualState.Value == state
+                    join actualState in GetActualStates(context)
+                        on job.Id equals actualState.JobId
                     orderby job.CreatedAt descending
-                    select job).
+                    select new JobInfo
+                    {
+                        Id = job.Id,
+                        State = job.ActualState.Value,
+                        ClrType = job.ClrType,
+                        Method = job.Method,
+                        ArgumentTypes = job.ArgumentTypes,
+                        Arguments = job.Arguments,
+                        StateData = actualState.Data,
+                        StateReason = actualState.Reason,
+                    }).
                     Skip(() => from).
                     Take(() => count).
                     ToArray();
@@ -314,7 +337,9 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        private JobList<TResult> DeserializeJobs<TResult, TStateData>(HangfireJob[] jobs, Func<HangfireJob, Job, TStateData, TResult> selector)
+        private JobList<TResult> DeserializeJobs<TResult, TStateData>(
+            JobInfo[] jobs,
+            Func<JobInfo, Job, TStateData, TResult> selector)
         {
             var result = new List<KeyValuePair<string, TResult>>(jobs.Length);
 
@@ -324,7 +349,7 @@ namespace Hangfire.EntityFramework
 
                 if (!string.IsNullOrWhiteSpace(job.ClrType) && !string.IsNullOrWhiteSpace(job.Method))
                 {
-                    TStateData stateData = JobHelper.FromJson<TStateData>(job.ActualState.State.Data);
+                    TStateData stateData = JobHelper.FromJson<TStateData>(job.StateData);
                     dto = selector(job, DeserializeJob(job), stateData);
                 }
 
@@ -343,9 +368,9 @@ namespace Hangfire.EntityFramework
         private long GetNumberOfJobsByStateName(JobState state)
         {
             return UseContext(context => (
-                from actualState in context.JobActualStates
-                where actualState.State.State == state
-                select actualState).
+                from job in context.Jobs
+                where job.ActualState == state
+                select job).
                 LongCount());
         }
 
@@ -390,6 +415,44 @@ namespace Hangfire.EntityFramework
 
         private T UseContext<T>(Func<HangfireDbContext, T> func) => Storage.UseContext(func);
 
+        private static IQueryable<HangfireJobState> GetActualStates(HangfireDbContext context)
+        {
+            var states = context.JobStates.Where(x => x.State == x.Job.ActualState);
+
+            return
+                from actualState in states
+                join state in (
+                    from state in states
+                    group state by state.JobId into grouping
+                    select new
+                    {
+                        JobId = grouping.Key,
+                        CreatedAt = grouping.Max(x => x.CreatedAt),
+                    })
+                    on new
+                    {
+                        actualState.JobId,
+                        actualState.CreatedAt,
+                    }
+                    equals new
+                    {
+                        state.JobId,
+                        state.CreatedAt,
+                    }
+                select actualState;
+        }
+
+        private static Job DeserializeJob(JobInfo job)
+        {
+            var data = new InvocationData(
+                job.ClrType,
+                job.Method,
+                job.ArgumentTypes,
+                job.Arguments);
+
+            return Deserialize(data);
+        }
+
         private static Job DeserializeJob(HangfireJob job)
         {
             var data = new InvocationData(
@@ -398,6 +461,11 @@ namespace Hangfire.EntityFramework
                 job.ArgumentTypes,
                 job.Arguments);
 
+            return Deserialize(data);
+        }
+
+        private static Job Deserialize(InvocationData data)
+        {
             try
             {
                 return data.Deserialize();

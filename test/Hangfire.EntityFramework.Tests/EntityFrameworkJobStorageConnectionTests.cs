@@ -312,7 +312,6 @@ namespace Hangfire.EntityFramework
 
             HangfireJob hangfireJob = UseContext(context =>
                 context.Jobs.
-                Include(p => p.ActualState).
                 Include(p => p.Parameters).
                 Single());
 
@@ -368,6 +367,7 @@ namespace Hangfire.EntityFramework
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
+                    ActualState = JobState.Succeeded,
                 });
 
                 var state = context.JobStates.Add(new HangfireJobState
@@ -375,12 +375,6 @@ namespace Hangfire.EntityFramework
                     Job = jobItem,
                     CreatedAt = DateTime.UtcNow,
                     State = JobState.Succeeded,
-                });
-
-                context.JobActualStates.Add(new HangfireJobActualState
-                {
-                    State = state,
-                    Job = jobItem,
                 });
 
                 return jobItem;
@@ -412,6 +406,7 @@ namespace Hangfire.EntityFramework
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
+                    ActualState = JobState.Succeeded,
                 });
 
                 var state = context.JobStates.Add(new HangfireJobState
@@ -419,12 +414,6 @@ namespace Hangfire.EntityFramework
                     Job = job,
                     CreatedAt = DateTime.UtcNow,
                     State = JobState.Succeeded,
-                });
-
-                context.JobActualStates.Add(new HangfireJobActualState
-                {
-                    State = state,
-                    Job = job,
                 });
 
                 return job;
@@ -619,6 +608,7 @@ namespace Hangfire.EntityFramework
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
+                    ActualState = JobState.Awaiting,
                 });
 
                 var state = context.JobStates.Add(new HangfireJobState
@@ -628,12 +618,6 @@ namespace Hangfire.EntityFramework
                     State = JobState.Awaiting,
                     Reason = "Reason",
                     Data = data
-                });
-
-                context.JobActualStates.Add(new HangfireJobActualState
-                {
-                    State = state,
-                    Job = job,
                 });
 
                 return job;

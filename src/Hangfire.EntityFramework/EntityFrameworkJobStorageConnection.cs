@@ -157,7 +157,7 @@ namespace Hangfire.EntityFramework
                     job.ArgumentTypes,
                     job.Arguments,
                     job.CreatedAt,
-                    State = job.ActualState.State.State,
+                    State = job.ActualState,
                 }).
                 FirstOrDefault());
 
@@ -171,7 +171,7 @@ namespace Hangfire.EntityFramework
 
             var jobData = new JobData
             {
-                State = jobInfo.State.ToStateName(),
+                State = jobInfo.State?.ToStateName(),
                 CreatedAt = jobInfo.CreatedAt,
             };
 
@@ -197,9 +197,10 @@ namespace Hangfire.EntityFramework
                 return null;
 
             var stateInfo = Storage.UseContext(context => (
-                from actualState in context.JobActualStates
-                where actualState.JobId == id
-                let state = actualState.State
+                from job in context.Jobs
+                from state in job.States
+                where job.ActualState == state.State
+                orderby state.CreatedAt descending
                 select new
                 {
                     state.State,
@@ -208,7 +209,8 @@ namespace Hangfire.EntityFramework
                 }).
                 FirstOrDefault());
 
-            if (stateInfo == null) return null;
+            if (stateInfo == null)
+                return null;
 
             return new StateData
             {

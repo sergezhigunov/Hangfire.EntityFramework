@@ -169,12 +169,12 @@ namespace Hangfire.EntityFramework
             DateTime endTimestamp = DateTime.UtcNow.AddSeconds(1);
 
             var actualJob = GetTestJob(job.Id);
-            Assert.Equal(JobState.Awaiting, actualJob.ActualState.State.State);
+            Assert.Equal(JobState.Awaiting, actualJob.ActualState);
 
             anotherJob = GetTestJob(anotherJob.Id);
             Assert.Null(anotherJob.ActualState);
 
-            var jobState = actualJob.ActualState.State;
+            var jobState = GetTestJobActualState(job.Id);
             Assert.Equal(JobState.Awaiting, jobState.State);
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
@@ -1514,10 +1514,16 @@ namespace Hangfire.EntityFramework
         }
 
         private HangfireJob GetTestJob(long jobId) => UseContext(context => context.Jobs.
-            Include(p => p.ActualState.State).
             Include(p => p.Parameters).
             Include(p => p.States).
             Single(x => x.Id == jobId));
+
+        private HangfireJobState GetTestJobActualState(long jobId) => UseContext(context => (
+            from state in context.JobStates
+            where state.JobId == jobId && state.Job.ActualState == state.State
+            orderby state.CreatedAt descending
+            select state).
+            FirstOrDefault());
 
         private static EntityFrameworkJobStorageTransaction CreateDisposedTransaction()
         {

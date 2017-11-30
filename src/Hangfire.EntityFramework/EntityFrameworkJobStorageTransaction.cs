@@ -85,30 +85,21 @@ namespace Hangfire.EntityFramework
                 var addedState = AddJobStateToContext(context, id, state);
 
                 var entry = context.ChangeTracker.
-                    Entries<HangfireJobActualState>().
-                    FirstOrDefault(x => x.Entity.JobId == id);
+                    Entries<HangfireJob>().
+                    FirstOrDefault(x => x.Entity.Id == id);
 
                 if (entry != null)
-                {
-                    var entity = entry.Entity;
-                    entity.State = addedState;
-                    entry.State = EntityState.Modified;
-                }
+                    entry.Entity.ActualState = addedState.State;
                 else
                 {
-                    var actualState = new HangfireJobActualState
+                    entry = context.Entry(context.Jobs.Attach(new HangfireJob
                     {
-                        JobId = id,
-                        State = addedState,
-                    };
-
-                    if (!context.JobActualStates.Any(x => x.JobId == id))
-                        context.JobActualStates.Add(actualState);
-                    else
-                        context.Entry(context.JobActualStates.Attach(actualState)).
-                            Property(x => x.StateId).
-                            IsModified = true;
+                        Id = id,
+                        ActualState = addedState.State,
+                    }));
                 }
+
+                entry.Property(x => x.ActualState).IsModified = true;
             });
         }
 
