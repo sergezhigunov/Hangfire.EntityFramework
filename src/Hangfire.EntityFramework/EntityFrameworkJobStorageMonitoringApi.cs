@@ -268,12 +268,15 @@ namespace Hangfire.EntityFramework
 
         private JobList<EnqueuedJobDto> EnqueuedJobs(long[] enqueuedJobIds)
         {
+            if (enqueuedJobIds.Length == 0)
+                return new JobList<EnqueuedJobDto>(Enumerable.Empty<KeyValuePair<string, EnqueuedJobDto>>());
+
             return UseContext(context =>
             {
                 var jobs = (
                     from job in context.Jobs.
-                    Include(x => x.ActualState.State)
-                    where enqueuedJobIds.Contains(job.Id)
+                    Include(x => x.ActualState.State).
+                    WhereContains(x => x.Id, enqueuedJobIds)
                     orderby job.CreatedAt ascending
                     select job).
                     ToArray();
@@ -368,8 +371,8 @@ namespace Hangfire.EntityFramework
         private Dictionary<DateTime, long> GetTimelineStats(IDictionary<string, DateTime> keyMaps)
         {
             var valuesMap = UseContext(context => (
-                from counter in context.Counters
-                where keyMaps.Keys.Contains(counter.Key)
+                from counter in context.Counters.
+                WhereContains(x => x.Key, keyMaps.Keys)
                 group counter by counter.Key into groupByKey
                 select new
                 {

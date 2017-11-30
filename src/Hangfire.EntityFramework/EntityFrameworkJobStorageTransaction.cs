@@ -105,7 +105,9 @@ namespace Hangfire.EntityFramework
                     if (!context.JobActualStates.Any(x => x.JobId == id))
                         context.JobActualStates.Add(actualState);
                     else
-                        context.Entry(actualState).Property(x => x.StateId).IsModified = true;
+                        context.Entry(context.JobActualStates.Attach(actualState)).
+                            Property(x => x.StateId).
+                            IsModified = true;
                 }
             });
         }

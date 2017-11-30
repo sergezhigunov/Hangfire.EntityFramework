@@ -46,8 +46,9 @@ namespace Hangfire.EntityFramework
                     using (var context = Storage.CreateContext())
                     {
                         var queueItem = (
-                            from item in context.JobQueues
-                            where item.Lookup == null && queues.Contains(item.Queue)
+                            from item in context.JobQueues.
+                            WhereContains(x => x.Queue, queues)
+                            where item.Lookup == null
                             orderby item.Id ascending
                             select item).
                             FirstOrDefault();
