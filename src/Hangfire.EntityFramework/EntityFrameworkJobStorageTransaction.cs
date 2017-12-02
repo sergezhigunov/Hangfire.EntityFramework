@@ -38,17 +38,26 @@ namespace Hangfire.EntityFramework
             ValidateJobId(jobId);
             ThrowIfDisposed();
 
+            long id = long.Parse(jobId, CultureInfo.InvariantCulture);
+
             EnqueueCommand(context =>
             {
-                var job = new HangfireJob
+                var entry = context.ChangeTracker.
+                    Entries<HangfireJob>().
+                    FirstOrDefault(x => x.Entity.Id == id);
+
+                if (entry != null)
+                    entry.Entity.ExpireAt = DateTime.UtcNow + expireIn;
+                else
                 {
-                    Id = long.Parse(jobId, CultureInfo.InvariantCulture),
-                    ExpireAt = DateTime.UtcNow + expireIn,
-                };
+                    entry = context.Entry(context.Jobs.Attach(new HangfireJob
+                    {
+                        Id = id,
+                        ExpireAt = DateTime.UtcNow + expireIn,
+                    }));
+                }
 
-                context.Jobs.Attach(job);
-
-                context.Entry(job).Property(x => x.ExpireAt).IsModified = true;
+                entry.Property(x => x.ExpireAt).IsModified = true;
             });
         }
 
@@ -57,16 +66,26 @@ namespace Hangfire.EntityFramework
             ValidateJobId(jobId);
             ThrowIfDisposed();
 
+            long id = long.Parse(jobId, CultureInfo.InvariantCulture);
+
             EnqueueCommand(context =>
             {
-                var job = new HangfireJob
+                var entry = context.ChangeTracker.
+                    Entries<HangfireJob>().
+                    FirstOrDefault(x => x.Entity.Id == id);
+
+                if (entry != null)
+                    entry.Entity.ExpireAt = null;
+                else
                 {
-                    Id = long.Parse(jobId, CultureInfo.InvariantCulture),
-                };
+                    entry = context.Entry(context.Jobs.Attach(new HangfireJob
+                    {
+                        Id = id,
+                        ExpireAt = null,
+                    }));
+                }
 
-                context.Jobs.Attach(job);
-
-                context.Entry(job).Property(x => x.ExpireAt).IsModified = true;
+                entry.Property(x => x.ExpireAt).IsModified = true;
             });
         }
 
@@ -79,9 +98,10 @@ namespace Hangfire.EntityFramework
 
             ThrowIfDisposed();
 
+            long id = long.Parse(jobId, CultureInfo.InvariantCulture);
+
             EnqueueCommand(context =>
             {
-                long id = long.Parse(jobId, CultureInfo.InvariantCulture);
                 var addedState = AddJobStateToContext(context, id, state);
 
                 var entry = context.ChangeTracker.
