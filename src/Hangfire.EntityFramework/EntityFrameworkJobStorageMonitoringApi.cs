@@ -121,7 +121,8 @@ namespace Hangfire.EntityFramework
             {
                 var stateCounts = (
                     from job in context.Jobs
-                    let state = job.ActualState
+                    where job.ActualState.HasValue
+                    let state = job.ActualState.Value
                     where
                         state == JobState.Enqueued ||
                         state == JobState.Failed ||
