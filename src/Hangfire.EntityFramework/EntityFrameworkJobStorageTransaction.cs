@@ -41,24 +41,7 @@ namespace Hangfire.EntityFramework
             long id = long.Parse(jobId, CultureInfo.InvariantCulture);
 
             EnqueueCommand(context =>
-            {
-                var entry = context.ChangeTracker.
-                    Entries<HangfireJob>().
-                    FirstOrDefault(x => x.Entity.Id == id);
-
-                if (entry != null)
-                    entry.Entity.ExpireAt = DateTime.UtcNow + expireIn;
-                else
-                {
-                    entry = context.Entry(context.Jobs.Attach(new HangfireJob
-                    {
-                        Id = id,
-                        ExpireAt = DateTime.UtcNow + expireIn,
-                    }));
-                }
-
-                entry.Property(x => x.ExpireAt).IsModified = true;
-            });
+                SetJobExpiration(context, id, DateTime.UtcNow + expireIn));
         }
 
         public override void PersistJob(string jobId)
@@ -69,24 +52,7 @@ namespace Hangfire.EntityFramework
             long id = long.Parse(jobId, CultureInfo.InvariantCulture);
 
             EnqueueCommand(context =>
-            {
-                var entry = context.ChangeTracker.
-                    Entries<HangfireJob>().
-                    FirstOrDefault(x => x.Entity.Id == id);
-
-                if (entry != null)
-                    entry.Entity.ExpireAt = null;
-                else
-                {
-                    entry = context.Entry(context.Jobs.Attach(new HangfireJob
-                    {
-                        Id = id,
-                        ExpireAt = null,
-                    }));
-                }
-
-                entry.Property(x => x.ExpireAt).IsModified = true;
-            });
+                SetJobExpiration(context, id, null));
         }
 
         public override void SetJobState(string jobId, IState state)
@@ -100,27 +66,7 @@ namespace Hangfire.EntityFramework
 
             long id = long.Parse(jobId, CultureInfo.InvariantCulture);
 
-            EnqueueCommand(context =>
-            {
-                var addedState = AddJobStateToContext(context, id, state);
-
-                var entry = context.ChangeTracker.
-                    Entries<HangfireJob>().
-                    FirstOrDefault(x => x.Entity.Id == id);
-
-                if (entry != null)
-                    entry.Entity.ActualState = addedState.State;
-                else
-                {
-                    entry = context.Entry(context.Jobs.Attach(new HangfireJob
-                    {
-                        Id = id,
-                        ActualState = addedState.State,
-                    }));
-                }
-
-                entry.Property(x => x.ActualState).IsModified = true;
-            });
+            EnqueueCommand(context => AddJobState(context, id, state, true));
         }
 
         public override void AddJobState(string jobId, IState state)
@@ -132,24 +78,9 @@ namespace Hangfire.EntityFramework
 
             ThrowIfDisposed();
 
-            EnqueueCommand(context => AddJobStateToContext(
-                context,
-                long.Parse(jobId, CultureInfo.InvariantCulture),
-                state));
-        }
+            long id = long.Parse(jobId, CultureInfo.InvariantCulture);
 
-        private HangfireJobState AddJobStateToContext(HangfireDbContext context, long jobId, IState state)
-        {
-            var jobState = new HangfireJobState
-            {
-                JobId = jobId,
-                State = JobStateExtensions.ToJobState(state.Name),
-                Reason = state.Reason,
-                Data = JobHelper.ToJson(state.SerializeData()),
-                CreatedAt = DateTime.UtcNow,
-            };
-
-            return context.JobStates.Add(jobState);
+            EnqueueCommand(context => AddJobState(context, id, state, false));
         }
 
         public override void AddToQueue(string queue, string jobId)
@@ -179,7 +110,8 @@ namespace Hangfire.EntityFramework
             ValidateKey(key);
             ThrowIfDisposed();
 
-            EnqueueCommand(context => AddCounterToContext(context, key, 1, expireIn));
+            EnqueueCommand(context =>
+                AddCounterToContext(context, key, 1, DateTime.UtcNow + expireIn));
         }
 
         public override void DecrementCounter(string key)
@@ -195,22 +127,8 @@ namespace Hangfire.EntityFramework
             ValidateKey(key);
             ThrowIfDisposed();
 
-            EnqueueCommand(context => AddCounterToContext(context, key, -1, expireIn));
-        }
-
-        private static void AddCounterToContext(HangfireDbContext context, string key, long value, TimeSpan? expireIn)
-        {
-            var counter = new HangfireCounter
-            {
-                Id = Guid.NewGuid(),
-                Key = key,
-                Value = value,
-            };
-
-            if (expireIn.HasValue)
-                counter.ExpireAt = DateTime.UtcNow + expireIn;
-
-            context.Counters.Add(counter);
+            EnqueueCommand(context =>
+                AddCounterToContext(context, key, -1, DateTime.UtcNow + expireIn));
         }
 
         public override void AddToSet(string key, string value) => AddToSet(key, value, 0);
@@ -319,33 +237,7 @@ namespace Hangfire.EntityFramework
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
-            {
-                var ids = (
-                    from item in context.Sets
-                    where item.Key == key
-                    select new
-                    {
-                        item.Key,
-                        item.Value,
-                    }).
-                    ToArray();
-
-                DateTime expireAt = DateTime.UtcNow.Add(expireIn);
-
-                foreach (var id in ids)
-                {
-                    var item = new HangfireSet
-                    {
-                        Key = id.Key,
-                        Value = id.Value,
-                        ExpireAt = expireAt,
-                    };
-
-                    context.Sets.Attach(item);
-
-                    context.Entry(item).Property(x => x.ExpireAt).IsModified = true;
-                }
-            });
+                SetSetExpiration(context, key, DateTime.UtcNow + expireIn));
         }
 
         public override void PersistSet([NotNull] string key)
@@ -354,30 +246,7 @@ namespace Hangfire.EntityFramework
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
-            {
-                var ids = (
-                    from item in context.Sets
-                    where item.Key == key
-                    select new
-                    {
-                        item.Key,
-                        item.Value,
-                    }).
-                    ToArray();
-
-                foreach (var id in ids)
-                {
-                    var item = new HangfireSet
-                    {
-                        Key = id.Key,
-                        Value = id.Value,
-                    };
-
-                    context.Sets.Attach(item);
-
-                    context.Entry(item).Property(x => x.ExpireAt).IsModified = true;
-                }
-            });
+                SetSetExpiration(context, key, null));
         }
 
         public override void RemoveSet([NotNull] string key)
@@ -471,57 +340,13 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        private static void CopyNonKeyValues(HangfireList[] source, HangfireList[] destination)
-        {
-            for (int i = 0; i < source.Length; i++)
-            {
-                var oldItem = destination[i];
-                var newItem = source[i];
-
-                if (ReferenceEquals(oldItem, newItem))
-                    continue;
-
-                if (oldItem.ExpireAt != newItem.ExpireAt)
-                    oldItem.ExpireAt = newItem.ExpireAt;
-
-                if (oldItem.Value != newItem.Value)
-                    oldItem.Value = newItem.Value;
-            }
-        }
-
         public override void ExpireList([NotNull] string key, TimeSpan expireIn)
         {
             ValidateKey(key);
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
-            {
-                var ids = (
-                    from item in context.Lists
-                    where item.Key == key
-                    select new
-                    {
-                        item.Key,
-                        item.Position,
-                    }).
-                    ToArray();
-
-                DateTime expireAt = DateTime.UtcNow.Add(expireIn);
-
-                foreach (var id in ids)
-                {
-                    var item = new HangfireList
-                    {
-                        Key = id.Key,
-                        Position = id.Position,
-                        ExpireAt = expireAt
-                    };
-
-                    context.Lists.Attach(item);
-
-                    context.Entry(item).Property(x => x.ExpireAt).IsModified = true;
-                }
-            });
+                SetListexpiration(context, key, DateTime.UtcNow + expireIn));
         }
 
         public override void PersistList([NotNull] string key)
@@ -530,30 +355,7 @@ namespace Hangfire.EntityFramework
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
-            {
-                var ids = (
-                    from item in context.Lists
-                    where item.Key == key
-                    select new
-                    {
-                        item.Key,
-                        item.Position,
-                    }).
-                    ToArray();
-
-                foreach (var id in ids)
-                {
-                    var item = new HangfireList
-                    {
-                        Key = id.Key,
-                        Position = id.Position,
-                    };
-
-                    context.Lists.Attach(item);
-
-                    context.Entry(item).Property(x => x.ExpireAt).IsModified = true;
-                }
-            });
+                SetListexpiration(context, key, null));
         }
 
         public override void SetRangeInHash(string key, IEnumerable<KeyValuePair<string, string>> keyValuePairs)
@@ -622,29 +424,7 @@ namespace Hangfire.EntityFramework
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
-            {
-                string[] fields = (
-                    from hash in context.Hashes
-                    where hash.Key == key
-                    select hash.Field).
-                    ToArray();
-
-                DateTime expireAt = DateTime.UtcNow.Add(expireIn);
-
-                foreach (var field in fields)
-                {
-                    var hash = new HangfireHash
-                    {
-                        Key = key,
-                        Field = field,
-                        ExpireAt = expireAt,
-                    };
-
-                    context.Hashes.Attach(hash);
-
-                    context.Entry(hash).Property(x => x.ExpireAt).IsModified = true;
-                }
-            });
+                SetHashExpiration(context, key, DateTime.UtcNow + expireIn));
         }
 
         public override void PersistHash([NotNull] string key)
@@ -653,27 +433,7 @@ namespace Hangfire.EntityFramework
             ThrowIfDisposed();
 
             EnqueueCommand(context =>
-            {
-                string[] fields = (
-                    from hash in context.Hashes
-                    where hash.Key == key
-                    select hash.Field).
-                    ToArray();
-
-                foreach (var field in fields)
-                {
-                    var hash = new HangfireHash
-                    {
-                        Key = key,
-                        Field = field,
-                        ExpireAt = null,
-                    };
-
-                    context.Hashes.Attach(hash);
-
-                    context.Entry(hash).Property(x => x.ExpireAt).IsModified = true;
-                }
-            });
+                SetHashExpiration(context, key, null));
         }
 
         public override void Commit()
@@ -721,6 +481,166 @@ namespace Hangfire.EntityFramework
         {
             if (Disposed)
                 throw new ObjectDisposedException(GetType().FullName);
+        }
+
+        private static void AddCounterToContext(HangfireDbContext context, string key, long value, DateTime? expireAt)
+        {
+            var counter = new HangfireCounter
+            {
+                Id = Guid.NewGuid(),
+                Key = key,
+                Value = value,
+                ExpireAt = expireAt,
+            };
+
+            context.Counters.Add(counter);
+        }
+
+        private static void AddJobState(HangfireDbContext context, long id, IState state, bool setActual)
+        {
+            var addedState = context.JobStates.Add(new HangfireJobState
+            {
+                JobId = id,
+                State = JobStateExtensions.ToJobState(state.Name),
+                Reason = state.Reason,
+                Data = JobHelper.ToJson(state.SerializeData()),
+                CreatedAt = DateTime.UtcNow,
+            });
+
+            if (setActual)
+            {
+                var entry = context.ChangeTracker.
+                    Entries<HangfireJob>().
+                    FirstOrDefault(x => x.Entity.Id == id);
+
+                if (entry != null)
+                    entry.Entity.ActualState = addedState.State;
+                else
+                {
+                    entry = context.Entry(context.Jobs.Attach(new HangfireJob
+                    {
+                        Id = id,
+                        ActualState = addedState.State,
+                    }));
+                }
+
+                entry.Property(x => x.ActualState).IsModified = true;
+            }
+        }
+
+        private static void CopyNonKeyValues(HangfireList[] source, HangfireList[] destination)
+        {
+            for (int i = 0; i < source.Length; i++)
+            {
+                var oldItem = destination[i];
+                var newItem = source[i];
+
+                if (ReferenceEquals(oldItem, newItem))
+                    continue;
+
+                if (oldItem.ExpireAt != newItem.ExpireAt)
+                    oldItem.ExpireAt = newItem.ExpireAt;
+
+                if (oldItem.Value != newItem.Value)
+                    oldItem.Value = newItem.Value;
+            }
+        }
+
+        private static void SetJobExpiration(HangfireDbContext context, long id, DateTime? expireAt)
+        {
+            var entry = context.ChangeTracker.
+                Entries<HangfireJob>().
+                FirstOrDefault(x => x.Entity.Id == id);
+
+            if (entry != null)
+                entry.Entity.ExpireAt = expireAt;
+            else
+            {
+                entry = context.Entry(context.Jobs.Attach(new HangfireJob
+                {
+                    Id = id,
+                    ExpireAt = expireAt,
+                }));
+            }
+
+            entry.Property(x => x.ExpireAt).IsModified = true;
+        }
+
+        private static void SetHashExpiration(HangfireDbContext context, string key, DateTime? expireAt)
+        {
+            string[] fields = (
+                from hash in context.Hashes
+                where hash.Key == key
+                select hash.Field).
+                ToArray();
+
+            foreach (var field in fields)
+            {
+                var hash = new HangfireHash
+                {
+                    Key = key,
+                    Field = field,
+                    ExpireAt = expireAt,
+                };
+
+                context.Hashes.Attach(hash);
+
+                context.Entry(hash).Property(x => x.ExpireAt).IsModified = true;
+            }
+        }
+
+        private static void SetListexpiration(HangfireDbContext context, string key, DateTime? expireAt)
+        {
+            var ids = (
+                from item in context.Lists
+                where item.Key == key
+                select new
+                {
+                    item.Key,
+                    item.Position,
+                }).
+                ToArray();
+
+            foreach (var id in ids)
+            {
+                var item = new HangfireList
+                {
+                    Key = id.Key,
+                    Position = id.Position,
+                    ExpireAt = expireAt
+                };
+
+                context.Lists.Attach(item);
+
+                context.Entry(item).Property(x => x.ExpireAt).IsModified = true;
+            }
+        }
+
+        private static void SetSetExpiration(HangfireDbContext context, string key, DateTime? expireAt)
+        {
+            var ids = (
+                from item in context.Sets
+                where item.Key == key
+                select new
+                {
+                    item.Key,
+                    item.Value,
+                }).
+                ToArray();
+
+            foreach (var id in ids)
+            {
+                var item = new HangfireSet
+                {
+                    Key = id.Key,
+                    Value = id.Value,
+                    ExpireAt = expireAt,
+                };
+
+                context.Sets.Attach(item);
+
+                context.Entry(item).Property(x => x.ExpireAt).IsModified = true;
+            }
         }
 
         private static void ValidateQueue(string queue)
