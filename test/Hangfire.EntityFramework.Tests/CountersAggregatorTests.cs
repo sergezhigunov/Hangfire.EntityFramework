@@ -42,7 +42,6 @@ namespace Hangfire.EntityFramework
                 for (int i = 0; i < 10; i++)
                     context.Counters.Add(new HangfireCounter
                     {
-                        Id = Guid.NewGuid(),
                         Key = "counter1",
                         Value = 1
                     });
@@ -50,7 +49,6 @@ namespace Hangfire.EntityFramework
                 for (int i = 0; i < 20; i++)
                     context.Counters.Add(new HangfireCounter
                     {
-                        Id = Guid.NewGuid(),
                         Key = "counter2",
                         Value = -1
                     });
@@ -58,14 +56,12 @@ namespace Hangfire.EntityFramework
                 for (int i = 0; i < 5; i++)
                     context.Counters.Add(new HangfireCounter
                     {
-                        Id = Guid.NewGuid(),
                         Key = "counter3",
                         Value = 20
                     });
 
                 context.Counters.Add(new HangfireCounter
                 {
-                    Id = Guid.NewGuid(),
                     Key = "counter3",
                     Value = -1
                 });

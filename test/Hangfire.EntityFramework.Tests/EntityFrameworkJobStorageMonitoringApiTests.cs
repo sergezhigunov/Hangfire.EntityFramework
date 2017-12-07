@@ -202,14 +202,12 @@ namespace Hangfire.EntityFramework
 
                 context.Counters.Add(new HangfireCounter
                 {
-                    Id = Guid.NewGuid(),
                     Key = "stats:deleted",
                     Value = 5,
                 });
 
                 context.Counters.Add(new HangfireCounter
                 {
-                    Id = Guid.NewGuid(),
                     Key = "stats:succeeded",
                     Value = 6,
                 });
@@ -333,7 +331,6 @@ namespace Hangfire.EntityFramework
                     if (item.Value != 0)
                         context.Counters.Add(new HangfireCounter
                         {
-                            Id = Guid.NewGuid(),
                             Key = $"stats:succeeded:{item.Key:yyyy-MM-dd}",
                             Value = item.Value,
                         });
@@ -359,7 +356,6 @@ namespace Hangfire.EntityFramework
                     if (item.Value != 0)
                         context.Counters.Add(new HangfireCounter
                         {
-                            Id = Guid.NewGuid(),
                             Key = $"stats:failed:{item.Key:yyyy-MM-dd}",
                             Value = item.Value,
                         });
@@ -390,7 +386,6 @@ namespace Hangfire.EntityFramework
                     if (item.Value != 0)
                         context.Counters.Add(new HangfireCounter
                         {
-                            Id = Guid.NewGuid(),
                             Key = $"stats:succeeded:{item.Key:yyyy-MM-dd-HH}",
                             Value = item.Value,
                         });
@@ -421,7 +416,6 @@ namespace Hangfire.EntityFramework
                     if (item.Value != 0)
                         context.Counters.Add(new HangfireCounter
                         {
-                            Id = Guid.NewGuid(),
                             Key = $"stats:failed:{item.Key:yyyy-MM-dd-HH}",
                             Value = item.Value,
                         });

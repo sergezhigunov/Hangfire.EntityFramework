@@ -10,7 +10,8 @@ namespace Hangfire.EntityFramework
     internal class HangfireCounter
     {
         [Key]
-        public Guid Id { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public long Id { get; set; }
 
         [Required]
         [StringLength(100)]

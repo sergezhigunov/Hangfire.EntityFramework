@@ -1172,19 +1172,16 @@ namespace Hangfire.EntityFramework
             {
                 new HangfireCounter
                 {
-                    Id = Guid.NewGuid(),
                     Key = key1,
                     Value = 1,
                 },
                 new HangfireCounter
                 {
-                    Id = Guid.NewGuid(),
                     Key = key2,
                     Value = 1,
                 },
                 new HangfireCounter
                 {
-                    Id = Guid.NewGuid(),
                     Key = key1,
                     Value = 1,
                 },

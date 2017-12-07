@@ -487,7 +487,6 @@ namespace Hangfire.EntityFramework
         {
             var counter = new HangfireCounter
             {
-                Id = Guid.NewGuid(),
                 Key = key,
                 Value = value,
                 ExpireAt = expireAt,

@@ -61,7 +61,6 @@ namespace Hangfire.EntityFramework
                             context.Counters.RemoveRange(itemsToRemove);
                             context.Counters.Add(new HangfireCounter
                             {
-                                Id = Guid.NewGuid(),
                                 Key = key,
                                 Value = itemsToRemove.Sum(x => x.Value),
                                 ExpireAt = itemsToRemove.Max(x => x.ExpireAt),

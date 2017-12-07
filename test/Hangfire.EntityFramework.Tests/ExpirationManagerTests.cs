@@ -98,7 +98,6 @@ namespace Hangfire.EntityFramework
             {
                 context.Counters.Add(new HangfireCounter
                 {
-                    Id = Guid.NewGuid(),
                     Key = "test",
                     ExpireAt = expireAt,
                 });
