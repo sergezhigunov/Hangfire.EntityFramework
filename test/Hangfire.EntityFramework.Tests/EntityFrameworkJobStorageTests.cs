@@ -11,6 +11,7 @@ namespace Hangfire.EntityFramework
 {
     using static ConnectionUtils;
 
+    [CleanDatabase]
     public class EntityFrameworkJobStorageTests
     {
         [Fact]

@@ -11,6 +11,7 @@ namespace Hangfire.EntityFramework
 {
     using static ConnectionUtils;
 
+    [CleanDatabase]
     public class CountersAggregatorTests
     {
         private TimeSpan AggregationInterval { get; } = new TimeSpan(1);

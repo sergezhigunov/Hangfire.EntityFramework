@@ -16,6 +16,7 @@ namespace Hangfire.EntityFramework
 {
     using static ConnectionUtils;
 
+    [CleanDatabase]
     public class EntityFrameworkJobStorageTransactionTests
     {
         private static string JobId { get; } =

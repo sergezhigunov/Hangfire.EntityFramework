@@ -21,6 +21,7 @@ namespace Hangfire.EntityFramework
 {
     using static ConnectionUtils;
 
+    [CleanDatabase]
     public class EntityFrameworkJobStorageConnectionTests
     {
         private Mock<IPersistentJobQueue> Queue { get; } = new Mock<IPersistentJobQueue>();

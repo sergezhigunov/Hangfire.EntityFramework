@@ -11,6 +11,7 @@ namespace Hangfire.EntityFramework
 {
     using static ConnectionUtils;
 
+    [CleanDatabase]
     public class EntityFrameworkDistributedLockManagerTests
     {
         private readonly TimeSpan Timeout = TimeSpan.FromSeconds(5);

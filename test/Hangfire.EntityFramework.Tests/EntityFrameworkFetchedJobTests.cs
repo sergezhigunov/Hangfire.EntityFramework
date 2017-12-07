@@ -10,6 +10,7 @@ namespace Hangfire.EntityFramework
 {
     using static ConnectionUtils;
 
+    [CleanDatabase]
     public class EntityFrameworkFetchedJobTests
     {
         private const string Queue = "QUEUE";
