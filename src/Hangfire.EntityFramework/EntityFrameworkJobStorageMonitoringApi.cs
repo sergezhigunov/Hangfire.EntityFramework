@@ -278,8 +278,10 @@ namespace Hangfire.EntityFramework
                 var jobs = (
                     from job in context.Jobs.
                     WhereContains(x => x.Id, enqueuedJobIds)
-                    join actualState in GetActualStates(context)
-                        on job.Id equals actualState.JobId
+                    join enqueuedState in GetLastStates(context, JobState.Enqueued)
+                        on job.Id equals enqueuedState.JobId
+                        into enqueuedStates
+                    from enqueuedState in enqueuedStates.DefaultIfEmpty()
                     orderby job.CreatedAt ascending
                     select new JobInfo
                     {
@@ -289,8 +291,8 @@ namespace Hangfire.EntityFramework
                         Method = job.Method,
                         ArgumentTypes = job.ArgumentTypes,
                         Arguments = job.Arguments,
-                        StateData = actualState.Data,
-                        StateReason = actualState.Reason,
+                        StateData = enqueuedState.Data,
+                        StateReason = enqueuedState.Reason,
                     }).
                     ToArray();
 
@@ -316,7 +318,7 @@ namespace Hangfire.EntityFramework
                 var jobs = (
                     from job in context.Jobs
                     where job.ActualState.Value == state
-                    join actualState in GetActualStates(context)
+                    join actualState in GetLastStates(context, state)
                         on job.Id equals actualState.JobId
                     orderby job.CreatedAt descending
                     select new JobInfo
@@ -370,7 +372,7 @@ namespace Hangfire.EntityFramework
         {
             return UseContext(context => (
                 from job in context.Jobs
-                where job.ActualState == state
+                where job.ActualState.Value == state
                 select job).
                 LongCount());
         }
@@ -416,9 +418,12 @@ namespace Hangfire.EntityFramework
 
         private T UseContext<T>(Func<HangfireDbContext, T> func) => Storage.UseContext(func);
 
-        private static IQueryable<HangfireJobState> GetActualStates(HangfireDbContext context)
+        private static IQueryable<HangfireJobState> GetLastStates(
+            HangfireDbContext context,
+            JobState jobState)
         {
-            var states = context.JobStates.Where(x => x.State == x.Job.ActualState);
+            var states = context.JobStates.
+                Where(x => x.State == jobState);
 
             return
                 from actualState in states
