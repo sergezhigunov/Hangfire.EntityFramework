@@ -19,6 +19,14 @@ namespace Hangfire.EntityFramework
         private const string SucceededCounterName = "stats:succeeded";
         private const string RecurringJobsSetName = "recurring-jobs";
 
+        private static IReadOnlyList<JobState> StatsJobStates { get; } = new[]
+        {
+            JobState.Enqueued,
+            JobState.Scheduled,
+            JobState.Processing,
+            JobState.Failed,
+        };
+
         private EntityFrameworkJobStorage Storage { get; }
 
         public EntityFrameworkJobStorageMonitoringApi([NotNull] EntityFrameworkJobStorage storage)
@@ -122,11 +130,7 @@ namespace Hangfire.EntityFramework
                 var stateCounts = (
                     from job in context.Jobs
                     let state = job.ActualState
-                    where
-                        state == JobState.Enqueued ||
-                        state == JobState.Failed ||
-                        state == JobState.Processing ||
-                        state == JobState.Scheduled
+                    where StatsJobStates.Contains(state)
                     group job by state into @group
                     select new
                     {
