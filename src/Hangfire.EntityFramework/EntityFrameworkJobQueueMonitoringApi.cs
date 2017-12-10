@@ -35,7 +35,7 @@ namespace Hangfire.EntityFramework
 
             return Storage.UseContext(context => (
                 from item in context.JobQueues
-                where item.Queue == queue && item.Lookup == null
+                where item.Queue == queue && item.ServerHostId == null
                 orderby item.Id ascending
                 select item.JobId).
                 Skip(() => from).
@@ -48,7 +48,7 @@ namespace Hangfire.EntityFramework
             queue = queue.ToUpperInvariant();
 
             return Storage.UseContext(context =>
-                context.JobQueues.Count(x => x.Queue == queue && x.Lookup == null));
+                context.JobQueues.Count(x => x.Queue == queue && x.ServerHostId == null));
         }
     }
 }

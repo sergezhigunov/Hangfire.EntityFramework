@@ -35,7 +35,6 @@ namespace Hangfire.EntityFramework.Utils
                 CleanDbSet(context.DistributedLocks);
                 CleanDbSet(context.Hashes);
                 CleanDbSet(context.JobParameters);
-                CleanDbSet(context.JobQueueLookups);
                 CleanDbSet(context.JobQueues);
                 CleanDbSet(context.JobStates);
                 CleanDbSet(context.Jobs);

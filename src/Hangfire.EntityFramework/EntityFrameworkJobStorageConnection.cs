@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using Hangfire.Annotations;
 using Hangfire.Common;
@@ -271,13 +272,13 @@ namespace Hangfire.EntityFramework
 
             Storage.UseContext(context =>
             {
-                context.Servers.RemoveRange(context.Servers.Where(x => x.Id == serverId));
-                context.SaveChanges();
+                RemoveServers(context, x => x.Id == serverId);
 
                 context.ServerHosts.RemoveRange(
                     from host in context.ServerHosts
                     where !host.Servers.Any()
                     select host);
+
                 context.SaveChanges();
             });
         }
@@ -314,30 +315,10 @@ namespace Hangfire.EntityFramework
             return Storage.UseContext(context =>
             {
                 DateTime outdate = DateTime.UtcNow - timeOut;
+                int removed = RemoveServers(context, x => x.Heartbeat <= outdate);
+                RemoveStaleServerHosts(context);
 
-                string[] serverIds = (
-                    from server in context.Servers
-                    where server.Heartbeat <= outdate
-                    select server.Id).
-                    ToArray();
-
-                foreach (var serverId in serverIds)
-                    context.Entry(new HangfireServer
-                    {
-                        Id = serverId,
-                    }).
-                    State = EntityState.Deleted;
-
-                context.SaveChanges();
-
-                context.ServerHosts.RemoveRange(
-                    from host in context.ServerHosts
-                    where !host.Servers.Any()
-                    select host);
-
-                context.SaveChanges();
-
-                return serverIds.Length;
+                return removed;
             });
         }
 
@@ -569,6 +550,42 @@ namespace Hangfire.EntityFramework
                 Skip(() => startingFrom).
                 Take(() => take).
                 ToList());
+        }
+
+        private static void RemoveStaleServerHosts(HangfireDbContext context)
+        {
+            context.ServerHosts.RemoveRange(
+                from host in context.ServerHosts
+                where !host.Servers.Any()
+                select host);
+
+            context.SaveChanges();
+        }
+
+        private static int RemoveServers(HangfireDbContext context, Expression<Func<HangfireServer, bool>> predicate)
+        {
+            var servers = context.Servers.Where(predicate);
+
+            context.JobQueues.RemoveRange(
+                from server in servers
+                from queueItem in server.ServerHost.QueueItems
+                select queueItem);
+
+            string[] serverIds = (
+                from server in servers
+                select server.Id).
+                ToArray();
+
+            foreach (var serverId in serverIds)
+                context.Entry(new HangfireServer
+                {
+                    Id = serverId,
+                }).
+                State = EntityState.Deleted;
+
+            context.SaveChanges();
+
+            return serverIds.Length;
         }
 
         private static void Swap<T>(ref T left, ref T right)

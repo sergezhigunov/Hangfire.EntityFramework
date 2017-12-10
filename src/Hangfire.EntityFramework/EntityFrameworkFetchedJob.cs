@@ -131,7 +131,11 @@ namespace Hangfire.EntityFramework
         private static void RemoveQueueItem(HangfireDbContext context, long itemId)
         {
             context.
-                Entry(new HangfireJobQueue{ Id = itemId, }).
+                Entry(new HangfireJobQueue
+                {
+                    Id = itemId,
+                    ServerHostId = EntityFrameworkJobStorage.ServerHostId,
+                }).
                 State = EntityState.Deleted;
         }
     }

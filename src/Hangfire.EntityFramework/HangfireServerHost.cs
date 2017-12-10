@@ -17,6 +17,6 @@ namespace Hangfire.EntityFramework
         public virtual ICollection<HangfireServer> Servers { get; set; } = new HashSet<HangfireServer>();
 
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<HangfireJobQueueLookup> QueueItems { get; set; } = new HashSet<HangfireJobQueueLookup>();
+        public virtual ICollection<HangfireJobQueue> QueueItems { get; set; } = new HashSet<HangfireJobQueue>();
     }
 }

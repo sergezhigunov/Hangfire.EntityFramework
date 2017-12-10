@@ -32,8 +32,6 @@ namespace Hangfire.EntityFramework
 
         public DbSet<HangfireJobQueue> JobQueues { get; set; }
 
-        public DbSet<HangfireJobQueueLookup> JobQueueLookups { get; set; }
-
         public DbSet<HangfireList> Lists { get; set; }
 
         public DbSet<HangfireServer> Servers { get; set; }
@@ -55,11 +53,6 @@ namespace Hangfire.EntityFramework
                 HasRequired(x => x.ServerHost).
                 WithMany(x => x.Servers).
                 WillCascadeOnDelete(false);
-
-            modelBuilder.Entity<HangfireJobQueueLookup>().
-                HasRequired(x => x.QueueItem).
-                WithOptional(x => x.Lookup).
-                WillCascadeOnDelete();
         }
 
         private class DateTimePrecisionConvention : PrimitivePropertyAttributeConfigurationConvention<DateTimePrecisionAttribute>

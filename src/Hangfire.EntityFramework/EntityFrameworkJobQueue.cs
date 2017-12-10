@@ -48,24 +48,20 @@ namespace Hangfire.EntityFramework
                         var queueItem = (
                             from item in context.JobQueues.
                             WhereContains(x => x.Queue, queues)
-                            where item.Lookup == null
+                            where item.ServerHostId == null
                             orderby item.Id ascending
                             select item).
                             FirstOrDefault();
 
                         if (queueItem != null)
                         {
-                            context.JobQueueLookups.Add(new HangfireJobQueueLookup
-                            {
-                                QueueItemId = queueItem.Id,
-                                ServerHostId = EntityFrameworkJobStorage.ServerHostId,
-                            });
+                            queueItem.ServerHostId = EntityFrameworkJobStorage.ServerHostId;
                             try
                             {
                                 context.SaveChanges();
                                 return new EntityFrameworkFetchedJob(queueItem.Id, queueItem.JobId, Storage, queueItem.Queue);
                             }
-                            catch (DbUpdateException)
+                            catch (DbUpdateConcurrencyException)
                             {
                                 continue;
                             }

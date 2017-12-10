@@ -50,6 +50,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = job,
                 Queue = Queue,
+                ServerHost = host,
             };
 
             UseContextWithSavingChanges(context =>
@@ -57,11 +58,6 @@ namespace Hangfire.EntityFramework
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
-                context.JobQueueLookups.Add(new HangfireJobQueueLookup
-                {
-                    QueueItem = queueItem,
-                    ServerHost = host,
-                });
             });
 
             using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, job.Id, storage, Queue))
@@ -90,6 +86,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = job,
                 Queue = Queue,
+                ServerHost = host,
             };
 
             UseContextWithSavingChanges(context =>
@@ -97,17 +94,13 @@ namespace Hangfire.EntityFramework
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
-                context.JobQueueLookups.Add(new HangfireJobQueueLookup { QueueItem = queueItem, ServerHost = host, });
             });
 
             using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, job.Id, storage, Queue))
                 fetchedJob.RemoveFromQueue();
 
             UseContext(context =>
-            {
-                Assert.False(context.JobQueueLookups.Any());
-                Assert.False(context.JobQueues.Any());
-            });
+                Assert.Empty(context.JobQueues));
         }
 
         [Fact, RollbackTransaction]
@@ -129,6 +122,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = job,
                 Queue = Queue,
+                ServerHost = host,
             };
 
             UseContextWithSavingChanges(context =>
@@ -136,20 +130,15 @@ namespace Hangfire.EntityFramework
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
-
-                context.JobQueueLookups.Add(new HangfireJobQueueLookup
-                {
-                    QueueItem = queueItem,
-                    ServerHost = host,
-                });
             });
+
             using (var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, job.Id, storage, Queue))
                 fetchedJob.Requeue();
 
             UseContext(context =>
             {
-                Assert.False(context.JobQueueLookups.Any());
-                Assert.True(context.JobQueues.Any());
+                var actualItem = Assert.Single(context.JobQueues);
+                Assert.Null(actualItem.ServerHostId);
             });
         }
 
@@ -172,6 +161,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = job,
                 Queue = Queue,
+                ServerHost = host,
             };
 
             UseContextWithSavingChanges(context =>
@@ -179,12 +169,6 @@ namespace Hangfire.EntityFramework
                 context.Jobs.Add(job);
                 context.JobQueues.Add(queueItem);
                 context.ServerHosts.Add(host);
-
-                context.JobQueueLookups.Add(new HangfireJobQueueLookup
-                {
-                    QueueItem = queueItem,
-                    ServerHost = host,
-                });
             });
 
             var fetchedJob = new EntityFrameworkFetchedJob(queueItem.Id, job.Id, storage, Queue);
@@ -193,8 +177,8 @@ namespace Hangfire.EntityFramework
 
             UseContext(context =>
             {
-                Assert.False(context.JobQueueLookups.Any());
-                Assert.True(context.JobQueues.Any());
+                var actualItem = Assert.Single(context.JobQueues);
+                Assert.Null(actualItem.ServerHostId);
             });
         }
     }

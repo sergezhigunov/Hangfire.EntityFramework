@@ -101,7 +101,9 @@ namespace Hangfire.EntityFramework
             EntityFrameworkFetchedJob fetchedJob = (EntityFrameworkFetchedJob)result;
             Assert.Equal(job.Id, fetchedJob.JobId);
             Assert.Equal("DEFAULT", fetchedJob.Queue);
-            var jobInQueue = UseContext(context => context.JobQueues.SingleOrDefault(x => x.Lookup == null));
+
+            var jobInQueue = UseContext(context => context.JobQueues.SingleOrDefault(x => x.ServerHostId == null));
+
             Assert.Null(jobInQueue);
         }
 
