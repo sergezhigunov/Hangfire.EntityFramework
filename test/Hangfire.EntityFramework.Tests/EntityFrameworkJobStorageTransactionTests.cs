@@ -173,7 +173,7 @@ namespace Hangfire.EntityFramework
             Assert.Equal(JobState.Awaiting, actualJob.ActualState);
 
             anotherJob = GetTestJob(anotherJob.Id);
-            Assert.Null(anotherJob.ActualState);
+            Assert.Equal(JobState.Created, anotherJob.ActualState);
 
             var jobState = GetTestJobActualState(job.Id);
             Assert.Equal(JobState.Awaiting, jobState.State);
@@ -245,7 +245,7 @@ namespace Hangfire.EntityFramework
             DateTime endTimestamp = DateTime.UtcNow.AddSeconds(1);
 
             var actualJob = GetTestJob(job.Id);
-            Assert.Null(actualJob.ActualState);
+            Assert.Equal(JobState.Created, actualJob.ActualState);
 
             var jobState = Assert.Single(actualJob.States);
             Assert.Equal(JobState.Awaiting, jobState.State);

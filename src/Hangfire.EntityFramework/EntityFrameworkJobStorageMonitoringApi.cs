@@ -121,8 +121,7 @@ namespace Hangfire.EntityFramework
             {
                 var stateCounts = (
                     from job in context.Jobs
-                    where job.ActualState.HasValue
-                    let state = job.ActualState.Value
+                    let state = job.ActualState
                     where
                         state == JobState.Enqueued ||
                         state == JobState.Failed ||
@@ -286,7 +285,7 @@ namespace Hangfire.EntityFramework
                     select new JobInfo
                     {
                         Id = job.Id,
-                        State = job.ActualState.Value,
+                        State = job.ActualState,
                         ClrType = job.ClrType,
                         Method = job.Method,
                         ArgumentTypes = job.ArgumentTypes,
@@ -317,14 +316,14 @@ namespace Hangfire.EntityFramework
             {
                 var jobs = (
                     from job in context.Jobs
-                    where job.ActualState.Value == state
+                    where job.ActualState == state
                     join actualState in GetLastStates(context, state)
                         on job.Id equals actualState.JobId
                     orderby job.CreatedAt descending
                     select new JobInfo
                     {
                         Id = job.Id,
-                        State = job.ActualState.Value,
+                        State = job.ActualState,
                         ClrType = job.ClrType,
                         Method = job.Method,
                         ArgumentTypes = job.ArgumentTypes,
@@ -372,7 +371,7 @@ namespace Hangfire.EntityFramework
         {
             return UseContext(context => (
                 from job in context.Jobs
-                where job.ActualState.Value == state
+                where job.ActualState == state
                 select job).
                 LongCount());
         }

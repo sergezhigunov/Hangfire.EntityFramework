@@ -171,7 +171,7 @@ namespace Hangfire.EntityFramework
 
             var jobData = new JobData
             {
-                State = jobInfo.State?.ToStateName(),
+                State = jobInfo.State.ToStateName(),
                 CreatedAt = jobInfo.CreatedAt,
             };
 

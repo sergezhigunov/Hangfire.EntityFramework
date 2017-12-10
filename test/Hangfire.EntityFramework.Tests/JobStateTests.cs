@@ -10,13 +10,14 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void Check_EnumValuesAreCorrect()
         {
-            Assert.Equal(0, (int)JobState.Enqueued);
-            Assert.Equal(1, (int)JobState.Scheduled);
-            Assert.Equal(2, (int)JobState.Processing);
-            Assert.Equal(3, (int)JobState.Succeeded);
-            Assert.Equal(4, (int)JobState.Failed);
-            Assert.Equal(5, (int)JobState.Deleted);
-            Assert.Equal(6, (int)JobState.Awaiting);
+            Assert.Equal(0, (int)JobState.Created);
+            Assert.Equal(1, (int)JobState.Enqueued);
+            Assert.Equal(2, (int)JobState.Scheduled);
+            Assert.Equal(3, (int)JobState.Processing);
+            Assert.Equal(4, (int)JobState.Succeeded);
+            Assert.Equal(5, (int)JobState.Failed);
+            Assert.Equal(6, (int)JobState.Deleted);
+            Assert.Equal(7, (int)JobState.Awaiting);
         }
     }
 }

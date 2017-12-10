@@ -13,7 +13,7 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void ToStateName_Throws_WhenStateIsOutOfRange()
         {
-            var state = (JobState)int.MaxValue;
+            var state = (JobState)byte.MaxValue;
 
             var exception = Assert.Throws<ArgumentOutOfRangeException>("state",
                 () => state.ToStateName());

@@ -318,7 +318,7 @@ namespace Hangfire.EntityFramework
 
             Assert.Equal(jobId, hangfireJob.Id.ToString(CultureInfo.InvariantCulture));
             Assert.Equal(createdAt, hangfireJob.CreatedAt);
-            Assert.Null(hangfireJob.ActualState);
+            Assert.Equal(JobState.Created, hangfireJob.ActualState);
 
             var invocationData = new InvocationData(
                 hangfireJob.ClrType,
