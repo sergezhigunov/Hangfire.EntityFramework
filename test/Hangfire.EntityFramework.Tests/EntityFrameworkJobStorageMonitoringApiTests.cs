@@ -539,7 +539,7 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    CreatedAt = now - new TimeSpan(0, 0, x),
+                    CreatedAt = now + new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
@@ -599,7 +599,7 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    CreatedAt = now - new TimeSpan(0, 0, x),
+                    CreatedAt = now + new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
@@ -657,7 +657,7 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    CreatedAt = now - new TimeSpan(0, 0, x),
+                    CreatedAt = now + new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
@@ -717,7 +717,7 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    CreatedAt = now - new TimeSpan(0, 0, x),
+                    CreatedAt = now + new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
@@ -778,7 +778,7 @@ namespace Hangfire.EntityFramework
             var jobs = Enumerable.Range(0, 5).Select(x =>
                 new HangfireJob
                 {
-                    CreatedAt = now - new TimeSpan(0, 0, x),
+                    CreatedAt = now + new TimeSpan(0, 0, x),
                     ClrType = invocationData.Type,
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,

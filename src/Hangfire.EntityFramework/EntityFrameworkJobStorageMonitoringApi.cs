@@ -285,7 +285,11 @@ namespace Hangfire.EntityFramework
                         on job.Id equals enqueuedState.JobId
                         into enqueuedStates
                     from enqueuedState in enqueuedStates.DefaultIfEmpty()
-                    orderby job.CreatedAt ascending
+                    join stateInfo in context.JobStates
+                        on enqueuedState.Id equals stateInfo.Id
+                        into stateInfoes
+                    from stateInfo in stateInfoes.DefaultIfEmpty()
+                    orderby job.Id ascending
                     select new JobInfo
                     {
                         Id = job.Id,
@@ -294,8 +298,8 @@ namespace Hangfire.EntityFramework
                         Method = job.Method,
                         ArgumentTypes = job.ArgumentTypes,
                         Arguments = job.Arguments,
-                        StateData = enqueuedState.Data,
-                        StateReason = enqueuedState.Reason,
+                        StateData = stateInfo.Data,
+                        StateReason = stateInfo.Reason,
                     }).
                     ToArray();
 
@@ -318,12 +322,23 @@ namespace Hangfire.EntityFramework
         {
             return UseContext(context =>
             {
-                var jobs = (
+                var jobIds = (
                     from job in context.Jobs
-                    where job.ActualState == state
+                    where new[] { state }.Contains(job.ActualState) // Force emit number literal
+                    orderby job.Id
+                    select job.Id).
+                    Skip(() => from).
+                    Take(() => count);
+
+                var jobs = (
+                    from jobId in jobIds
+                    join job in context.Jobs
+                        on jobId equals job.Id
                     join actualState in GetLastStates(context, state)
                         on job.Id equals actualState.JobId
-                    orderby job.CreatedAt descending
+                    join stateInfo in context.JobStates
+                        on actualState.Id equals stateInfo.Id
+                    orderby job.Id
                     select new JobInfo
                     {
                         Id = job.Id,
@@ -332,11 +347,9 @@ namespace Hangfire.EntityFramework
                         Method = job.Method,
                         ArgumentTypes = job.ArgumentTypes,
                         Arguments = job.Arguments,
-                        StateData = actualState.Data,
-                        StateReason = actualState.Reason,
+                        StateData = stateInfo.Data,
+                        StateReason = stateInfo.Reason,
                     }).
-                    Skip(() => from).
-                    Take(() => count).
                     ToArray();
 
                 return DeserializeJobs(jobs, selector);
@@ -421,12 +434,12 @@ namespace Hangfire.EntityFramework
 
         private T UseContext<T>(Func<HangfireDbContext, T> func) => Storage.UseContext(func);
 
-        private static IQueryable<HangfireJobState> GetLastStates(
+        private static IQueryable<ActualState> GetLastStates(
             HangfireDbContext context,
             JobState jobState)
         {
             var states = context.JobStates.
-                Where(x => x.State == jobState);
+                Where(x => new[] { jobState }.Contains(x.State));  // Force emit number literal
 
             return
                 from actualState in states
@@ -436,19 +449,23 @@ namespace Hangfire.EntityFramework
                     select new
                     {
                         JobId = grouping.Key,
-                        CreatedAt = grouping.Max(x => x.CreatedAt),
+                        Id = grouping.Max(x => x.Id),
                     })
                     on new
                     {
                         actualState.JobId,
-                        actualState.CreatedAt,
+                        actualState.Id,
                     }
                     equals new
                     {
                         state.JobId,
-                        state.CreatedAt,
+                        state.Id,
                     }
-                select actualState;
+                select new ActualState
+                {
+                    Id = actualState.Id,
+                    JobId = actualState.JobId,
+                };
         }
 
         private static Job DeserializeJob(JobInfo job)
@@ -483,6 +500,12 @@ namespace Hangfire.EntityFramework
             {
                 return null;
             }
+        }
+
+        private class ActualState
+        {
+            public long Id { get; set; }
+            public long JobId { get; set; }
         }
     }
 }
