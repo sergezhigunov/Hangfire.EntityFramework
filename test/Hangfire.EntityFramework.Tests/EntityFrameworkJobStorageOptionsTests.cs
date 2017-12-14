@@ -25,9 +25,10 @@ namespace Hangfire.EntityFramework
         public void DistributedLockTimeout_SetChangesValue()
         {
             var valueToSet = new TimeSpan(1, 2, 3);
-            var options = new EntityFrameworkJobStorageOptions();
-
-            options.DistributedLockTimeout = valueToSet;
+            var options = new EntityFrameworkJobStorageOptions
+            {
+                DistributedLockTimeout = valueToSet
+            };
 
             Assert.Equal(valueToSet, options.DistributedLockTimeout);
         }
@@ -38,7 +39,7 @@ namespace Hangfire.EntityFramework
         {
             var options = new EntityFrameworkJobStorageOptions();
 
-            Assert.Throws<ArgumentOutOfRangeException>("value",
+            Assert.Throws<ArgumentOutOfRangeException>(nameof(value),
                 () => options.DistributedLockTimeout = value);
         }
 
@@ -46,9 +47,10 @@ namespace Hangfire.EntityFramework
         public void QueuePollInterval_SetChangesValue()
         {
             var valueToSet = new TimeSpan(1, 2, 3);
-            var options = new EntityFrameworkJobStorageOptions();
-
-            options.QueuePollInterval = valueToSet;
+            var options = new EntityFrameworkJobStorageOptions
+            {
+                QueuePollInterval = valueToSet
+            };
 
             Assert.Equal(valueToSet, options.QueuePollInterval);
         }
@@ -59,7 +61,7 @@ namespace Hangfire.EntityFramework
         {
             var options = new EntityFrameworkJobStorageOptions();
 
-            Assert.Throws<ArgumentOutOfRangeException>("value",
+            Assert.Throws<ArgumentOutOfRangeException>(nameof(value),
                 () => options.QueuePollInterval = value);
         }
 
@@ -67,9 +69,10 @@ namespace Hangfire.EntityFramework
         public void CountersAggregationInterval_SetChangesValue()
         {
             var valueToSet = new TimeSpan(1, 2, 3);
-            var options = new EntityFrameworkJobStorageOptions();
-
-            options.CountersAggregationInterval = valueToSet;
+            var options = new EntityFrameworkJobStorageOptions
+            {
+                CountersAggregationInterval = valueToSet
+            };
 
             Assert.Equal(valueToSet, options.CountersAggregationInterval);
         }
@@ -80,7 +83,7 @@ namespace Hangfire.EntityFramework
         {
             var options = new EntityFrameworkJobStorageOptions();
 
-            Assert.Throws<ArgumentOutOfRangeException>("value",
+            Assert.Throws<ArgumentOutOfRangeException>(nameof(value),
                 () => options.CountersAggregationInterval = value);
         }
 
@@ -88,9 +91,10 @@ namespace Hangfire.EntityFramework
         public void JobExpirationCheckInterval_SetChangesValue()
         {
             var valueToSet = new TimeSpan(1, 2, 3);
-            var options = new EntityFrameworkJobStorageOptions();
-
-            options.JobExpirationCheckInterval = valueToSet;
+            var options = new EntityFrameworkJobStorageOptions
+            {
+                JobExpirationCheckInterval = valueToSet
+            };
 
             Assert.Equal(valueToSet, options.JobExpirationCheckInterval);
         }
@@ -101,7 +105,7 @@ namespace Hangfire.EntityFramework
         {
             var options = new EntityFrameworkJobStorageOptions();
 
-            Assert.Throws<ArgumentOutOfRangeException>("value",
+            Assert.Throws<ArgumentOutOfRangeException>(nameof(value),
                 () => options.JobExpirationCheckInterval = value);
         }
 
@@ -117,10 +121,11 @@ namespace Hangfire.EntityFramework
         [Fact]
         public void DefaultSchemaName_SetChangesValue()
         {
-            var options = new EntityFrameworkJobStorageOptions();
             var valueToSet = "TEST";
-
-            options.DefaultSchemaName = valueToSet;
+            var options = new EntityFrameworkJobStorageOptions
+            {
+                DefaultSchemaName = valueToSet
+            };
 
             Assert.Same(valueToSet, options.DefaultSchemaName);
         }
