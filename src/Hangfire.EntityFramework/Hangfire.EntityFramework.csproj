@@ -23,6 +23,7 @@
 
   <PropertyGroup>
     <Features>IOperation</Features>
+    <PackageReleaseNotes>https://github.com/sergezhigunov/Hangfire.EntityFramework/releases</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
