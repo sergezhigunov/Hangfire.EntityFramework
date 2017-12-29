@@ -578,8 +578,8 @@ namespace Hangfire.EntityFramework
                 Assert.Equal(now, value.SucceededAt);
             });
 
-            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
-            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
+            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
+            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
         }
 
         [Fact, RollbackTransaction]
@@ -637,8 +637,8 @@ namespace Hangfire.EntityFramework
                 Assert.Equal(now, value.StartedAt);
             });
 
-            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
-            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
+            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
+            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
         }
 
         [Fact, RollbackTransaction]
@@ -695,8 +695,8 @@ namespace Hangfire.EntityFramework
                 Assert.Equal(now.AddSeconds(1), value.ScheduledAt);
             });
 
-            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
-            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
+            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
+            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
         }
 
         [Fact, RollbackTransaction]
@@ -756,8 +756,8 @@ namespace Hangfire.EntityFramework
                 Assert.Equal("ExceptionType", value.ExceptionType);
                 Assert.Equal("Reason", value.Reason);
             });
-            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
-            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
+            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
+            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
         }
 
         [Fact, RollbackTransaction]
@@ -815,8 +815,8 @@ namespace Hangfire.EntityFramework
                 Assert.Equal(now, value.DeletedAt);
             });
 
-            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
-            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
+            Assert.Equal(jobs[1].Id.ToString(CultureInfo.InvariantCulture), result[1].Key);
+            Assert.Equal(jobs[2].Id.ToString(CultureInfo.InvariantCulture), result[0].Key);
         }
 
         [Fact, RollbackTransaction]

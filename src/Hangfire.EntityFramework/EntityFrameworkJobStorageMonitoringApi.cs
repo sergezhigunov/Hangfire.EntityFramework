@@ -338,7 +338,7 @@ namespace Hangfire.EntityFramework
                         on job.Id equals actualState.JobId
                     join stateInfo in context.JobStates
                         on actualState.Id equals stateInfo.Id
-                    orderby job.Id
+                    orderby job.Id descending
                     select new JobInfo
                     {
                         Id = job.Id,
