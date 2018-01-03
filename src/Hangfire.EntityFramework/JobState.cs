@@ -3,7 +3,7 @@
 
 namespace Hangfire.EntityFramework
 {
-    internal enum JobState : byte
+    internal enum JobState
     {
         Created = 0,
         Enqueued,
