@@ -16,7 +16,8 @@ namespace Hangfire.EntityFramework
         public long Id { get; set; }
 
         [Index(IsUnique = false)]
-        public JobState ActualState { get; set; }
+        [StringLength(20)]
+        public string ActualState { get; set; }
 
         [StringLength(512)]
         public string ClrType { get; set; }

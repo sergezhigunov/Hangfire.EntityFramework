@@ -16,8 +16,10 @@ namespace Hangfire.EntityFramework
         [ForeignKey(nameof(Job))]
         public long JobId { get; set; }
 
+        [Required]
         [Index(IsUnique = false)]
-        public JobState State { get; set; }
+        [StringLength(20)]
+        public string State { get; set; }
 
         [StringLength(100)]
         public string Reason { get; set; }

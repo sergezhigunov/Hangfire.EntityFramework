@@ -500,7 +500,7 @@ namespace Hangfire.EntityFramework
             var addedState = context.JobStates.Add(new HangfireJobState
             {
                 JobId = id,
-                State = JobStateExtensions.ToJobState(state.Name),
+                State = state.Name,
                 Reason = state.Reason,
                 Data = JobHelper.ToJson(state.SerializeData()),
                 CreatedAt = DateTime.UtcNow,

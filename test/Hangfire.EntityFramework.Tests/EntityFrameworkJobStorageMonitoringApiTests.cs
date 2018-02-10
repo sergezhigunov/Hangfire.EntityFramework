@@ -48,14 +48,14 @@ namespace Hangfire.EntityFramework
                 Method = invocationData.Method,
                 ArgumentTypes = invocationData.ParameterTypes,
                 Arguments = invocationData.Arguments,
-                ActualState = JobState.Awaiting,
+                ActualState = AwaitingState.StateName,
             };
 
             var state = new HangfireJobState
             {
                 Job = job,
                 CreatedAt = DateTime.UtcNow,
-                State = JobState.Awaiting,
+                State = AwaitingState.StateName,
             };
 
             var jobQueueItem = new HangfireJobQueue
@@ -189,16 +189,16 @@ namespace Hangfire.EntityFramework
             UseContextWithSavingChanges(context =>
             {
                 for (int i = 0; i < 1; i++)
-                    AddJobWithStateToContext(context, JobState.Enqueued);
+                    AddJobWithStateToContext(context, EnqueuedState.StateName);
 
                 for (int i = 0; i < 2; i++)
-                    AddJobWithStateToContext(context, JobState.Failed);
+                    AddJobWithStateToContext(context, FailedState.StateName);
 
                 for (int i = 0; i < 3; i++)
-                    AddJobWithStateToContext(context, JobState.Processing);
+                    AddJobWithStateToContext(context, ProcessingState.StateName);
 
                 for (int i = 0; i < 4; i++)
-                    AddJobWithStateToContext(context, JobState.Scheduled);
+                    AddJobWithStateToContext(context, ScheduledState.StateName);
 
                 context.Counters.Add(new HangfireCounter
                 {
@@ -435,7 +435,7 @@ namespace Hangfire.EntityFramework
             UseContextWithSavingChanges(context =>
             {
                 for (int i = 0; i < 3; i++)
-                    AddJobWithStateToContext(context, JobState.Scheduled);
+                    AddJobWithStateToContext(context, ScheduledState.StateName);
             });
 
             var result = UseMonitoringApi(api => api.ScheduledCount());
@@ -449,7 +449,7 @@ namespace Hangfire.EntityFramework
             UseContextWithSavingChanges(context =>
             {
                 for (int i = 0; i < 3; i++)
-                    AddJobWithStateToContext(context, JobState.Failed);
+                    AddJobWithStateToContext(context, FailedState.StateName);
             });
 
             var result = UseMonitoringApi(api => api.FailedCount());
@@ -463,7 +463,7 @@ namespace Hangfire.EntityFramework
             UseContextWithSavingChanges(context =>
             {
                 for (int i = 0; i < 3; i++)
-                    AddJobWithStateToContext(context, JobState.Processing);
+                    AddJobWithStateToContext(context, ProcessingState.StateName);
             });
 
             var result = UseMonitoringApi(api => api.ProcessingCount());
@@ -477,7 +477,7 @@ namespace Hangfire.EntityFramework
             UseContextWithSavingChanges(context =>
             {
                 for (int i = 0; i < 3; i++)
-                    AddJobWithStateToContext(context, JobState.Succeeded);
+                    AddJobWithStateToContext(context, SucceededState.StateName);
             });
 
             var result = UseMonitoringApi(api => api.SucceededListCount());
@@ -491,7 +491,7 @@ namespace Hangfire.EntityFramework
             UseContextWithSavingChanges(context =>
             {
                 for (int i = 0; i < 3; i++)
-                    AddJobWithStateToContext(context, JobState.Deleted);
+                    AddJobWithStateToContext(context, DeletedState.StateName);
             });
 
             var result = UseMonitoringApi(api => api.DeletedListCount());
@@ -544,7 +544,7 @@ namespace Hangfire.EntityFramework
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
-                    ActualState = JobState.Succeeded,
+                    ActualState = SucceededState.StateName,
                 }).
                 ToArray();
 
@@ -552,7 +552,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = JobState.Succeeded,
+                State = SucceededState.StateName,
                 Data = JobHelper.ToJson(data),
             }).
             ToArray();
@@ -604,7 +604,7 @@ namespace Hangfire.EntityFramework
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
-                    ActualState = JobState.Processing,
+                    ActualState = ProcessingState.StateName,
                 }).
                 ToArray();
 
@@ -612,7 +612,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = JobState.Processing,
+                State = ProcessingState.StateName,
                 Data = JobHelper.ToJson(data),
             }).
             ToArray();
@@ -662,7 +662,7 @@ namespace Hangfire.EntityFramework
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
-                    ActualState = JobState.Scheduled,
+                    ActualState = ScheduledState.StateName,
                 }).
                 ToArray();
 
@@ -670,7 +670,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = JobState.Scheduled,
+                State = ScheduledState.StateName,
                 Data = JobHelper.ToJson(data),
             }).
             ToArray();
@@ -722,7 +722,7 @@ namespace Hangfire.EntityFramework
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
-                    ActualState = JobState.Failed,
+                    ActualState = FailedState.StateName,
                 }).
                 ToArray();
 
@@ -730,7 +730,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = JobState.Failed,
+                State = FailedState.StateName,
                 Data = JobHelper.ToJson(data),
                 Reason = "Reason",
             }).ToArray();
@@ -783,7 +783,7 @@ namespace Hangfire.EntityFramework
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
-                    ActualState = JobState.Deleted,
+                    ActualState = DeletedState.StateName,
                 }).
                 ToArray();
 
@@ -791,7 +791,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = JobState.Deleted,
+                State = DeletedState.StateName,
                 Data = JobHelper.ToJson(data),
             }).
             ToArray();
@@ -839,7 +839,7 @@ namespace Hangfire.EntityFramework
                     Method = invocationData.Method,
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
-                    ActualState = JobState.Enqueued,
+                    ActualState = EnqueuedState.StateName,
                 }).
                 ToArray();
 
@@ -847,7 +847,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = JobState.Enqueued,
+                State = EnqueuedState.StateName,
                 Data = JobHelper.ToJson(data),
             }).
             ToArray();
@@ -891,24 +891,24 @@ namespace Hangfire.EntityFramework
             Assert.Empty(result);
         }
 
-        private void AddJobWithStateToContext(HangfireDbContext context, JobState jobState, string data = null)
+        private void AddJobWithStateToContext(HangfireDbContext context, string state, string data = null)
         {
             var job = new HangfireJob
             {
                 CreatedAt = DateTime.UtcNow,
-                ActualState = jobState,
+                ActualState = state,
             };
 
-            var state = new HangfireJobState
+            var jobSstate = new HangfireJobState
             {
                 Job = job,
                 CreatedAt = DateTime.UtcNow,
-                State = jobState,
+                State = state,
                 Data = data,
             };
 
             context.Jobs.Add(job);
-            context.JobStates.Add(state);
+            context.JobStates.Add(jobSstate);
         }
 
         private void AddJobWithQueueItemToContext(HangfireDbContext context, string queue)

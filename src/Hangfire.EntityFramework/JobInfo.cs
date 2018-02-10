@@ -10,8 +10,8 @@ namespace Hangfire.EntityFramework
         public string Method { get; set; }
         public string ArgumentTypes { get; set; }
         public string Arguments { get; set; }
-        public string StateData { get; internal set; }
-        public string StateReason { get; internal set; }
-        public JobState State { get; internal set; }
+        public string StateData { get; set; }
+        public string StateReason { get; set; }
+        public string State { get; set; }
     }
 }

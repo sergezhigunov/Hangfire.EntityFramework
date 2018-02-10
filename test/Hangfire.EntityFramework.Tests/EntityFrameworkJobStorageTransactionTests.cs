@@ -170,13 +170,13 @@ namespace Hangfire.EntityFramework
             DateTime endTimestamp = DateTime.UtcNow.AddSeconds(1);
 
             var actualJob = GetTestJob(job.Id);
-            Assert.Equal(JobState.Awaiting, actualJob.ActualState);
+            Assert.Equal(AwaitingState.StateName, actualJob.ActualState);
 
             anotherJob = GetTestJob(anotherJob.Id);
-            Assert.Equal(JobState.Created, anotherJob.ActualState);
+            Assert.Null(anotherJob.ActualState);
 
             var jobState = GetTestJobActualState(job.Id);
-            Assert.Equal(JobState.Awaiting, jobState.State);
+            Assert.Equal(AwaitingState.StateName, jobState.State);
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
             var data = JobHelper.FromJson<Dictionary<string, string>>(jobState.Data);
@@ -245,10 +245,10 @@ namespace Hangfire.EntityFramework
             DateTime endTimestamp = DateTime.UtcNow.AddSeconds(1);
 
             var actualJob = GetTestJob(job.Id);
-            Assert.Equal(JobState.Created, actualJob.ActualState);
+            Assert.Null(actualJob.ActualState);
 
             var jobState = Assert.Single(actualJob.States);
-            Assert.Equal(JobState.Awaiting, jobState.State);
+            Assert.Equal(AwaitingState.StateName, jobState.State);
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
             var data = JobHelper.FromJson<Dictionary<string, string>>(jobState.Data);

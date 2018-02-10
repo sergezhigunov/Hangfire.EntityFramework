@@ -318,7 +318,7 @@ namespace Hangfire.EntityFramework
 
             Assert.Equal(jobId, hangfireJob.Id.ToString(CultureInfo.InvariantCulture));
             Assert.Equal(createdAt, hangfireJob.CreatedAt);
-            Assert.Equal(JobState.Created, hangfireJob.ActualState);
+            Assert.Null(hangfireJob.ActualState);
 
             var invocationData = new InvocationData(
                 hangfireJob.ClrType,
@@ -368,14 +368,14 @@ namespace Hangfire.EntityFramework
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
-                    ActualState = JobState.Succeeded,
+                    ActualState = SucceededState.StateName,
                 });
 
                 var state = context.JobStates.Add(new HangfireJobState
                 {
                     Job = jobItem,
                     CreatedAt = DateTime.UtcNow,
-                    State = JobState.Succeeded,
+                    State = SucceededState.StateName,
                 });
 
                 return jobItem;
@@ -407,14 +407,14 @@ namespace Hangfire.EntityFramework
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
-                    ActualState = JobState.Succeeded,
+                    ActualState = SucceededState.StateName,
                 });
 
                 var state = context.JobStates.Add(new HangfireJobState
                 {
                     Job = job,
                     CreatedAt = DateTime.UtcNow,
-                    State = JobState.Succeeded,
+                    State = SucceededState.StateName,
                 });
 
                 return job;
@@ -609,14 +609,14 @@ namespace Hangfire.EntityFramework
                     ArgumentTypes = invocationData.ParameterTypes,
                     Arguments = invocationData.Arguments,
                     CreatedAt = DateTime.UtcNow,
-                    ActualState = JobState.Awaiting,
+                    ActualState = AwaitingState.StateName,
                 });
 
                 var state = context.JobStates.Add(new HangfireJobState
                 {
                     Job = job,
                     CreatedAt = DateTime.UtcNow,
-                    State = JobState.Awaiting,
+                    State = AwaitingState.StateName,
                     Reason = "Reason",
                     Data = data
                 });

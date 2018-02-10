@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using Hangfire.Annotations;
 using Hangfire.Common;
+using Hangfire.States;
 using Hangfire.Storage;
 using Hangfire.Storage.Monitoring;
 
@@ -19,12 +20,12 @@ namespace Hangfire.EntityFramework
         private const string SucceededCounterName = "stats:succeeded";
         private const string RecurringJobsSetName = "recurring-jobs";
 
-        private static IReadOnlyList<JobState> StatsJobStates { get; } = new[]
+        private static IReadOnlyList<string> StatsJobStates { get; } = new[]
         {
-            JobState.Enqueued,
-            JobState.Scheduled,
-            JobState.Processing,
-            JobState.Failed,
+            EnqueuedState.StateName,
+            ScheduledState.StateName,
+            ProcessingState.StateName,
+            FailedState.StateName,
         };
 
         private EntityFrameworkJobStorage Storage { get; }
@@ -115,7 +116,7 @@ namespace Hangfire.EntityFramework
                         {
                             CreatedAt = x.CreatedAt,
                             Reason = x.Reason,
-                            StateName = x.State.ToStateName(),
+                            StateName = x.State,
                             Data = JobHelper.FromJson<Dictionary<string, string>>(x.Data),
                         }).
                         ToList(),
@@ -130,7 +131,9 @@ namespace Hangfire.EntityFramework
                 var stateCounts = (
                     from job in context.Jobs
                     let state = job.ActualState
-                    where StatsJobStates.Contains(state)
+                    where
+                        state != null &&
+                        StatsJobStates.Contains(state)
                     group job by state into @group
                     select new
                     {
@@ -157,10 +160,10 @@ namespace Hangfire.EntityFramework
                 {
                     Recurring = context.Sets.LongCount(x => x.Key == RecurringJobsSetName),
                     Servers = context.Servers.LongCount(),
-                    Enqueued = stateCounts.TryGetValue(JobState.Enqueued, out long count) ? count : 0,
-                    Failed = stateCounts.TryGetValue(JobState.Failed, out count) ? count : 0,
-                    Processing = stateCounts.TryGetValue(JobState.Processing, out count) ? count : 0,
-                    Scheduled = stateCounts.TryGetValue(JobState.Scheduled, out count) ? count : 0,
+                    Enqueued = stateCounts.TryGetValue(EnqueuedState.StateName, out long count) ? count : 0,
+                    Failed = stateCounts.TryGetValue(FailedState.StateName, out count) ? count : 0,
+                    Processing = stateCounts.TryGetValue(ProcessingState.StateName, out count) ? count : 0,
+                    Scheduled = stateCounts.TryGetValue(ScheduledState.StateName, out count) ? count : 0,
                     Deleted = counters.TryGetValue(DeletedCounterName, out count) ? count : 0,
                     Succeeded = counters.TryGetValue(SucceededCounterName, out count) ? count : 0,
                 };
@@ -187,7 +190,7 @@ namespace Hangfire.EntityFramework
 
         public JobList<ProcessingJobDto> ProcessingJobs(int from, int count)
         {
-            return GetJobs<ProcessingJobDto, ProcessingStateData>(from, count, JobState.Processing,
+            return GetJobs<ProcessingJobDto, ProcessingStateData>(from, count, ProcessingState.StateName,
                 (sqlJob, job, stateData) => new ProcessingJobDto
                 {
                     Job = job,
@@ -198,7 +201,7 @@ namespace Hangfire.EntityFramework
 
         public JobList<ScheduledJobDto> ScheduledJobs(int from, int count)
         {
-            return GetJobs<ScheduledJobDto, ScheduledStateData>(from, count, JobState.Scheduled,
+            return GetJobs<ScheduledJobDto, ScheduledStateData>(from, count, ScheduledState.StateName,
                 (sqlJob, job, stateData) => new ScheduledJobDto
                 {
                     Job = job,
@@ -209,7 +212,7 @@ namespace Hangfire.EntityFramework
 
         public JobList<SucceededJobDto> SucceededJobs(int from, int count)
         {
-            return GetJobs<SucceededJobDto, SucceededStateData>(from, count, JobState.Succeeded,
+            return GetJobs<SucceededJobDto, SucceededStateData>(from, count, SucceededState.StateName,
                 (sqlJob, job, stateData) => new SucceededJobDto
                 {
                     Job = job,
@@ -221,7 +224,7 @@ namespace Hangfire.EntityFramework
 
         public JobList<FailedJobDto> FailedJobs(int from, int count)
         {
-            return GetJobs<FailedJobDto, FailedStateData>(from, count, JobState.Failed,
+            return GetJobs<FailedJobDto, FailedStateData>(from, count, FailedState.StateName,
                 (sqlJob, job, stateData) => new FailedJobDto
                 {
                     Job = job,
@@ -235,7 +238,7 @@ namespace Hangfire.EntityFramework
 
         public JobList<DeletedJobDto> DeletedJobs(int from, int count)
         {
-            return GetJobs<DeletedJobDto, DeletedStateData>(from, count, JobState.Deleted,
+            return GetJobs<DeletedJobDto, DeletedStateData>(from, count, DeletedState.StateName,
                 (sqlJob, job, stateData) => new DeletedJobDto
                 {
                     Job = job,
@@ -243,7 +246,7 @@ namespace Hangfire.EntityFramework
                 });
         }
 
-        public long ScheduledCount() => GetNumberOfJobsByStateName(JobState.Scheduled);
+        public long ScheduledCount() => GetNumberOfJobsByStateName(ScheduledState.StateName);
 
         public long EnqueuedCount(string queue)
         {
@@ -253,13 +256,13 @@ namespace Hangfire.EntityFramework
 
         public long FetchedCount(string queue) => 0;
 
-        public long FailedCount() => GetNumberOfJobsByStateName(JobState.Failed);
+        public long FailedCount() => GetNumberOfJobsByStateName(FailedState.StateName);
 
-        public long ProcessingCount() => GetNumberOfJobsByStateName(JobState.Processing);
+        public long ProcessingCount() => GetNumberOfJobsByStateName(ProcessingState.StateName);
 
-        public long SucceededListCount() => GetNumberOfJobsByStateName(JobState.Succeeded);
+        public long SucceededListCount() => GetNumberOfJobsByStateName(SucceededState.StateName);
 
-        public long DeletedListCount() => GetNumberOfJobsByStateName(JobState.Deleted);
+        public long DeletedListCount() => GetNumberOfJobsByStateName(DeletedState.StateName);
 
         public IDictionary<DateTime, long> SucceededByDatesCount() =>
             UseContext(context => GetTimelineStats("succeeded"));
@@ -281,7 +284,7 @@ namespace Hangfire.EntityFramework
                 var jobs = (
                     from job in context.Jobs.
                     WhereContains(x => x.Id, enqueuedJobIds)
-                    join enqueuedState in GetLastStates(context, JobState.Enqueued)
+                    join enqueuedState in GetLastStates(context, EnqueuedState.StateName)
                         on job.Id equals enqueuedState.JobId
                         into enqueuedStates
                     from enqueuedState in enqueuedStates.DefaultIfEmpty()
@@ -308,7 +311,7 @@ namespace Hangfire.EntityFramework
                     (sqlJob, job, stateData) => new EnqueuedJobDto
                     {
                         Job = job,
-                        State = sqlJob.State.ToStateName(),
+                        State = sqlJob.State,
                         EnqueuedAt = stateData?.EnqueuedAt
                     });
             });
@@ -317,14 +320,16 @@ namespace Hangfire.EntityFramework
         private JobList<TResult> GetJobs<TResult, TStateData>(
             int from,
             int count,
-            JobState state,
+            string state,
             Func<JobInfo, Job, TStateData, TResult> selector)
         {
             return UseContext(context =>
             {
                 var jobIds = (
                     from job in context.Jobs
-                    where new[] { state }.Contains(job.ActualState) // Force emit number literal
+                    where
+                        job.ActualState != null &&
+                        job.ActualState == state
                     orderby job.Id
                     select job.Id).
                     Skip(() => from).
@@ -384,11 +389,13 @@ namespace Hangfire.EntityFramework
             return provider.GetJobQueueMonitoringApi();
         }
 
-        private long GetNumberOfJobsByStateName(JobState state)
+        private long GetNumberOfJobsByStateName(string state)
         {
             return UseContext(context => (
                 from job in context.Jobs
-                where job.ActualState == state
+                where
+                    job.ActualState != null &&
+                    job.ActualState == state
                 select job).
                 LongCount());
         }
@@ -436,10 +443,10 @@ namespace Hangfire.EntityFramework
 
         private static IQueryable<ActualState> GetLastStates(
             HangfireDbContext context,
-            JobState jobState)
+            string jobState)
         {
             var states = context.JobStates.
-                Where(x => new[] { jobState }.Contains(x.State));  // Force emit number literal
+                Where(x => x.State == jobState);
 
             return
                 from actualState in states
