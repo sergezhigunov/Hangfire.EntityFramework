@@ -500,7 +500,7 @@ namespace Hangfire.EntityFramework
             var addedState = context.JobStates.Add(new HangfireJobState
             {
                 JobId = id,
-                State = state.Name,
+                Name = state.Name,
                 Reason = state.Reason,
                 Data = JobHelper.ToJson(state.SerializeData()),
                 CreatedAt = DateTime.UtcNow,
@@ -513,13 +513,13 @@ namespace Hangfire.EntityFramework
                     FirstOrDefault(x => x.Entity.Id == id);
 
                 if (entry != null)
-                    entry.Entity.ActualState = addedState.State;
+                    entry.Entity.ActualState = addedState.Name;
                 else
                 {
                     entry = context.Entry(context.Jobs.Attach(new HangfireJob
                     {
                         Id = id,
-                        ActualState = addedState.State,
+                        ActualState = addedState.Name,
                     }));
                 }
 

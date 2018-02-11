@@ -55,7 +55,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = job,
                 CreatedAt = DateTime.UtcNow,
-                State = AwaitingState.StateName,
+                Name = AwaitingState.StateName,
             };
 
             var jobQueueItem = new HangfireJobQueue
@@ -552,7 +552,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = SucceededState.StateName,
+                Name = SucceededState.StateName,
                 Data = JobHelper.ToJson(data),
             }).
             ToArray();
@@ -612,7 +612,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = ProcessingState.StateName,
+                Name = ProcessingState.StateName,
                 Data = JobHelper.ToJson(data),
             }).
             ToArray();
@@ -670,7 +670,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = ScheduledState.StateName,
+                Name = ScheduledState.StateName,
                 Data = JobHelper.ToJson(data),
             }).
             ToArray();
@@ -730,7 +730,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = FailedState.StateName,
+                Name = FailedState.StateName,
                 Data = JobHelper.ToJson(data),
                 Reason = "Reason",
             }).ToArray();
@@ -791,7 +791,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = DeletedState.StateName,
+                Name = DeletedState.StateName,
                 Data = JobHelper.ToJson(data),
             }).
             ToArray();
@@ -847,7 +847,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = x,
                 CreatedAt = DateTime.UtcNow,
-                State = EnqueuedState.StateName,
+                Name = EnqueuedState.StateName,
                 Data = JobHelper.ToJson(data),
             }).
             ToArray();
@@ -903,7 +903,7 @@ namespace Hangfire.EntityFramework
             {
                 Job = job,
                 CreatedAt = DateTime.UtcNow,
-                State = state,
+                Name = state,
                 Data = data,
             };
 

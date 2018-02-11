@@ -116,7 +116,7 @@ namespace Hangfire.EntityFramework
                         {
                             CreatedAt = x.CreatedAt,
                             Reason = x.Reason,
-                            StateName = x.State,
+                            StateName = x.Name,
                             Data = JobHelper.FromJson<Dictionary<string, string>>(x.Data),
                         }).
                         ToList(),
@@ -446,7 +446,7 @@ namespace Hangfire.EntityFramework
             string jobState)
         {
             var states = context.JobStates.
-                Where(x => x.State == jobState);
+                Where(x => x.Name == jobState);
 
             return
                 from actualState in states

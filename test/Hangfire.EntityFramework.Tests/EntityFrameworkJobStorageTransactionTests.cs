@@ -176,7 +176,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(anotherJob.ActualState);
 
             var jobState = GetTestJobActualState(job.Id);
-            Assert.Equal(AwaitingState.StateName, jobState.State);
+            Assert.Equal(AwaitingState.StateName, jobState.Name);
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
             var data = JobHelper.FromJson<Dictionary<string, string>>(jobState.Data);
@@ -248,7 +248,7 @@ namespace Hangfire.EntityFramework
             Assert.Null(actualJob.ActualState);
 
             var jobState = Assert.Single(actualJob.States);
-            Assert.Equal(AwaitingState.StateName, jobState.State);
+            Assert.Equal(AwaitingState.StateName, jobState.Name);
             Assert.Equal("Reason", jobState.Reason);
             Assert.True(beginTimestamp <= jobState.CreatedAt && jobState.CreatedAt <= endTimestamp);
             var data = JobHelper.FromJson<Dictionary<string, string>>(jobState.Data);
@@ -1521,7 +1521,7 @@ namespace Hangfire.EntityFramework
 
         private HangfireJobState GetTestJobActualState(long jobId) => UseContext(context => (
             from state in context.JobStates
-            where state.JobId == jobId && state.Job.ActualState == state.State
+            where state.JobId == jobId && state.Job.ActualState == state.Name
             orderby state.CreatedAt descending
             select state).
             FirstOrDefault());

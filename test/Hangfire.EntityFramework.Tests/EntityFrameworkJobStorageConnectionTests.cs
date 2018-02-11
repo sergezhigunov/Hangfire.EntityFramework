@@ -375,7 +375,7 @@ namespace Hangfire.EntityFramework
                 {
                     Job = jobItem,
                     CreatedAt = DateTime.UtcNow,
-                    State = SucceededState.StateName,
+                    Name = SucceededState.StateName,
                 });
 
                 return jobItem;
@@ -414,7 +414,7 @@ namespace Hangfire.EntityFramework
                 {
                     Job = job,
                     CreatedAt = DateTime.UtcNow,
-                    State = SucceededState.StateName,
+                    Name = SucceededState.StateName,
                 });
 
                 return job;
@@ -616,7 +616,7 @@ namespace Hangfire.EntityFramework
                 {
                     Job = job,
                     CreatedAt = DateTime.UtcNow,
-                    State = AwaitingState.StateName,
+                    Name = AwaitingState.StateName,
                     Reason = "Reason",
                     Data = data
                 });

@@ -203,11 +203,11 @@ namespace Hangfire.EntityFramework
                 from state in job.States
                 where
                     job.ActualState != null &&
-                    job.ActualState == state.State
+                    job.ActualState == state.Name
                 orderby state.CreatedAt descending
                 select new
                 {
-                    state.State,
+                    state.Name,
                     state.Reason,
                     state.Data,
                 }).
@@ -219,7 +219,7 @@ namespace Hangfire.EntityFramework
             return new StateData
             {
                 Data = JobHelper.FromJson<Dictionary<string, string>>(stateInfo.Data),
-                Name = stateInfo.State,
+                Name = stateInfo.Name,
                 Reason = stateInfo.Reason,
             };
         }

@@ -19,7 +19,7 @@ namespace Hangfire.EntityFramework
         [Required]
         [Index(IsUnique = false)]
         [StringLength(20)]
-        public string State { get; set; }
+        public string Name { get; set; }
 
         [StringLength(100)]
         public string Reason { get; set; }
