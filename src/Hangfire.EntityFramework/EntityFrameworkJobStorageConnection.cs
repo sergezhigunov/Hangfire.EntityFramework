@@ -199,6 +199,7 @@ namespace Hangfire.EntityFramework
 
             var stateInfo = Storage.UseContext(context => (
                 from job in context.Jobs
+                where job.Id == id
                 from state in job.States
                 where
                     job.ActualState != null &&
