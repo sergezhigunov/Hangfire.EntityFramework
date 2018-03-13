@@ -3,19 +3,22 @@
 
 using System;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration.Configuration;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
 namespace Hangfire.EntityFramework
 {
-    internal class HangfireDbContext : DbContext
+    internal class HangfireDbContext : DbContext, IDbModelCacheKeyProvider
     {
-        private string DefaultSchemaName { get; }
+        private string DefaultSchema { get; }
 
-        public HangfireDbContext(string nameOrConnectionString, string defaultSchemaName)
+        string IDbModelCacheKeyProvider.CacheKey => DefaultSchema;
+
+        public HangfireDbContext(string nameOrConnectionString, string defaultSchema)
             : base(nameOrConnectionString)
         {
-            DefaultSchemaName = defaultSchemaName;
+            DefaultSchema = defaultSchema;
         }
 
         public DbSet<HangfireCounter> Counters { get; set; }
@@ -46,8 +49,8 @@ namespace Hangfire.EntityFramework
 
             modelBuilder.Conventions.Add<DateTimePrecisionConvention>();
 
-            if (DefaultSchemaName != null)
-                modelBuilder.HasDefaultSchema(DefaultSchemaName);
+            if (DefaultSchema != null)
+                modelBuilder.HasDefaultSchema(DefaultSchema);
 
             modelBuilder.Entity<HangfireServer>().
                 HasRequired(x => x.ServerHost).
