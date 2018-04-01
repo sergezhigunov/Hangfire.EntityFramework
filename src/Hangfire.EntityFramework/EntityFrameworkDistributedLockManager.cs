@@ -129,11 +129,7 @@ namespace Hangfire.EntityFramework
 
         public virtual void ReleaseDistributedLock(string resource)
         {
-            if (resource == null)
-                throw new ArgumentNullException(nameof(resource));
-
-            if (resource == string.Empty)
-                throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(resource));
+            ValidateResource(resource);
 
             Storage.UseContext(context =>
             {
@@ -154,7 +150,7 @@ namespace Hangfire.EntityFramework
             if (resource == null)
                 throw new ArgumentNullException(nameof(resource));
 
-            if (resource == string.Empty)
+            if (resource.Length == 0)
                 throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(resource));
         }
     }

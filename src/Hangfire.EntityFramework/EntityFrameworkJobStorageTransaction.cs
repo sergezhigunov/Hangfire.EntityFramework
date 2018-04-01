@@ -647,7 +647,7 @@ namespace Hangfire.EntityFramework
             if (queue == null)
                 throw new ArgumentNullException(nameof(queue));
 
-            if (queue == string.Empty)
+            if (queue.Length == 0)
                 throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(queue));
         }
 
@@ -656,7 +656,7 @@ namespace Hangfire.EntityFramework
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
-            if (key == string.Empty)
+            if (key.Length == 0)
                 throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(key));
         }
 
@@ -665,7 +665,7 @@ namespace Hangfire.EntityFramework
             if (jobId == null)
                 throw new ArgumentNullException(nameof(jobId));
 
-            if (jobId == string.Empty)
+            if (jobId.Length == 0)
                 throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(jobId));
         }
     }

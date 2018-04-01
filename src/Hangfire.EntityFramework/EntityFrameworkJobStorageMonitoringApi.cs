@@ -361,7 +361,7 @@ namespace Hangfire.EntityFramework
             });
         }
 
-        private JobList<TResult> DeserializeJobs<TResult, TStateData>(
+        private static JobList<TResult> DeserializeJobs<TResult, TStateData>(
             JobInfo[] jobs,
             Func<JobInfo, Job, TStateData, TResult> selector)
         {

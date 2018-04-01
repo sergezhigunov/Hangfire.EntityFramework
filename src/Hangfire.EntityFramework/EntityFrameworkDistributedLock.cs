@@ -22,7 +22,7 @@ namespace Hangfire.EntityFramework
             if (resource == null)
                 throw new ArgumentNullException(nameof(resource));
 
-            if (resource == string.Empty)
+            if (resource.Length == 0)
                 throw new ArgumentException(ErrorStrings.StringCannotBeEmpty, nameof(resource));
 
             Manager = manager;
