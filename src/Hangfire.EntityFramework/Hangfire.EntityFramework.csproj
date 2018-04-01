@@ -19,11 +19,13 @@
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/sergezhigunov/Hangfire.EntityFramework.git</RepositoryUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Features>IOperation</Features>
+    <PackageReleaseNotes>https://github.com/sergezhigunov/Hangfire.EntityFramework/releases</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup>
-    <Features>IOperation</Features>
-    <PackageReleaseNotes>https://github.com/sergezhigunov/Hangfire.EntityFramework/releases</PackageReleaseNotes>
+    <WarningsAsErrors />
+    <NoWarn>1701;1702;1705;NU1603</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -33,9 +35,6 @@
       <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Net.Compilers" Version="2.7.0">
-      <ExcludeAssets>all</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3">
       <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
     <Reference Include="System.Data" />
